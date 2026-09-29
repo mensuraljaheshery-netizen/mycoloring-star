@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Theme {
+  id                  String   @id @default(cuid())
+  name                String
+  slug                String   @unique
+  category            String
+  description         String
+  coverImage          String?
+  hoverImage          String?
+  costumePrompt       String
+  styleRules          String
+  sortOrder           Int      @default(0)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  scenes              Scene[]
+}
+
+model Scene {
+  id             String   @id @default(cuid())
+  themeId        String
+  theme          Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  description    String
+  cameraAngle    String
+  action         String
+  setting        String
+  tags           String
+  isActive       Boolean  @default(true)
+  usageCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Setting {
+  key   String @id
+  value String
+}
