@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { jsPDF } from 'jspdf';
 import {
   ArrowLeft,
   Sparkles,
@@ -173,6 +174,121 @@ export default function ThemeCustomizerPage() {
     reader.readAsDataURL(file);
   };
 
+  // Helper to load image as Base64 to bypass browser canvas restrictions
+  const ensureBase64 = async (src: string): Promise<string> => {
+    if (src.startsWith('data:image')) return src;
+    const res = await fetch(src);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  // In-Browser PDF Builder
+  const buildPdfInBrowser = async (coverUrl: string | null, pageUrls: string[]) => {
+    const isLandscape = orientation === 'landscape';
+    const doc = new jsPDF({
+      orientation: isLandscape ? 'landscape' : 'portrait',
+      unit: 'pt',
+      format: 'letter'
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // 1. Cover Page
+    if (coverUrl) {
+      try {
+        const coverBase64 = await ensureBase64(coverUrl);
+        const props = doc.getImageProperties(coverBase64);
+        const imgRatio = props.width / props.height;
+        const pageRatio = pageWidth / pageHeight;
+
+        let drawW = pageWidth;
+        let drawH = pageHeight;
+        let drawX = 0;
+        let drawY = 0;
+
+        if (imgRatio > pageRatio) {
+          drawH = pageHeight;
+          drawW = pageHeight * imgRatio;
+          drawX = -(drawW - pageWidth) / 2;
+        } else {
+          drawW = pageWidth;
+          drawH = pageWidth / imgRatio;
+        }
+
+        doc.addImage(coverBase64, 'PNG', drawX, drawY, drawW, drawH, undefined, 'FAST');
+      } catch (err) {
+        console.error('Failed to embed cover in PDF:', err);
+      }
+    }
+
+    // 2. Dedication Page
+    doc.addPage();
+    doc.setFillColor(255, 253, 249);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(28);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`${childName || 'Hero'}'s`, pageWidth / 2, pageHeight * 0.32, { align: 'center' });
+    doc.text(`${baseTheme.name} Coloring Book`, pageWidth / 2, pageHeight * 0.40, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(13);
+    doc.setTextColor(100, 116, 139);
+    doc.text('A personalized coloring adventure created just for you!', pageWidth / 2, pageHeight * 0.48, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(71, 85, 105);
+    doc.text('Colored with love by: ________________________________', pageWidth / 2, pageHeight * 0.58, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(148, 163, 184);
+    doc.text('Published by MyColoringStar • www.mycoloringstar.com', pageWidth / 2, pageHeight - 35, { align: 'center' });
+
+    // 3. Interior Pages
+    for (let i = 0; i < pageUrls.length; i++) {
+      const pUrl = pageUrls[i];
+      if (!pUrl) continue;
+      try {
+        doc.addPage();
+        const pageBase64 = await ensureBase64(pUrl);
+        const props = doc.getImageProperties(pageBase64);
+        const imgRatio = props.width / props.height;
+
+        const margin = 24;
+        const maxW = pageWidth - margin * 2;
+        const maxH = pageHeight - margin * 2;
+
+        let w = maxW;
+        let h = maxW / imgRatio;
+        if (h > maxH) {
+          h = maxH;
+          w = maxH * imgRatio;
+        }
+
+        const x = margin + (maxW - w) / 2;
+        const y = margin + (maxH - h) / 2;
+
+        doc.addImage(pageBase64, 'PNG', x, y, w, h, undefined, 'FAST');
+      } catch (err) {
+        console.error(`Failed to embed page ${i + 1} in PDF:`, err);
+      }
+    }
+
+    const filename = `MyColoringStar_${(childName || 'Hero').replace(/\s+/g, '_')}_${baseTheme.slug}.pdf`;
+    
+    // Save file locally and generate download link
+    doc.save(filename);
+
+    const pdfBlob = doc.output('blob');
+    const blobUrl = window.URL.createObjectURL(pdfBlob);
+    setDownloadReadyPdf({ url: blobUrl, filename });
+  };
+
   // 1. FREE SAMPLE GENERATOR
   const handleGeneratePreview = async () => {
     if (previewCount >= MAX_FREE_PREVIEWS) return;
@@ -220,7 +336,7 @@ export default function ThemeCustomizerPage() {
     }
   };
 
- // 2. COVER ONLY GENERATOR (1 CREDIT TEST)
+  // 2. COVER ONLY GENERATOR (1 CREDIT TEST)
   const handleGenerateCoverOnly = async () => {
     if (!photoPreview) {
       setErrorMessage('Please upload a child face photo first.');
@@ -229,7 +345,8 @@ export default function ThemeCustomizerPage() {
 
     setIsBuildingBook(true);
     setDownloadReadyPdf(null);
-    setFulfillmentStage(`Rendering single comic-style cover page (${orientation})...`);
+    setErrorMessage(null);
+    setFulfillmentStage(`Rendering comic-style cover page (${orientation})...`);
 
     try {
       const coverRes = await fetch('/api/generate', {
@@ -249,42 +366,10 @@ export default function ThemeCustomizerPage() {
         throw new Error(coverData.error || 'Failed generating cover.');
       }
 
-      // Show the generated cover directly in the preview box
       setPreviewImageUrl(coverData.imageUrl);
-
-      setFulfillmentStage('Compiling cover PDF document...');
-      const pdfRes = await fetch('/api/pdf/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          childName: childName || 'Hero',
-          themeName: baseTheme.name,
-          orientation,
-          coverImage: coverData.imageUrl,
-          pages: []
-        })
-      });
-
-      if (!pdfRes.ok) {
-        throw new Error('Failed assembling cover PDF.');
-      }
-
-      // Handle raw binary PDF stream
-      const blob = await pdfRes.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const filename = `MyColoringStar_${(childName || 'Hero').replace(/\s+/g, '_')}_${baseTheme.name.replace(/\s+/g, '_')}_Cover.pdf`;
-
-      setDownloadReadyPdf({ url: blobUrl, filename });
+      setFulfillmentStage('Compiling cover PDF in browser...');
+      await buildPdfInBrowser(coverData.imageUrl, []);
       setFulfillmentStage('Cover complete! Download started.');
-
-      // Trigger instant download
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
     } catch (err: any) {
       console.error('Cover generation error:', err);
       setErrorMessage(err.message || 'Error generating cover. Please try again.');
@@ -304,6 +389,7 @@ export default function ThemeCustomizerPage() {
     setIsCheckoutModalOpen(true);
     setIsBuildingBook(true);
     setDownloadReadyPdf(null);
+    setErrorMessage(null);
 
     try {
       // Step A: Cover
@@ -321,6 +407,8 @@ export default function ThemeCustomizerPage() {
       });
       const coverData = await coverRes.json();
       if (!coverRes.ok || !coverData.imageUrl) throw new Error(coverData.error || 'Failed generating cover');
+
+      setPreviewImageUrl(coverData.imageUrl);
 
       // Step B: 3 Interior Coloring Pages
       const pages: string[] = [];
@@ -342,33 +430,10 @@ export default function ThemeCustomizerPage() {
         pages.push(pageData.imageUrl);
       }
 
-      // Step C: Compile 4-Page PDF
-      setFulfillmentStage('Compiling 4-Page PDF document...');
-      const pdfRes = await fetch('/api/pdf/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          childName: childName || 'Hero',
-          themeName: baseTheme.name,
-          orientation,
-          coverImage: coverData.imageUrl,
-          pages
-        })
-      });
-
-      const pdfData = await pdfRes.json();
-      if (!pdfRes.ok || !pdfData.pdfUrl) throw new Error(pdfData.error || 'Failed assembling 4-page PDF document.');
-
-      setDownloadReadyPdf({ url: pdfData.pdfUrl, filename: pdfData.filename });
-      setFulfillmentStage('4-Page Test Book ready for download!');
-
-      // Automatic download trigger
-      const link = document.createElement('a');
-      link.href = pdfData.pdfUrl;
-      link.download = pdfData.filename || `${(childName || 'hero').toLowerCase()}-${baseTheme.slug}-test-book.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Step C: Compile in Browser
+      setFulfillmentStage('Compiling 4-Page PDF directly in browser...');
+      await buildPdfInBrowser(coverData.imageUrl, pages);
+      setFulfillmentStage('4-Page Test Book ready and downloaded!');
 
     } catch (err: any) {
       console.error(err);
@@ -392,14 +457,15 @@ export default function ThemeCustomizerPage() {
 
     setIsBuildingBook(true);
     setDownloadReadyPdf(null);
+    setErrorMessage(null);
     setFulfillmentStage('Rendering cover & preparing page batches...');
 
     try {
       const totalPagesToRender = parseInt(packageSize, 10) || 8;
       const compiledPages: string[] = [];
 
-      // 1. Kick off Cover Generation First
-      const coverPromise = fetch('/api/generate', {
+      // 1. Cover
+      const coverRes = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -409,17 +475,17 @@ export default function ThemeCustomizerPage() {
           isCover: true,
           orientation
         })
-      }).then(async (res) => {
-        const data = await res.json();
-        if (!res.ok || !data.imageUrl) throw new Error(data.error || 'Failed generating cover');
-        return data.imageUrl as string;
       });
+      const coverData = await coverRes.json();
+      if (!coverRes.ok || !coverData.imageUrl) throw new Error(coverData.error || 'Failed generating cover');
 
-      // 2. Generate Interior Pages in Parallel Batches of 4
+      setPreviewImageUrl(coverData.imageUrl);
+
+      // 2. Parallel Batches of 4
       const BATCH_SIZE = 4;
       for (let i = 0; i < totalPagesToRender; i += BATCH_SIZE) {
         const currentBatchCount = Math.min(BATCH_SIZE, totalPagesToRender - i);
-        setFulfillmentStage(`Generating pages ${i + 1} to ${i + currentBatchCount} of ${totalPagesToRender} simultaneously...`);
+        setFulfillmentStage(`Generating pages ${i + 1} to ${i + currentBatchCount} of ${totalPagesToRender}...`);
 
         const batchPromises = Array.from({ length: currentBatchCount }).map(() =>
           fetch('/api/generate', {
@@ -443,33 +509,14 @@ export default function ThemeCustomizerPage() {
         compiledPages.push(...batchResults);
       }
 
-      // Wait for cover to finish
-      setFulfillmentStage('Finalizing cover artwork...');
-      const coverUrl = await coverPromise;
-
-      // 3. Assemble PDF
-      setFulfillmentStage('Compiling vector PDF document...');
-      const pdfRes = await fetch('/api/pdf/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          childName: childName || 'Hero',
-          themeName: baseTheme.name,
-          orientation,
-          coverImage: coverUrl,
-          pages: compiledPages
-        })
-      });
-
-      const pdfData = await pdfRes.json();
-      if (!pdfRes.ok || !pdfData.pdfUrl) throw new Error(pdfData.error || 'Failed assembling PDF document.');
-
-      setDownloadReadyPdf({ url: pdfData.pdfUrl, filename: pdfData.filename });
+      // 3. Assemble in Browser
+      setFulfillmentStage('Compiling complete PDF document...');
+      await buildPdfInBrowser(coverData.imageUrl, compiledPages);
       setFulfillmentStage('Complete! Your personalized coloring book is ready.');
 
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || 'Error generating your coloring book. Please try again.');
+      setErrorMessage(err.message || 'Error generating your coloring book.');
     } finally {
       setIsBuildingBook(false);
     }
@@ -580,11 +627,6 @@ export default function ThemeCustomizerPage() {
           <>
             <Lock className="w-4 h-4 text-slate-400" />
             Free Previews Used (Run 4-Page Test Below)
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-4 h-4 text-orange-500" />
-            Generate Free Sample ({remainingPreviews} Left)
           </>
         )}
       </button>
