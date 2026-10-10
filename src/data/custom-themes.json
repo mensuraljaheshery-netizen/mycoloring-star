@@ -1,0 +1,19 @@
+{
+  "customThemes": [
+    {
+      "slug": "dino-karate",
+      "name": "Dino Karate",
+      "category": "Adventure",
+      "genderTarget": "all",
+      "previewImage": "/theme-previews/Dino Karate.png",
+      "description": "Adventure world exploring Dino Karate",
+      "scenes": []
+    }
+  ],
+  "extraPrompts": {
+    "dino-karate": []
+  },
+  "extraCoverPrompts": {
+    "dino-karate": []
+  }
+}

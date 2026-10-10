@@ -1,0 +1,457 @@
+﻿'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { 
+  Sparkles, 
+  Upload, 
+  ShieldCheck, 
+  ArrowRight, 
+  Palette, 
+  Camera, 
+  Smile, 
+  Check, 
+  Gift, 
+  BookOpen,
+  Image as ImageIcon
+} from 'lucide-react';
+
+interface ThemeItem {
+  id: number;
+  name: string;
+  category: string;
+  slug: string;
+  previewImage: string;
+  genderTarget: 'boy' | 'girl' | 'all';
+}
+
+const ALL_34_THEMES: ThemeItem[] = [
+  { id: 1, name: 'Superhero', category: 'Adventure', slug: 'superhero', previewImage: '/theme-previews/superhero.png', genderTarget: 'all' },
+  { id: 2, name: 'Princess', category: 'Fantasy', slug: 'princess', previewImage: '/theme-previews/princess.png', genderTarget: 'girl' },
+  { id: 3, name: 'Astronaut', category: 'Space', slug: 'astronaut', previewImage: '/theme-previews/astronaut.png', genderTarget: 'all' },
+  { id: 4, name: 'School Day', category: 'Jobs', slug: 'school-day', previewImage: '/theme-previews/school-day.png', genderTarget: 'all' },
+  { id: 5, name: 'Jungle Explorer', category: 'Adventure', slug: 'jungle-explorer', previewImage: '/theme-previews/jungle-explorer.png', genderTarget: 'all' },
+  { id: 6, name: 'Outer Space', category: 'Space', slug: 'outer-space', previewImage: '/theme-previews/outer-space.png', genderTarget: 'all' },
+  { id: 7, name: 'Mars Mission', category: 'Space', slug: 'mars-mission', previewImage: '/theme-previews/mars-mission.png', genderTarget: 'all' },
+  { id: 8, name: 'Playing with Animals', category: 'Animals and Nature', slug: 'playing-with-animals', previewImage: '/theme-previews/playing-with-animals.png', genderTarget: 'all' },
+  { id: 9, name: 'Desert Adventure', category: 'Adventure', slug: 'desert-adventure', previewImage: '/theme-previews/desert-adventure.png', genderTarget: 'all' },
+  { id: 10, name: 'Snow and Winter', category: 'Seasonal', slug: 'snow-and-winter', previewImage: '/theme-previews/snow-and-winter.png', genderTarget: 'all' },
+  { id: 11, name: 'Soccer Stadium', category: 'Sports', slug: 'soccer-stadium', previewImage: '/theme-previews/soccer-stadium.png', genderTarget: 'all' },
+  { id: 12, name: 'Basketball Champion', category: 'Sports', slug: 'basketball-champion', previewImage: '/theme-previews/basketball-champion.png', genderTarget: 'all' },
+  { id: 13, name: 'Under the Sea', category: 'Animals and Nature', slug: 'under-the-sea', previewImage: '/theme-previews/under-the-sea.png', genderTarget: 'all' },
+  { id: 14, name: 'Dinosaur Explorer', category: 'Adventure', slug: 'dinosaur-explorer', previewImage: '/theme-previews/dinosaur-explorer.png', genderTarget: 'all' },
+  { id: 15, name: 'Pirate Adventure', category: 'Adventure', slug: 'pirate-adventure', previewImage: '/theme-previews/pirate-adventure.png', genderTarget: 'all' },
+  { id: 16, name: 'Farm Day', category: 'Animals and Nature', slug: 'farm-day', previewImage: '/theme-previews/farm-day.png', genderTarget: 'all' },
+  { id: 17, name: 'Fairy Forest', category: 'Fantasy', slug: 'fairy-forest', previewImage: '/theme-previews/fairy-forest.png', genderTarget: 'all' },
+  { id: 18, name: 'Knights and Dragons', category: 'Fantasy', slug: 'knights-and-dragons', previewImage: '/theme-previews/knights-and-dragons.png', genderTarget: 'all' },
+  { id: 19, name: 'Race Car Driver', category: 'Sports', slug: 'race-car-driver', previewImage: '/theme-previews/race-car-driver.png', genderTarget: 'all' },
+  { id: 20, name: 'Firefighter', category: 'Jobs', slug: 'firefighter', previewImage: '/theme-previews/firefighter.png', genderTarget: 'all' },
+  { id: 21, name: 'Doctor and Vet', category: 'Jobs', slug: 'doctor-and-vet', previewImage: '/theme-previews/doctor-and-vet.png', genderTarget: 'all' },
+  { id: 22, name: 'Chef in the Kitchen', category: 'Jobs', slug: 'chef-in-the-kitchen', previewImage: '/theme-previews/chef-in-the-kitchen.png', genderTarget: 'all' },
+  { id: 23, name: 'Robot World', category: 'Fantasy', slug: 'robot-world', previewImage: '/theme-previews/robot-world.png', genderTarget: 'all' },
+  { id: 24, name: 'Camping Trip', category: 'Adventure', slug: 'camping-trip', previewImage: '/theme-previews/camping-trip.png', genderTarget: 'all' },
+  { id: 25, name: 'Ballet and Dance', category: 'Sports', slug: 'ballet-and-dance', previewImage: '/theme-previews/ballet-and-dance.png', genderTarget: 'girl' },
+  { id: 26, name: 'Music Band', category: 'Jobs', slug: 'music-band', previewImage: '/theme-previews/music-band.png', genderTarget: 'all' },
+  { id: 27, name: 'Arctic Animals', category: 'Animals and Nature', slug: 'arctic-animals', previewImage: '/theme-previews/arctic-animals.png', genderTarget: 'all' },
+  { id: 28, name: 'Safari', category: 'Animals and Nature', slug: 'safari', previewImage: '/theme-previews/safari.png', genderTarget: 'all' },
+  { id: 29, name: 'Magical Wizard Academy', category: 'Fantasy', slug: 'magical-wizard-academy', previewImage: '/theme-previews/magical-wizard-academy.png', genderTarget: 'all' },
+  { id: 30, name: 'Birthday Party', category: 'Seasonal', slug: 'birthday-party', previewImage: '/theme-previews/birthday-party.png', genderTarget: 'all' },
+  { id: 31, name: 'Halloween', category: 'Seasonal', slug: 'halloween', previewImage: '/theme-previews/halloween.png', genderTarget: 'all' },
+  { id: 32, name: 'Winter Holidays', category: 'Seasonal', slug: 'winter-holidays', previewImage: '/theme-previews/winter-holidays.png', genderTarget: 'all' },
+  { id: 33, name: 'Eid and Ramadan', category: 'Seasonal', slug: 'eid-and-ramadan', previewImage: '/theme-previews/eid-and-ramadan.png', genderTarget: 'all' },
+  { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png', genderTarget: 'all' }
+];
+
+export default function HomePage() {
+  const router = useRouter();
+  const themeSectionRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [childName, setChildName] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Load any previously saved session info
+  useEffect(() => {
+    const savedName = sessionStorage.getItem('hero_child_name');
+    const savedPhoto = sessionStorage.getItem('hero_child_photo');
+    if (savedName) setChildName(savedName);
+    if (savedPhoto) setPhotoPreview(savedPhoto);
+  }, []);
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processPhotoFile(file);
+    }
+  };
+
+  const processPhotoFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const b64 = reader.result as string;
+      setPhotoPreview(b64);
+      sessionStorage.setItem('hero_child_photo', b64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processPhotoFile(file);
+    }
+  };
+
+  const handleContinueToThemes = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!childName.trim()) {
+      alert('Please enter your child’s name to personalize their adventure!');
+      return;
+    }
+    sessionStorage.setItem('hero_child_name', childName.trim());
+    themeSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSelectTheme = (slug: string) => {
+    if (childName.trim()) {
+      sessionStorage.setItem('hero_child_name', childName.trim());
+    }
+    const cleanName = childName.trim() || 'Hero';
+    router.push(`/theme/${slug}?name=${encodeURIComponent(cleanName)}`);
+  };
+
+  const categories = ['All', 'Adventure', 'Fantasy', 'Space', 'Sports', 'Animals and Nature', 'Jobs', 'Seasonal'];
+
+  const filteredThemes = selectedCategory === 'All' 
+    ? ALL_34_THEMES 
+    : ALL_34_THEMES.filter(t => t.category === selectedCategory);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+      {/* HEADER */}
+      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center text-white font-black shadow-lg shadow-orange-500/30">
+            🎨
+          </div>
+          <span className="font-black text-lg tracking-tight text-white">
+            ColorMyKid<span className="text-orange-500">.com</span>
+          </span>
+        </Link>
+        <Link 
+          href="/admin" 
+          className="text-xs text-slate-500 hover:text-slate-300 font-semibold transition"
+        >
+          Admin Portal
+        </Link>
+      </header>
+
+      {/* HERO SECTION: DIRECT & FRICTIONLESS */}
+      <section className="relative px-4 pt-12 pb-16 md:pt-20 md:pb-24 max-w-4xl mx-auto w-full text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold mb-6">
+          <Sparkles className="w-3.5 h-3.5" /> Turn Your Child Into The Hero of Their Own Coloring Book
+        </div>
+
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight leading-[1.1] mb-4">
+          Transform Your Kid&apos;s Photo Into A <span className="text-orange-500">Personalized Coloring Book</span>
+        </h1>
+        <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          Upload any everyday photo. Our AI turns them into bold, professional storybook line art ready to color at home or shipped as a physical printed book!
+        </p>
+
+        {/* START HERE CARD */}
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl max-w-xl mx-auto text-left backdrop-blur">
+          <form onSubmit={handleContinueToThemes} className="space-y-6">
+            {/* 1. CHILD'S FIRST NAME */}
+            <div>
+              <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-2">
+                1. What is your child&apos;s first name?
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Leo, Maya, Oliver..."
+                value={childName}
+                onChange={(e) => setChildName(e.target.value)}
+                className="w-full px-4 py-3.5 bg-slate-950 border border-slate-700 rounded-2xl text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
+                required
+              />
+            </div>
+
+            {/* 2. PHOTO UPLOADER */}
+            <div>
+              <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-2">
+                2. Upload child&apos;s photo <span className="text-slate-500 font-normal">(smiling face works best)</span>
+              </label>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handlePhotoSelect}
+                className="hidden"
+              />
+
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[140px] ${
+                  isDragging
+                    ? 'border-orange-500 bg-orange-500/10'
+                    : photoPreview
+                    ? 'border-emerald-500/60 bg-emerald-500/5'
+                    : 'border-slate-700 hover:border-slate-600 bg-slate-950/60'
+                }`}
+              >
+                {photoPreview ? (
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={photoPreview}
+                      alt="Uploaded preview"
+                      className="w-16 h-16 rounded-xl object-cover border-2 border-emerald-500 shadow-md"
+                    />
+                    <div className="text-left">
+                      <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <Check className="w-4 h-4 text-emerald-400" /> Photo Ready!
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5">Click or drag to replace photo</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center mx-auto">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div className="text-xs sm:text-sm font-bold text-white">
+                      Click to upload or drag &amp; drop photo
+                    </div>
+                    <p className="text-[11px] text-slate-500">PNG, JPG, or HEIC (Up to 15MB)</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* PRIVACY & SECURITY BADGE */}
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 leading-snug">
+              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+              <span>
+                <strong>Your child&apos;s privacy is protected.</strong> Photos are processed securely in private memory and never shared or stored.
+              </span>
+            </div>
+
+            {/* ACTION BUTTON */}
+            <button
+              type="submit"
+              className="w-full py-4 bg-orange-500 hover:bg-orange-600 active:scale-[0.99] text-white font-black text-sm rounded-2xl transition shadow-xl shadow-orange-500/25 flex items-center justify-center gap-2"
+            >
+              Continue to Choose Theme <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* 3-STEP VISUAL TRANSFORMATION PIPELINE */}
+      <section className="border-y border-slate-800 bg-slate-900/40 py-16 px-4">
+        <div className="max-w-5xl mx-auto text-center space-y-10">
+          <div>
+            <div className="text-xs uppercase font-black tracking-widest text-orange-500 mb-1">
+              Pure Magic in 3 Easy Steps
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-white">
+              How The Hero Transformation Works
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            {/* STEP 1: REGULAR KID PHOTO */}
+            <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 text-left flex flex-col justify-between space-y-4">
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-slate-900 border border-slate-800 flex items-center justify-center">
+                {/* Fallback to clean illustrative placeholder if file not yet uploaded */}
+                <img
+                  src="/how-it-works/step1-regular-kid.png"
+                  alt="1. Candid child photo"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 p-4 text-center pointer-events-none">
+                  <Camera className="w-8 h-8 mb-2 text-slate-500" />
+                  <span className="text-xs font-bold text-slate-400">Step 1 Image Slot</span>
+                  <span className="text-[10px] text-slate-600 font-mono mt-1">/public/how-it-works/step1-regular-kid.png</span>
+                </div>
+              </div>
+              <div>
+                <span className="text-xs font-black text-orange-500 uppercase tracking-wider">Step 1</span>
+                <h3 className="text-base font-bold text-white mt-0.5">Upload a Candid Photo</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Just snap a smiling phone photo of your child. Any background works!
+                </p>
+              </div>
+            </div>
+
+            {/* STEP 2: CONVERTED HERO LINE ART */}
+            <div className="bg-slate-950 border border-orange-500/30 rounded-3xl p-5 text-left flex flex-col justify-between space-y-4 relative shadow-lg shadow-orange-500/5">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-orange-500 text-white rounded-full text-[10px] font-black uppercase tracking-wider shadow">
+                AI Magic
+              </div>
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-slate-900 border border-slate-800 flex items-center justify-center">
+                <img
+                  src="/how-it-works/step2-hero-lineart.png"
+                  alt="2. AI converts into hero coloring page"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 p-4 text-center pointer-events-none">
+                  <Palette className="w-8 h-8 mb-2 text-orange-400" />
+                  <span className="text-xs font-bold text-slate-400">Step 2 Image Slot</span>
+                  <span className="text-[10px] text-slate-600 font-mono mt-1">/public/how-it-works/step2-hero-lineart.png</span>
+                </div>
+              </div>
+              <div>
+                <span className="text-xs font-black text-orange-500 uppercase tracking-wider">Step 2</span>
+                <h3 className="text-base font-bold text-white mt-0.5">Converted Into The Hero</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Our model preserves their exact facial likeness and draws them into exciting adventures.
+                </p>
+              </div>
+            </div>
+
+            {/* STEP 3: HAPPY KID HOLDING THE BOOK */}
+            <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 text-left flex flex-col justify-between space-y-4">
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-slate-900 border border-slate-800 flex items-center justify-center">
+                <img
+                  src="/how-it-works/step3-happy-kid.png"
+                  alt="3. Kid happily coloring their book"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                  }}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 p-4 text-center pointer-events-none">
+                  <Smile className="w-8 h-8 mb-2 text-emerald-400" />
+                  <span className="text-xs font-bold text-slate-400">Step 3 Image Slot</span>
+                  <span className="text-[10px] text-slate-600 font-mono mt-1">/public/how-it-works/step3-happy-kid.png</span>
+                </div>
+              </div>
+              <div>
+                <span className="text-xs font-black text-orange-500 uppercase tracking-wider">Step 3</span>
+                <h3 className="text-base font-bold text-white mt-0.5">Print or Ship &amp; Enjoy!</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Instant printable PDF for home, or have a bound glossy book delivered straight to your door.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* THEME SELECTION & VARIETY PACK */}
+      <section ref={themeSectionRef} className="px-4 py-16 max-w-6xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <div className="text-xs uppercase font-black tracking-widest text-orange-500">
+            Select Their Adventure
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-black text-white">
+            Choose a Theme or Pick The Surprise Variety Pack
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400">
+            {childName ? `Personalizing for ${childName}:` : 'Click any theme to generate your free 1-page preview:'}
+          </p>
+        </div>
+
+        {/* 🌟 FEATURED: SURPRISE VARIETY PACK */}
+        <div 
+          onClick={() => handleSelectTheme('variety-pack')}
+          className="cursor-pointer p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-purple-500/20 border-2 border-orange-500/50 hover:border-orange-500 transition shadow-2xl relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6 group"
+        >
+          <div className="space-y-2 text-center sm:text-left z-10">
+            <span className="px-3 py-1 rounded-full bg-orange-500 text-white text-[11px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 shadow">
+              <Gift className="w-3.5 h-3.5" /> Most Popular Gift Choice
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-black text-white group-hover:text-orange-400 transition">
+              ✨ Surprise Variety Pack
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
+              Can&apos;t pick just one? The Variety Pack combines Dinosaur, Space, Superhero, Safari, and Fantasy into one ultimate mixed adventure book!
+            </p>
+          </div>
+
+          <button 
+            type="button"
+            className="px-6 py-3.5 bg-orange-500 group-hover:bg-orange-600 text-white font-black text-xs sm:text-sm rounded-2xl transition shadow-xl shrink-0 flex items-center gap-2"
+          >
+            Select Variety Pack <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* CATEGORY FILTER TABS */}
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                selectedCategory === cat
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* THEMES GRID */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {filteredThemes.map((theme) => (
+            <div
+              key={theme.slug}
+              onClick={() => handleSelectTheme(theme.slug)}
+              className="cursor-pointer group bg-slate-900 border border-slate-800 hover:border-orange-500/60 rounded-2xl p-3 flex flex-col justify-between transition hover:-translate-y-1 shadow-lg"
+            >
+              <div className="aspect-square rounded-xl bg-slate-950 border border-slate-800 overflow-hidden mb-3 relative">
+                <img
+                  src={theme.previewImage}
+                  alt={theme.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLElement).setAttribute('src', '/theme-previews/superhero.png');
+                  }}
+                />
+                <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-black/70 text-slate-300 backdrop-blur">
+                  {theme.category}
+                </span>
+              </div>
+              <div className="text-xs font-bold text-white text-center truncate group-hover:text-orange-400 transition">
+                {theme.name}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-slate-800 bg-slate-900/40 py-10 px-6 text-center text-xs text-slate-500 mt-auto">
+        <p>© 2026 ColorMyKid. All rights reserved. Transforming real kids into timeless coloring adventures.</p>
+      </footer>
+    </div>
+  );
+}

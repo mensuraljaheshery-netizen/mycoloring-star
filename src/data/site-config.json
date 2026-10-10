@@ -1,0 +1,31 @@
+{
+  "maintenanceMode": false,
+  "dailyLimit": 50,
+  "generationsToday": 5,
+  "lastResetDate": "2026-10-10",
+  "pricingTiers": [
+    {
+      "id": "tier-1",
+      "pages": 8,
+      "price": "$8.99",
+      "enabled": true
+    },
+    {
+      "id": "tier-2",
+      "pages": 16,
+      "price": "$12.99",
+      "enabled": true
+    },
+    {
+      "id": "tier-3",
+      "pages": 32,
+      "price": "$21.99",
+      "enabled": true
+    }
+  ],
+  "disabledThemes": [
+    "dino-karate"
+  ],
+  "featuredThemes": [],
+  "customBanners": {}
+}

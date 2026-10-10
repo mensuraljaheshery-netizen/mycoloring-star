@@ -13,6 +13,11 @@ interface ThemeCardProps {
 
 export function ThemeCard({ name, category, description, slug }: ThemeCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [colorError, setColorError] = useState(false);
+  const [lineError, setLineError] = useState(false);
+
+  const colorSrc = '/themes/' + slug + '-color.png';
+  const lineSrc = '/themes/' + slug + '-line.png';
 
   return (
     <Link href={'/theme/' + slug}>
@@ -31,23 +36,43 @@ export function ThemeCard({ name, category, description, slug }: ThemeCardProps)
 
         <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden mb-3 bg-slate-100 flex items-center justify-center border-2 border-slate-200">
           {!isHovered ? (
-            <div className="w-full h-full bg-gradient-to-br from-amber-200 via-rose-200 to-sky-300 flex flex-col items-center justify-center p-4 text-center">
-              <span className="text-4xl mb-2">??</span>
-              <span className="font-bold text-slate-800 text-lg">{name}</span>
-              <span className="text-xs text-slate-600 bg-white/70 px-2 py-1 rounded-full mt-2">
-                Color Preview
-              </span>
-            </div>
+            !colorError ? (
+              <img
+                src={colorSrc}
+                alt={name + ' colored preview'}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={() => setColorError(true)}
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-amber-200 via-rose-200 to-sky-300 flex flex-col items-center justify-center p-4 text-center">
+                <span className="text-4xl mb-2">??</span>
+                <span className="font-bold text-slate-800 text-lg">{name}</span>
+                <span className="text-xs text-slate-600 bg-white/70 px-2 py-1 rounded-full mt-2">
+                  Color Preview
+                </span>
+              </div>
+            )
           ) : (
-            <div className="w-full h-full bg-white flex flex-col items-center justify-center p-4 text-center border-4 border-dashed border-slate-400 transition-all duration-300">
-              <span className="text-4xl mb-2 grayscale">???</span>
-              <span className="font-bold text-slate-900 text-lg uppercase tracking-wide">
-                Color Me!
-              </span>
-              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full mt-2">
-                Line Art Mode
-              </span>
-            </div>
+            !lineError ? (
+              <div className="relative w-full h-full border-4 border-dashed border-slate-300 rounded-2xl overflow-hidden bg-white">
+                <img
+                  src={lineSrc}
+                  alt={name + ' coloring page preview'}
+                  className="w-full h-full object-cover"
+                  onError={() => setLineError(true)}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-white flex flex-col items-center justify-center p-4 text-center border-4 border-dashed border-slate-400 transition-all duration-300">
+                <span className="text-4xl mb-2 grayscale">???</span>
+                <span className="font-bold text-slate-900 text-lg uppercase tracking-wide">
+                  Color Me!
+                </span>
+                <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full mt-2">
+                  Line Art Mode
+                </span>
+              </div>
+            )
           )}
         </div>
 

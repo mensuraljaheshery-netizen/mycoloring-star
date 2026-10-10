@@ -1,0 +1,1307 @@
+﻿'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  Lock,
+  ArrowLeft,
+  KeyRound,
+  AlertCircle,
+  Power,
+  Sliders,
+  RotateCcw,
+  CheckCircle2,
+  Tag,
+  Save,
+  Palette,
+  Eye,
+  EyeOff,
+  Star,
+  Search,
+  Image as ImageIcon,
+  PlusCircle,
+  FileText,
+  BookOpen,
+  Trash2,
+  X
+} from 'lucide-react';
+
+interface PricingTier {
+  id: string;
+  pages: number;
+  price: string;
+  enabled: boolean;
+}
+
+interface SiteConfig {
+  maintenanceMode: boolean;
+  dailyLimit: number;
+  generationsToday: number;
+  lastResetDate: string;
+  pricingTiers: PricingTier[];
+  disabledThemes: string[];
+  featuredThemes: string[];
+  customBanners: Record<string, string>;
+}
+
+interface ThemeCardItem {
+  slug: string;
+  name: string;
+  category: string;
+  preview: string;
+  isCustom?: boolean;
+}
+
+interface PromptItem {
+  id: string;
+  title: string;
+  prompt: string;
+  ageGroup?: '2-4' | '5-7' | '8+' | 'all';
+}
+
+const DEFAULT_THEME_CATALOG: ThemeCardItem[] = [
+  { slug: 'superhero', name: 'Superhero', category: 'Adventure', preview: '/theme-previews/superhero.png' },
+  { slug: 'princess', name: 'Princess', category: 'Fantasy', preview: '/theme-previews/princess.png' },
+  { slug: 'astronaut', name: 'Astronaut', category: 'Space', preview: '/theme-previews/astronaut.png' },
+  { slug: 'school-day', name: 'School Day', category: 'Jobs', preview: '/theme-previews/school-day.png' },
+  { slug: 'jungle-explorer', name: 'Jungle Explorer', category: 'Adventure', preview: '/theme-previews/jungle-explorer.png' },
+  { slug: 'outer-space', name: 'Outer Space', category: 'Space', preview: '/theme-previews/outer-space.png' },
+  { slug: 'mars-mission', name: 'Mars Mission', category: 'Space', preview: '/theme-previews/mars-mission.png' },
+  { slug: 'playing-with-animals', name: 'Playing with Animals', category: 'Animals and Nature', preview: '/theme-previews/playing-with-animals.png' },
+  { slug: 'desert-adventure', name: 'Desert Adventure', category: 'Adventure', preview: '/theme-previews/desert-adventure.png' },
+  { slug: 'snow-and-winter', name: 'Snow and Winter', category: 'Seasonal', preview: '/theme-previews/snow-and-winter.png' },
+  { slug: 'soccer-stadium', name: 'Soccer Stadium', category: 'Sports', preview: '/theme-previews/soccer-stadium.png' },
+  { slug: 'basketball-champion', name: 'Basketball Champion', category: 'Sports', preview: '/theme-previews/basketball-champion.png' },
+  { slug: 'under-the-sea', name: 'Under the Sea', category: 'Animals and Nature', preview: '/theme-previews/under-the-sea.png' },
+  { slug: 'dinosaur-explorer', name: 'Dinosaur Explorer', category: 'Adventure', preview: '/theme-previews/dinosaur-explorer.png' },
+  { slug: 'pirate-adventure', name: 'Pirate Adventure', category: 'Adventure', preview: '/theme-previews/pirate-adventure.png' },
+  { slug: 'farm-day', name: 'Farm Day', category: 'Animals and Nature', preview: '/theme-previews/farm-day.png' },
+  { slug: 'fairy-forest', name: 'Fairy Forest', category: 'Fantasy', preview: '/theme-previews/fairy-forest.png' },
+  { slug: 'knights-and-dragons', name: 'Knights and Dragons', category: 'Fantasy', preview: '/theme-previews/knights-and-dragons.png' },
+  { slug: 'race-car-driver', name: 'Race Car Driver', category: 'Sports', preview: '/theme-previews/race-car-driver.png' },
+  { slug: 'firefighter', name: 'Firefighter', category: 'Jobs', preview: '/theme-previews/firefighter.png' },
+  { slug: 'doctor-and-vet', name: 'Doctor and Vet', category: 'Jobs', preview: '/theme-previews/doctor-and-vet.png' },
+  { slug: 'chef-in-the-kitchen', name: 'Chef in the Kitchen', category: 'Jobs', preview: '/theme-previews/chef-in-the-kitchen.png' },
+  { slug: 'robot-world', name: 'Robot World', category: 'Fantasy', preview: '/theme-previews/robot-world.png' },
+  { slug: 'camping-trip', name: 'Camping Trip', category: 'Adventure', preview: '/theme-previews/camping-trip.png' },
+  { slug: 'ballet-and-dance', name: 'Ballet and Dance', category: 'Sports', preview: '/theme-previews/ballet-and-dance.png' },
+  { slug: 'music-band', name: 'Music Band', category: 'Jobs', preview: '/theme-previews/music-band.png' },
+  { slug: 'arctic-animals', name: 'Arctic Animals', category: 'Animals and Nature', preview: '/theme-previews/arctic-animals.png' },
+  { slug: 'safari', name: 'Safari', category: 'Animals and Nature', preview: '/theme-previews/safari.png' },
+  { slug: 'magical-wizard-academy', name: 'Magical Wizard Academy', category: 'Fantasy', preview: '/theme-previews/magical-wizard-academy.png' },
+  { slug: 'birthday-party', name: 'Birthday Party', category: 'Seasonal', preview: '/theme-previews/birthday-party.png' },
+  { slug: 'halloween', name: 'Halloween', category: 'Seasonal', preview: '/theme-previews/halloween.png' },
+  { slug: 'winter-holidays', name: 'Winter Holidays', category: 'Seasonal', preview: '/theme-previews/winter-holidays.png' },
+  { slug: 'eid-and-ramadan', name: 'Eid and Ramadan', category: 'Seasonal', preview: '/theme-previews/eid-and-ramadan.png' },
+  { slug: 'spring-flowers', name: 'Spring Flowers', category: 'Seasonal', preview: '/theme-previews/spring-flowers.png' }
+];
+
+export default function AdminPage() {
+  const [passcode, setPasscode] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [config, setConfig] = useState<SiteConfig>({
+    maintenanceMode: false,
+    dailyLimit: 50,
+    generationsToday: 0,
+    lastResetDate: '',
+    pricingTiers: [
+      { id: 'tier-1', pages: 10, price: '$9.99', enabled: true },
+      { id: 'tier-2', pages: 25, price: '$19.99', enabled: true },
+      { id: 'tier-3', pages: 50, price: '$29.99', enabled: true }
+    ],
+    disabledThemes: [],
+    featuredThemes: [],
+    customBanners: {}
+  });
+
+  const [localTiers, setLocalTiers] = useState<PricingTier[]>([]);
+  const [customThemesList, setCustomThemesList] = useState<ThemeCardItem[]>([]);
+  const [themeFilter, setThemeFilter] = useState('');
+  const [editingBannerSlug, setEditingBannerSlug] = useState<string | null>(null);
+  const [tempBannerPath, setTempBannerPath] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [successText, setSuccessText] = useState('Settings saved successfully!');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // New Theme Modal State
+  const [showAddThemeModal, setShowAddThemeModal] = useState(false);
+  const [newThemeName, setNewThemeName] = useState('');
+  const [newThemeCategory, setNewThemeCategory] = useState('Adventure');
+  const [newThemeGender, setNewThemeGender] = useState<'all' | 'boy' | 'girl'>('all');
+  const [newThemePreview, setNewThemePreview] = useState('/theme-previews/superhero.png');
+
+  // Interior Scene Prompt Modal State
+  const [showAddPromptModal, setShowAddPromptModal] = useState(false);
+  const [selectedThemeForPrompt, setSelectedThemeForPrompt] = useState<ThemeCardItem | null>(null);
+  const [newPromptTitle, setNewPromptTitle] = useState('');
+  const [newPromptText, setNewPromptText] = useState('');
+  const [newPromptAgeGroup, setNewPromptAgeGroup] = useState<'all' | '2-4' | '5-7' | '8+'>('all');
+
+  // Manage Prompts Modal State
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [selectedThemeForManage, setSelectedThemeForManage] = useState<ThemeCardItem | null>(null);
+  const [activeModalTab, setActiveModalTab] = useState<'scenes' | 'covers'>('scenes');
+  const [currentThemePrompts, setCurrentThemePrompts] = useState<PromptItem[]>([]);
+  const [currentCoverPrompts, setCurrentCoverPrompts] = useState<string[]>([]);
+  const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
+
+  // Add Cover Prompt State
+  const [newCoverPromptInput, setNewCoverPromptInput] = useState('');
+  const [isAddingCover, setIsAddingCover] = useState(false);
+
+  useEffect(() => {
+    const sessionAuth = sessionStorage.getItem('admin_session_auth');
+    if (sessionAuth === 'true') {
+      setIsAuthenticated(true);
+      fetchSettings();
+      fetchCustomThemes();
+    }
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/admin/settings');
+      if (res.ok) {
+        const data = await res.json();
+        setConfig(data);
+        setLocalTiers(data.pricingTiers || []);
+      }
+    } catch (e) {
+      console.error('Failed to load settings', e);
+    }
+  };
+
+  const fetchCustomThemes = async () => {
+    try {
+      const res = await fetch('/api/admin/themes');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.customThemes)) {
+          const formatted = data.customThemes.map((ct: any) => ({
+            slug: ct.slug,
+            name: ct.name,
+            category: ct.category,
+            preview: ct.previewImage || '/theme-previews/superhero.png',
+            isCustom: true
+          }));
+          setCustomThemesList(formatted);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch custom themes', e);
+    }
+  };
+
+  const loadThemePrompts = async (slug: string) => {
+    setIsLoadingPrompts(true);
+    try {
+      const res = await fetch('/api/admin/themes');
+      if (res.ok) {
+        const data = await res.json();
+        const customTheme = (data.customThemes || []).find((t: any) => t.slug === slug);
+        const scenes = customTheme && Array.isArray(customTheme.scenes) ? customTheme.scenes : [];
+        const extra = data.extraPrompts && Array.isArray(data.extraPrompts[slug]) ? data.extraPrompts[slug] : [];
+        const combined = [...scenes, ...extra];
+        const unique = Array.from(new Map(combined.map((item: any) => [item.id || item.title, item])).values());
+        setCurrentThemePrompts(unique as PromptItem[]);
+
+        // Cover prompts
+        const themeCovers = customTheme && Array.isArray(customTheme.coverPrompts) ? customTheme.coverPrompts : [];
+        const extraCovers = data.extraCoverPrompts && Array.isArray(data.extraCoverPrompts[slug]) ? data.extraCoverPrompts[slug] : [];
+        const allCovers = Array.from(new Set([...themeCovers, ...extraCovers]));
+        setCurrentCoverPrompts(allCovers);
+      }
+    } catch (e) {
+      console.error('Failed to load theme prompts', e);
+    } finally {
+      setIsLoadingPrompts(false);
+    }
+  };
+
+  const openManageModal = (t: ThemeCardItem) => {
+    setSelectedThemeForManage(t);
+    setShowManageModal(true);
+    setActiveModalTab('scenes');
+    loadThemePrompts(t.slug);
+  };
+
+  const handleDeletePrompt = async (promptId: string) => {
+    if (!selectedThemeForManage) return;
+    if (!confirm('Are you sure you want to delete this scene prompt?')) return;
+
+    try {
+      const res = await fetch('/api/admin/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'DELETE_PROMPT',
+          slug: selectedThemeForManage.slug,
+          promptId
+        })
+      });
+
+      if (res.ok) {
+        triggerSuccessToast('Scene prompt deleted successfully!');
+        loadThemePrompts(selectedThemeForManage.slug);
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to delete prompt');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting prompt');
+    }
+  };
+
+  const handleAddCoverPrompt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedThemeForManage || !newCoverPromptInput.trim()) return;
+
+    setIsAddingCover(true);
+    try {
+      const res = await fetch('/api/admin/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ADD_COVER_PROMPT',
+          slug: selectedThemeForManage.slug,
+          prompt: newCoverPromptInput.trim()
+        })
+      });
+
+      if (res.ok) {
+        triggerSuccessToast('Cover prompt added successfully!');
+        setNewCoverPromptInput('');
+        loadThemePrompts(selectedThemeForManage.slug);
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to add cover prompt');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error adding cover prompt');
+    } finally {
+      setIsAddingCover(false);
+    }
+  };
+
+  const handleDeleteCoverPrompt = async (promptIndex: number) => {
+    if (!selectedThemeForManage) return;
+    if (!confirm('Are you sure you want to delete this cover prompt?')) return;
+
+    try {
+      const res = await fetch('/api/admin/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'DELETE_COVER_PROMPT',
+          slug: selectedThemeForManage.slug,
+          promptIndex
+        })
+      });
+
+      if (res.ok) {
+        triggerSuccessToast('Cover prompt deleted successfully!');
+        loadThemePrompts(selectedThemeForManage.slug);
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to delete cover prompt');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting cover prompt');
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.authenticated) {
+        throw new Error(data.error || 'Invalid passcode');
+      }
+
+      setIsAuthenticated(true);
+      sessionStorage.setItem('admin_session_auth', 'true');
+      fetchSettings();
+      fetchCustomThemes();
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const triggerSuccessToast = (msg: string) => {
+    setSuccessText(msg);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
+  };
+
+  const updateSetting = async (updates: Partial<SiteConfig> & { resetCount?: boolean }) => {
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setConfig(data.config);
+        setLocalTiers(data.config.pricingTiers || []);
+        triggerSuccessToast('Settings saved successfully and live on the site!');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleThemeStatus = (slug: string) => {
+    const disabled = config.disabledThemes || [];
+    const updated = disabled.includes(slug)
+      ? disabled.filter((s) => s !== slug)
+      : [...disabled, slug];
+    updateSetting({ disabledThemes: updated });
+  };
+
+  const toggleFeaturedTheme = (slug: string) => {
+    const featured = config.featuredThemes || [];
+    const updated = featured.includes(slug)
+      ? featured.filter((s) => s !== slug)
+      : [...featured, slug];
+    updateSetting({ featuredThemes: updated });
+  };
+
+  const saveCustomBanner = (slug: string) => {
+    const banners = { ...(config.customBanners || {}), [slug]: tempBannerPath };
+    updateSetting({ customBanners: banners });
+    setEditingBannerSlug(null);
+  };
+
+  const handleTierChange = (index: number, field: keyof PricingTier, value: any) => {
+    const updated = [...localTiers];
+    updated[index] = { ...updated[index], [field]: value };
+    setLocalTiers(updated);
+  };
+
+  const savePricingTiers = () => {
+    updateSetting({ pricingTiers: localTiers });
+  };
+
+  const handleCreateThemeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newThemeName.trim()) return;
+
+    try {
+      const res = await fetch('/api/admin/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CREATE_THEME',
+          name: newThemeName.trim(),
+          category: newThemeCategory,
+          genderTarget: newThemeGender,
+          previewImage: newThemePreview.trim() || '/theme-previews/superhero.png'
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to create theme');
+        return;
+      }
+
+      setShowAddThemeModal(false);
+      setNewThemeName('');
+      fetchCustomThemes();
+      triggerSuccessToast(`New theme "${data.theme.name}" created and active!`);
+    } catch (err: any) {
+      alert(err.message || 'Error creating theme');
+    }
+  };
+
+  const handleAddPromptSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedThemeForPrompt || !newPromptTitle.trim() || !newPromptText.trim()) return;
+
+    try {
+      const res = await fetch('/api/admin/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ADD_PROMPT',
+          slug: selectedThemeForPrompt.slug,
+          title: newPromptTitle.trim(),
+          prompt: newPromptText.trim(),
+          ageGroup: newPromptAgeGroup
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Failed to add prompt');
+        return;
+      }
+
+      triggerSuccessToast('Scene prompt added successfully!');
+      setShowAddPromptModal(false);
+      setNewPromptTitle('');
+      setNewPromptText('');
+
+      if (selectedThemeForManage && selectedThemeForManage.slug === selectedThemeForPrompt.slug) {
+        loadThemePrompts(selectedThemeForManage.slug);
+      }
+      setSelectedThemeForPrompt(null);
+    } catch (err) {
+      console.error(err);
+      alert('Error adding prompt');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('admin_session_auth');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-center items-center px-4">
+        <div className="w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+          <div className="w-16 h-16 bg-orange-500/20 text-orange-500 rounded-2xl flex items-center justify-center mx-auto">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-black">Admin Command Center</h1>
+            <p className="text-slate-400 text-xs mt-1">Enter your admin passcode to access site controls</p>
+          </div>
+
+          {errorMsg && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs flex items-center gap-2 text-left">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="relative">
+              <KeyRound className="w-5 h-5 text-slate-500 absolute left-3.5 top-3.5" />
+              <input
+                type="password"
+                placeholder="Passcode..."
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-white"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-black text-sm rounded-xl transition shadow-lg active:scale-95"
+            >
+              {isLoading ? 'Verifying...' : 'Unlock Dashboard →'}
+            </button>
+          </form>
+
+          <Link href="/" className="inline-block text-xs text-slate-500 hover:text-slate-300">
+            ← Return to public website
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const combinedThemes = [...customThemesList, ...DEFAULT_THEME_CATALOG];
+  const filteredCatalog = combinedThemes.filter(
+    (t) =>
+      t.name.toLowerCase().includes(themeFilter.toLowerCase()) ||
+      t.category.toLowerCase().includes(themeFilter.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className={`w-2.5 h-2.5 rounded-full ${config.maintenanceMode ? 'bg-amber-500 animate-ping' : 'bg-emerald-500 animate-pulse'}`} />
+          <h1 className="text-lg font-black tracking-wide text-white">Coloring App Admin</h1>
+          <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono">
+            {config.maintenanceMode ? 'MAINTENANCE' : 'LIVE'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            target="_blank"
+            className="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> View Public Site
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="text-xs font-bold bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 transition"
+          >
+            Lock Out
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 pt-8 space-y-8">
+        {saveSuccess && (
+          <div className="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center gap-2 animate-fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>{successText}</span>
+          </div>
+        )}
+
+        {/* TOP STATUS CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl space-y-2">
+            <div className="text-xs uppercase font-black text-slate-500">Engine State</div>
+            <div className={`text-2xl font-black ${config.maintenanceMode ? 'text-amber-400' : 'text-emerald-400'}`}>
+              {config.maintenanceMode ? 'Maintenance Mode' : 'Online & Active'}
+            </div>
+            <p className="text-xs text-slate-400">
+              {config.maintenanceMode ? 'Public generation is paused.' : 'Visitors can generate coloring pages.'}
+            </p>
+          </div>
+
+          <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl space-y-2">
+            <div className="text-xs uppercase font-black text-slate-500">Generations Today</div>
+            <div className="text-2xl font-black text-white">
+              {config.generationsToday} <span className="text-sm font-normal text-slate-500">/ {config.dailyLimit}</span>
+            </div>
+            <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mt-1">
+              <div
+                className="h-full bg-orange-500 transition-all duration-300"
+                style={{ width: `${Math.min(100, (config.generationsToday / config.dailyLimit) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="p-6 bg-slate-900 border border-slate-800 rounded-3xl space-y-2">
+            <div className="text-xs uppercase font-black text-slate-500">Live Active Themes</div>
+            <div className="text-2xl font-black text-orange-400">
+              {combinedThemes.length - (config.disabledThemes?.length || 0)} / {combinedThemes.length}
+            </div>
+            <p className="text-xs text-slate-400">Total themes available across the catalog.</p>
+          </div>
+        </div>
+
+        {/* SECTION 1: ENGINE & BUDGET */}
+        <div className="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-6">
+          <h2 className="text-base font-black text-white flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-orange-500" /> Engine & Budget Safeguards
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <div className="p-5 bg-slate-950/70 border border-slate-800 rounded-2xl flex items-center justify-between">
+              <div>
+                <div className="text-sm font-black text-white flex items-center gap-2">
+                  <Power className="w-4 h-4 text-orange-400" /> Maintenance Mode
+                </div>
+                <p className="text-xs text-slate-400 mt-1">Pause generation instantly while testing.</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => updateSetting({ maintenanceMode: !config.maintenanceMode })}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition active:scale-95 ${
+                  config.maintenanceMode
+                    ? 'bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {config.maintenanceMode ? 'ENABLED (PAUSED)' : 'DISABLED (ONLINE)'}
+              </button>
+            </div>
+
+            <div className="p-5 bg-slate-950/70 border border-slate-800 rounded-2xl flex items-center justify-between">
+              <div>
+                <div className="text-sm font-black text-white">Daily Generation Cap</div>
+                <p className="text-xs text-slate-400 mt-1">Max generations allowed per day.</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {[25, 50, 100, 200].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => updateSetting({ dailyLimit: val })}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition ${
+                      config.dailyLimit === val
+                        ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                        : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
+                    }`}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-5 bg-slate-950/70 border border-slate-800 rounded-2xl flex items-center justify-between md:col-span-2">
+              <div>
+                <div className="text-sm font-black text-white flex items-center gap-2">
+                  <RotateCcw className="w-4 h-4 text-slate-400" /> Reset Today&apos;s Counter
+                </div>
+                <p className="text-xs text-slate-400 mt-1">Resets the counter back to 0 immediately.</p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => updateSetting({ resetCount: true })}
+                className="px-4 py-2 rounded-xl text-xs font-black bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95"
+              >
+                Reset to 0
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2: PRICING */}
+        <div className="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-black text-white flex items-center gap-2">
+                <Tag className="w-4 h-4 text-orange-500" /> Book Size Packages & Pricing
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">Customize page counts and display prices.</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={savePricingTiers}
+              disabled={isSaving}
+              className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-black text-xs flex items-center gap-2 shadow-lg transition active:scale-95"
+            >
+              <Save className="w-3.5 h-3.5" /> {isSaving ? 'Saving...' : 'Save Pricing'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            {localTiers.map((tier, idx) => (
+              <div
+                key={tier.id}
+                className={`p-5 rounded-2xl border transition ${
+                  tier.enabled ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-950/30 border-slate-900 opacity-60'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-black uppercase text-slate-400">Tier #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleTierChange(idx, 'enabled', !tier.enabled)}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition ${
+                      tier.enabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    {tier.enabled ? 'Active' : 'Hidden'}
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                      Number of Pages
+                    </label>
+                    <input
+                      type="number"
+                      value={tier.pages}
+                      onChange={(e) => handleTierChange(idx, 'pages', parseInt(e.target.value, 10) || 0)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                      Display Price
+                    </label>
+                    <input
+                      type="text"
+                      value={tier.price}
+                      onChange={(e) => handleTierChange(idx, 'price', e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-bold"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* SECTION 3: THEME & PROMPT MANAGER */}
+        <div className="p-7 bg-slate-900 border border-slate-800 rounded-3xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-base font-black text-white flex items-center gap-2">
+                <Palette className="w-4 h-4 text-orange-500" /> Theme Catalog & Scene Prompts
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Add new themes, add coloring prompts, pin to featured, or toggle visibility.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowAddThemeModal(true)}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md transition active:scale-95 whitespace-nowrap"
+              >
+                <PlusCircle className="w-4 h-4" /> Add New Theme
+              </button>
+
+              <div className="relative w-full sm:w-60">
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                <input
+                  type="text"
+                  placeholder="Search catalog..."
+                  value={themeFilter}
+                  onChange={(e) => setThemeFilter(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto pr-1">
+            {filteredCatalog.map((t) => {
+              const isDisabled = config.disabledThemes?.includes(t.slug);
+              const isFeatured = config.featuredThemes?.includes(t.slug);
+              const currentBanner = config.customBanners?.[t.slug] || t.preview;
+
+              return (
+                <div
+                  key={t.slug}
+                  className={`p-4 rounded-2xl border transition text-left flex flex-col justify-between ${
+                    isDisabled ? 'bg-slate-950/40 border-slate-900 opacity-60' : 'bg-slate-950/80 border-slate-800'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                          {t.category}
+                        </span>
+                        {t.isCustom && (
+                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                            Custom
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => toggleFeaturedTheme(t.slug)}
+                          title="Pin as featured"
+                          className={`p-1.5 rounded-lg transition ${
+                            isFeatured ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-900 text-slate-500 hover:text-slate-300'
+                          }`}
+                        >
+                          <Star className="w-3.5 h-3.5" fill={isFeatured ? 'currentColor' : 'none'} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleThemeStatus(t.slug)}
+                          title={isDisabled ? 'Theme is hidden' : 'Theme is live'}
+                          className={`p-1.5 rounded-lg transition ${
+                            isDisabled ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'
+                          }`}
+                        >
+                          {isDisabled ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="font-bold text-sm text-white mb-1">{t.name}</div>
+                    <div className="text-[11px] text-slate-400 font-mono truncate mb-3">
+                      {currentBanner}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-slate-800">
+                    {editingBannerSlug === t.slug ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="/theme-previews/new.png"
+                          value={tempBannerPath}
+                          onChange={(e) => setTempBannerPath(e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveCustomBanner(t.slug)}
+                            className="flex-1 py-1 rounded-md bg-orange-500 text-white text-[11px] font-bold"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingBannerSlug(null)}
+                            className="px-2 py-1 rounded-md bg-slate-800 text-slate-400 text-[11px]"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedThemeForPrompt(t);
+                              setShowAddPromptModal(true);
+                            }}
+                            className="py-1.5 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30 text-[11px] font-bold flex items-center justify-center gap-1 transition"
+                          >
+                            <FileText className="w-3 h-3" /> + Prompt
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingBannerSlug(t.slug);
+                              setTempBannerPath(currentBanner);
+                            }}
+                            className="py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-semibold flex items-center justify-center gap-1 transition"
+                          >
+                            <ImageIcon className="w-3 h-3" /> Banner
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => openManageModal(t)}
+                          className="w-full py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold flex items-center justify-center gap-1 transition"
+                        >
+                          <FileText className="w-3 h-3" /> Manage Prompts
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </main>
+
+      {/* MODAL 1: ADD NEW THEME */}
+      {showAddThemeModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-up">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Palette className="w-5 h-5 text-orange-500" />
+                <h3 className="text-base font-black text-white">Create New Theme</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddThemeModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateThemeSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                  Theme Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Karate Master, Underwater City, Ninja Adventure"
+                  value={newThemeName}
+                  onChange={(e) => setNewThemeName(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={newThemeCategory}
+                    onChange={(e) => setNewThemeCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="Adventure">Adventure</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Space">Space</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Jobs">Jobs</option>
+                    <option value="Animals and Nature">Animals and Nature</option>
+                    <option value="Seasonal">Seasonal</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                    Gender Target
+                  </label>
+                  <select
+                    value={newThemeGender}
+                    onChange={(e) => setNewThemeGender(e.target.value as any)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  >
+                    <option value="all">🌟 All / Neutral</option>
+                    <option value="boy">👦 Boy</option>
+                    <option value="girl">👧 Girl</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                  Preview Image Path
+                </label>
+                <input
+                  type="text"
+                  value={newThemePreview}
+                  onChange={(e) => setNewThemePreview(e.target.value)}
+                  placeholder="/theme-previews/superhero.png"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  You can point to an existing image or drop a file in `public/theme-previews/`.
+                </p>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddThemeModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-black shadow-lg transition active:scale-95"
+                >
+                  Save &amp; Publish Theme
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: ADD SCENE PROMPT */}
+      {showAddPromptModal && selectedThemeForPrompt && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-up">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-orange-500" />
+                <h3 className="text-base font-black text-white">
+                  Add Scene Prompt to {selectedThemeForPrompt.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddPromptModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPromptSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                  Scene Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Practicing the High Kick, Flying Over the Clouds"
+                  value={newPromptTitle}
+                  onChange={(e) => setNewPromptTitle(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                  Target Age Group
+                </label>
+                <select
+                  value={newPromptAgeGroup}
+                  onChange={(e) => setNewPromptAgeGroup(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="all">All Ages (Universal)</option>
+                  <option value="2-4">Ages 2–4 (Toddler / Big Simple Lines)</option>
+                  <option value="5-7">Ages 5–7 (Kids / Balanced Detail)</option>
+                  <option value="8+">Ages 8+ (Older Kids / High Action &amp; Intricate)</option>
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  When a parent enters their child&apos;s age, the app will match scenes from this group.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                  AI Coloring Book Prompt Description
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="e.g. The child stands in a dojo striking a powerful karate pose with bamboo screens and lanterns in the background, clean thick vector line art..."
+                  value={newPromptText}
+                  onChange={(e) => setNewPromptText(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddPromptModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-black shadow-lg transition active:scale-95"
+                >
+                  Add Prompt
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: MANAGE THEME PROMPTS (SCENES + COVERS) */}
+      {showManageModal && selectedThemeForManage && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-black text-white">
+                  Manage Prompts: {selectedThemeForManage.name}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManageModal(false);
+                  setSelectedThemeForManage(null);
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* TAB SELECTOR: INTERIOR SCENES vs COVER PAGES */}
+            <div className="flex gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveModalTab('scenes')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition ${
+                  activeModalTab === 'scenes'
+                    ? 'bg-orange-500 text-white shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                Interior Scenes ({currentThemePrompts.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveModalTab('covers')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition ${
+                  activeModalTab === 'covers'
+                    ? 'bg-orange-500 text-white shadow'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Cover Page Prompts ({currentCoverPrompts.length})
+              </button>
+            </div>
+
+            <div className="overflow-y-auto pr-1 space-y-4 flex-1">
+              {/* TAB 1: INTERIOR SCENES */}
+              {activeModalTab === 'scenes' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
+                      Interior Coloring Pages
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedThemeForPrompt(selectedThemeForManage);
+                        setShowAddPromptModal(true);
+                      }}
+                      className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" /> + Add Scene Prompt
+                    </button>
+                  </div>
+
+                  {isLoadingPrompts ? (
+                    <div className="p-8 text-center text-xs text-slate-500">Loading prompts...</div>
+                  ) : currentThemePrompts.length === 0 ? (
+                    <div className="p-6 bg-slate-950 border border-slate-800/80 rounded-2xl text-center space-y-2">
+                      <p className="text-xs text-slate-400">No custom scene prompts configured yet.</p>
+                      <p className="text-[11px] text-slate-500">Click &ldquo;+ Add Scene Prompt&rdquo; above to create one!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {currentThemePrompts.map((p, idx) => (
+                        <div
+                          key={p.id || idx}
+                          className="p-4 bg-slate-950 border border-slate-800/80 rounded-2xl flex items-start justify-between gap-4 transition hover:border-slate-700"
+                        >
+                          <div className="space-y-1.5 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xs text-white">{p.title || `Prompt #${idx + 1}`}</span>
+                              {p.ageGroup && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                  Age {p.ageGroup}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-400 leading-relaxed font-mono">
+                              {p.prompt}
+                            </p>
+                          </div>
+
+                          {p.id && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePrompt(p.id)}
+                              title="Delete scene prompt"
+                              className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition shrink-0"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: COVER PAGE PROMPTS */}
+              {activeModalTab === 'covers' && (
+                <div className="space-y-4">
+                  {/* ADD NEW COVER PROMPT FORM */}
+                  <form onSubmit={handleAddCoverPrompt} className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
+                    <div className="text-xs font-bold text-slate-300 uppercase flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5 text-orange-400" />
+                      Add Full-Color Cover Prompt
+                    </div>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Vibrant Pixar-style front cover illustration of a smiling child in full karate uniform, with bold title banner 'DINO KARATE'..."
+                      value={newCoverPromptInput}
+                      onChange={(e) => setNewCoverPromptInput(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:ring-1 focus:ring-orange-500"
+                      required
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={isAddingCover}
+                        className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5"
+                      >
+                        <PlusCircle className="w-3.5 h-3.5" />
+                        {isAddingCover ? 'Adding...' : 'Add Cover Prompt'}
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* COVER PROMPT LIST */}
+                  <div className="space-y-2.5">
+                    <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
+                      Current Cover Prompts ({currentCoverPrompts.length})
+                    </span>
+
+                    {isLoadingPrompts ? (
+                      <div className="p-8 text-center text-xs text-slate-500">Loading covers...</div>
+                    ) : currentCoverPrompts.length === 0 ? (
+                      <div className="p-6 bg-slate-950 border border-slate-800/80 rounded-2xl text-center space-y-1">
+                        <p className="text-xs text-slate-400">No custom cover prompts yet for this theme.</p>
+                        <p className="text-[11px] text-slate-500">Use the form above to add a dedicated front cover prompt.</p>
+                      </div>
+                    ) : (
+                      currentCoverPrompts.map((cPrompt, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 bg-slate-950 border border-slate-800/80 rounded-2xl flex items-start justify-between gap-4 transition hover:border-slate-700"
+                        >
+                          <div className="space-y-1 flex-1">
+                            <span className="font-bold text-xs text-orange-400">Cover #{idx + 1}</span>
+                            <p className="text-xs text-slate-300 leading-relaxed font-mono">
+                              {cPrompt}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCoverPrompt(idx)}
+                            title="Delete cover prompt"
+                            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-slate-800 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManageModal(false);
+                  setSelectedThemeForManage(null);
+                }}
+                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
