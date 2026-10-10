@@ -220,7 +220,7 @@ export default function ThemeCustomizerPage() {
     }
   };
 
-  // 2. COVER ONLY GENERATOR (1 CREDIT TEST)
+ // 2. COVER ONLY GENERATOR (1 CREDIT TEST)
   const handleGenerateCoverOnly = async () => {
     if (!photoPreview) {
       setErrorMessage('Please upload a child face photo first.');
@@ -245,7 +245,12 @@ export default function ThemeCustomizerPage() {
       });
 
       const coverData = await coverRes.json();
-      if (!coverRes.ok || !coverData.imageUrl) throw new Error(coverData.error || 'Failed generating cover.');
+      if (!coverRes.ok || !coverData.imageUrl) {
+        throw new Error(coverData.error || 'Failed generating cover.');
+      }
+
+      // Show the generated cover directly in the preview box
+      setPreviewImageUrl(coverData.imageUrl);
 
       setFulfillmentStage('Compiling cover PDF document...');
       const pdfRes = await fetch('/api/pdf/generate', {
@@ -260,13 +265,28 @@ export default function ThemeCustomizerPage() {
         })
       });
 
-      const pdfData = await pdfRes.json();
-      if (!pdfRes.ok || !pdfData.pdfUrl) throw new Error(pdfData.error || 'Failed assembling PDF document.');
+      if (!pdfRes.ok) {
+        throw new Error('Failed assembling cover PDF.');
+      }
 
-      setDownloadReadyPdf({ url: pdfData.pdfUrl, filename: pdfData.filename });
-      setFulfillmentStage('Cover complete! Click download below.');
+      // Handle raw binary PDF stream
+      const blob = await pdfRes.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const filename = `MyColoringStar_${(childName || 'Hero').replace(/\s+/g, '_')}_${baseTheme.name.replace(/\s+/g, '_')}_Cover.pdf`;
+
+      setDownloadReadyPdf({ url: blobUrl, filename });
+      setFulfillmentStage('Cover complete! Download started.');
+
+      // Trigger instant download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
     } catch (err: any) {
-      console.error(err);
+      console.error('Cover generation error:', err);
       setErrorMessage(err.message || 'Error generating cover. Please try again.');
     } finally {
       setIsBuildingBook(false);
