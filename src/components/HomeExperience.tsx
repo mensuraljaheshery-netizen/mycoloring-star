@@ -576,17 +576,27 @@ export default function HomePage() {
               <span className="text-[10px] font-black uppercase tracking-wider text-orange-600">Finished example</span>
               <h3 className="text-lg font-black text-slate-900 mt-1">See exactly what a book looks like</h3>
               <p className="text-xs text-slate-600 mt-1 max-w-xl">
-                This is a real 4-page Superhero book made for Liam. The cover is in color. Every inside page is a different scene, not a copy of the cover.
+                These are real 4-page books. The cover is in color. Every inside page is a different scene, not a copy of the cover.
               </p>
             </div>
-            <a
-              href="/sample-book.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
-            >
-              Open the sample book
-            </a>
+            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+              <a
+                href="/sample-book.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
+              >
+                Liam's Superhero book
+              </a>
+              <a
+                href="/sample-book-princess.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-orange-500 text-white text-sm font-black hover:bg-orange-600"
+              >
+                Sara's Princess book
+              </a>
+            </div>
           </div>
           <ol className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-700">
             <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">1. Photo</strong>A clear picture of the child.</li>
