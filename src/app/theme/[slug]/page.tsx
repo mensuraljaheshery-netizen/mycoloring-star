@@ -124,8 +124,9 @@ export default function ThemeCustomizerPage() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('mcs_paid_children') || '';
-      setPaidNames(raw.split('|').map((name) => name.trim()).filter(Boolean));
+      const books = (localStorage.getItem('mcs_paid_books') || '').split('|').map((item) => item.trim()).filter(Boolean);
+      const older = (localStorage.getItem('mcs_paid_children') || '').split('|').map((name) => name.trim()).filter(Boolean).map((name) => `${name.toLowerCase()}::`);
+      setPaidNames([...books, ...older]);
     } catch {}
     fetch('/api/checkout')
       .then((res) => res.json())
@@ -630,11 +631,14 @@ export default function ThemeCustomizerPage() {
   };
 
   const currentPkgDetails = PACKAGES_CONFIG[packageSize] || PACKAGES_CONFIG['8'];
+  const repeatName = childName.trim().toLowerCase();
+  const repeatTheme = (baseTheme?.name || '').trim().toLowerCase();
+  const sameBookAgain = paidNames.includes(`${repeatName}::${repeatTheme}`);
   const siblingOn =
     siblingReady &&
     paidNames.length > 0 &&
-    childName.trim().length > 0 &&
-    !paidNames.some((name) => name.toLowerCase() === childName.trim().toLowerCase());
+    repeatName.length > 0 &&
+    !sameBookAgain;
   const displayPrice = siblingOn && SIBLING_PRICE[packageSize] ? SIBLING_PRICE[packageSize] : currentPkgDetails.price;
 
   const initiatePaidOrderModal = () => {
@@ -771,7 +775,7 @@ export default function ThemeCustomizerPage() {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {siblingOn && (
-                <p className="col-span-2 text-[11px] font-bold text-emerald-700">Sibling price for a different child. The first child stays at the regular price.</p>
+                <p className="col-span-2 text-[11px] font-bold text-emerald-700">Repeat price. A different theme for this child, or a book for another child, costs less. The same theme again stays at the regular price.</p>
               )}
               {Object.entries(PACKAGES_CONFIG).map(([key, cfg]) => {
                 const isSelected = packageSize === key;

@@ -259,13 +259,14 @@ function OrderSuccessContent() {
 
     try {
       const childName = localStorage.getItem('hero_child_name') || 'Hero';
-      const paidName = toTitleCase(childName);
-      const alreadyPaid = (localStorage.getItem('mcs_paid_children') || '').split('|').filter(Boolean);
-      if (!alreadyPaid.some((name) => name.toLowerCase() === paidName.toLowerCase())) {
-        alreadyPaid.push(paidName);
-        localStorage.setItem('mcs_paid_children', alreadyPaid.join('|'));
-      }
       const theme = localStorage.getItem('mcs_selected_theme') || 'superhero';
+      const paidName = toTitleCase(childName);
+      const bookKey = `${paidName.toLowerCase()}::${theme.toLowerCase()}`;
+      const paidBooks = (localStorage.getItem('mcs_paid_books') || '').split('|').filter(Boolean);
+      if (!paidBooks.includes(bookKey)) {
+        paidBooks.push(bookKey);
+        localStorage.setItem('mcs_paid_books', paidBooks.join('|'));
+      }
       const photo = localStorage.getItem('hero_child_photo');
       const orderToken = localStorage.getItem('mcs_current_order_token') || searchParams.get('order_id') || 'default_order';
       const bookOrientation =
