@@ -38,6 +38,7 @@ function OrderSuccessContent() {
   const [currentProgress, setCurrentProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
   const [completedBook, setCompletedBook] = useState<GeneratedBookResult | null>(null);
+  const [showNextOffer, setShowNextOffer] = useState(true);
   const isRunningRef = useRef(false);
 
   const fetchWithRetry = async (payload: any, retries = 3): Promise<string> => {
@@ -555,6 +556,54 @@ function OrderSuccessContent() {
               >
                 Create another book <ArrowRight className="w-3.5 h-3.5" />
               </Link>
+            </div>
+          </div>
+        )}
+
+        {completedBook && !isGenerating && showNextOffer && (
+          <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-end sm:items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white rounded-3xl p-5 shadow-xl text-left">
+              <p className="text-[10px] font-black uppercase tracking-wider text-orange-600">Next book costs less</p>
+              <h3 className="text-xl font-black text-slate-900 mt-1">Make another one now</h3>
+              <p className="text-sm text-slate-600 mt-2">
+                A different theme for {completedBook.childName}, or a book for another child, is $3, $5, $8, or $11.
+              </p>
+              <div className="mt-4 grid gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    try { sessionStorage.setItem('mcs_next_offer', 'theme'); } catch {}
+                    window.location.href = '/#themes';
+                  }}
+                  className="py-3 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-black"
+                >
+                  Another theme for {completedBook.childName}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      sessionStorage.setItem('mcs_next_offer', 'sibling');
+                      localStorage.removeItem('hero_child_name');
+                      sessionStorage.removeItem('hero_child_name');
+                      localStorage.removeItem('hero_child_photo');
+                      sessionStorage.removeItem('hero_child_photo');
+                      sessionStorage.removeItem('childPhotoPreview');
+                    } catch {}
+                    window.location.href = '/';
+                  }}
+                  className="py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-black"
+                >
+                  Add another child
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNextOffer(false)}
+                  className="py-2 text-xs font-bold text-slate-500"
+                >
+                  Not now
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -113,10 +113,18 @@ export default function HomePage() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [pendingFreeClaim, setPendingFreeClaim] = useState(false);
+  const [nextOffer, setNextOffer] = useState<'theme' | 'sibling' | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const carouselRef = useRef<HTMLDivElement>(null);
   const themesSectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    try {
+      const offer = sessionStorage.getItem('mcs_next_offer');
+      if (offer === 'theme' || offer === 'sibling') setNextOffer(offer);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     try {
@@ -343,6 +351,14 @@ export default function HomePage() {
         </div>
 
         {/* STEP 1: CONFIGURATION CARD (LOW FRICTION) */}
+        {nextOffer && (
+          <div className="max-w-xl mx-auto mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-left">
+            <p className="text-sm font-black text-slate-900">
+              {nextOffer === 'sibling' ? 'Add the next child' : 'Pick a different theme'}
+            </p>
+            <p className="text-xs text-slate-600 mt-1">The next book is $3, $5, $8, or $11. The same child and the same theme again stays at the regular price.</p>
+          </div>
+        )}
         <div className="max-w-xl mx-auto mt-6 p-6 sm:p-8 bg-white border-2 border-orange-200/80 rounded-3xl shadow-lg space-y-5 text-left">
           
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -605,7 +621,7 @@ export default function HomePage() {
       </section>
 
       {/* 3. THEMES SHOWCASE */}
-      <section ref={themesSectionRef} className="px-4 pb-16 max-w-7xl mx-auto scroll-mt-6">
+      <section id="themes" ref={themesSectionRef} className="px-4 pb-16 max-w-7xl mx-auto scroll-mt-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
           <div>
             <span className="text-xs font-black uppercase tracking-wider text-orange-600 block mb-1">
