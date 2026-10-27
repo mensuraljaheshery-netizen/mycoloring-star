@@ -600,39 +600,31 @@ export default function HomePage() {
         </div>
 
         <div className="mt-8 bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row gap-5 md:items-center">
-            <video
-              src="/how-it-works.mp4"
-              controls
-              playsInline
-              preload="metadata"
-              className="w-full max-w-[240px] mx-auto rounded-2xl bg-slate-900"
-              aria-label="Short silent demo of making a coloring book"
-            />
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-orange-600">Finished example</span>
               <h3 className="text-lg font-black text-slate-900 mt-1">See exactly what a book looks like</h3>
               <p className="text-xs text-slate-600 mt-1 max-w-xl">
-                Watch the 15-second demo, then open a real 4-page book. The cover is in color. Every inside page is a different scene, not a copy of the cover.
+                These are real 4-page books. The cover is in color. Every inside page is a different scene, not a copy of the cover.
               </p>
-              <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                <a
-                  href="/sample-book.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
-                >
-                  Liam's Superhero book
-                </a>
-                <a
-                  href="/sample-book-princess.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-orange-500 text-white text-sm font-black hover:bg-orange-600"
-                >
-                  Sara's Princess book
-                </a>
-              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+              <a
+                href="/sample-book.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
+              >
+                Liam's Superhero book
+              </a>
+              <a
+                href="/sample-book-princess.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-orange-500 text-white text-sm font-black hover:bg-orange-600"
+              >
+                Sara's Princess book
+              </a>
             </div>
           </div>
           <ol className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 text-xs text-slate-700">
