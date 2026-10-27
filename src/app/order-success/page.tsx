@@ -44,10 +44,14 @@ function OrderSuccessContent() {
   const fetchWithRetry = async (payload: any, retries = 3): Promise<string> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
+        if (attempt > 1) {
+          setProgressText(`Still drawing, attempt ${attempt} of ${retries}...`);
+        }
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(75000)
         });
 
         const data = await res.json();
@@ -57,11 +61,39 @@ function OrderSuccessContent() {
         if (attempt === retries) throw new Error(msg);
         await sleep(2500);
       } catch (err: any) {
-        if (attempt === retries) throw new Error(err.message || 'Connection interrupted');
+        const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+        const message = timedOut ? 'The drawing took too long and was stopped.' : (err.message || 'Connection interrupted');
+        if (attempt === retries) throw new Error(message);
         await sleep(2500);
       }
     }
     throw new Error('Failed to generate image after retries.');
+  };
+
+  const shrinkPhoto = (src: string): Promise<string> => {
+    if (!src.startsWith('data:image') || src.length < 350000) return Promise.resolve(src);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 768;
+        let width = img.width;
+        let height = img.height;
+        if (width > height && width > max) {
+          height = Math.round((height * max) / width);
+          width = max;
+        } else if (height > max) {
+          width = Math.round((width * max) / height);
+          height = max;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = () => resolve(src);
+      img.src = src;
+    });
   };
 
   const ensureBase64 = async (src: string): Promise<string> => {
@@ -304,13 +336,14 @@ function OrderSuccessContent() {
       if (!photo) {
         throw new Error('Photo data not found in session. Please return to the customizer.');
       }
+      const readyPhoto = await shrinkPhoto(photo);
 
       // 2. Check for previously generated cover to resume seamlessly
       let coverUrl = localStorage.getItem(`mcs_progress_cover_${orderToken}`);
       if (!coverUrl) {
         setProgressText(`Painting personalized cover for ${toTitleCase(childName)}...`);
         coverUrl = await fetchWithRetry({
-          imageBase64: photo,
+          imageBase64: readyPhoto,
           childName,
           theme,
           isCover: true,
@@ -350,7 +383,7 @@ function OrderSuccessContent() {
 
         const batchPromises = batchIndices.map(() =>
           fetchWithRetry({
-            imageBase64: photo,
+            imageBase64: readyPhoto,
             childName,
             theme,
             isCover: false,
