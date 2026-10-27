@@ -550,12 +550,12 @@ export default function HomePage() {
               </span>
               <h3 className="font-bold text-sm text-slate-900">Printable Vector Line Art</h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Solid black outlines with empty white fills. No gray wash.
+                A new inside scene from that theme, ready for crayons. Not a copy of the cover.
               </p>
             </div>
             <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-white border-2 border-slate-200 shadow-inner p-1">
               <img
-                src="/sample-coloring-page.jpg"
+                src="/sample-coloring-page.png"
                 alt="Sample printable coloring page"
                 className="w-full h-full object-contain bg-white rounded-xl"
                 onError={(e) => {
