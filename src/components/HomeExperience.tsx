@@ -506,8 +506,8 @@ export default function HomePage() {
             </div>
             <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner">
               <img
-                src="/sample-child-photo.png"
-                alt="Original child photo reference"
+                src="/sample-sara-photo.jpg"
+                alt="Sara's original photo"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -529,8 +529,8 @@ export default function HomePage() {
             </div>
             <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-orange-50 border border-orange-200 shadow-inner">
               <img
-                src="/sample-cover.png"
-                alt="Personalized book cover"
+                src="/sample-sara-cover.jpg"
+                alt="Sara's Princess book cover"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.currentTarget.src = '/theme-previews/superhero.png';
@@ -555,8 +555,8 @@ export default function HomePage() {
             </div>
             <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-white border-2 border-slate-200 shadow-inner p-1">
               <img
-                src="/sample-coloring-page.png"
-                alt="Sample printable coloring page"
+                src="/sample-sara-page.jpg"
+                alt="A coloring page from inside Sara's Princess book"
                 className="w-full h-full object-contain bg-white rounded-xl"
                 onError={(e) => {
                   e.currentTarget.src = '/theme-previews/superhero.png';
