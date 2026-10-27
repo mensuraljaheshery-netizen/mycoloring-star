@@ -477,31 +477,39 @@ export default function ThemeCustomizerPage() {
     };
 
     try {
+      const tasks: Promise<void>[] = [];
       if (!progress.cover) {
-        progress.cover = await generatePage({
-          imageBase64: photoPreview,
-          childName: childName || 'Hero',
-          theme: baseTheme.name,
-          isCover: true,
-          orientation,
-          paperSize: 'letter'
-        }, 'Designing Personalized Cover (1 of 3)...');
-        writeFreeProgress(progress);
+        tasks.push(
+          generatePage({
+            imageBase64: photoPreview,
+            childName: childName || 'Hero',
+            theme: baseTheme.name,
+            isCover: true,
+            orientation,
+            paperSize: 'letter'
+          }, 'Drawing the cover and pages together...').then((url) => {
+            progress.cover = url;
+            writeFreeProgress(progress);
+          })
+        );
       }
-
-      while (progress.pages.length < 2) {
-        const pageNumber = progress.pages.length + 1;
-        const pageUrl = await generatePage({
-          imageBase64: photoPreview,
-          childName: childName || 'Hero',
-          theme: baseTheme.name,
-          isCover: false,
-          orientation,
-          paperSize: 'letter'
-        }, `Drawing coloring page ${pageNumber} of 2...`);
-        progress.pages.push(pageUrl);
-        writeFreeProgress(progress);
+      const pagesNeeded = 2 - progress.pages.length;
+      for (let i = 0; i < pagesNeeded; i++) {
+        tasks.push(
+          generatePage({
+            imageBase64: photoPreview,
+            childName: childName || 'Hero',
+            theme: baseTheme.name,
+            isCover: false,
+            orientation,
+            paperSize: 'letter'
+          }, 'Drawing the cover and pages together...').then((url) => {
+            progress.pages.push(url);
+            writeFreeProgress(progress);
+          })
+        );
       }
+      await Promise.all(tasks);
 
       setFulfillmentStage('Compiling printable 3-page mini-book PDF...');
       await buildPdfInBrowser(progress.cover, progress.pages.slice(0, 2));

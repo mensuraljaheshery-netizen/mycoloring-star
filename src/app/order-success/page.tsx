@@ -338,73 +338,76 @@ function OrderSuccessContent() {
       }
       const readyPhoto = await shrinkPhoto(photo);
 
-      // 2. Check for previously generated cover to resume seamlessly
-      let coverUrl = localStorage.getItem(`mcs_progress_cover_${orderToken}`);
-      if (!coverUrl) {
-        setProgressText(`Painting personalized cover for ${toTitleCase(childName)}...`);
-        coverUrl = await fetchWithRetry({
-          imageBase64: readyPhoto,
-          childName,
-          theme,
-          isCover: true,
-          orientation: bookOrientation,
-          orderId: orderToken
-        });
-        try {
-          localStorage.setItem(`mcs_progress_cover_${orderToken}`, coverUrl);
-        } catch (e) {
-          console.warn('Cover progress caching skipped due to quota limits:', e);
-        }
-      }
-
-      // 3. Check for previously generated interior pages
-      let interiorUrls: string[] = [];
+      let coverUrl = localStorage.getItem(`mcs_progress_cover_${orderToken}`) || '';
+      const pageSlots: Array<string | null> = Array.from({ length: interiorCount }, () => null);
       try {
         const savedPagesRaw = localStorage.getItem(`mcs_progress_pages_${orderToken}`);
-        if (savedPagesRaw) {
-          interiorUrls = JSON.parse(savedPagesRaw);
+        const savedPages = savedPagesRaw ? JSON.parse(savedPagesRaw) : [];
+        if (Array.isArray(savedPages)) {
+          savedPages.forEach((url: string, index: number) => {
+            if (url && index < interiorCount) pageSlots[index] = url;
+          });
         }
       } catch (e) {
         console.warn('Failed to parse cached pages, starting fresh in memory:', e);
       }
 
-      setCurrentProgress({ current: 1 + interiorUrls.length, total: totalBookAssets });
+      const jobs: Array<'cover' | number> = [];
+      if (!coverUrl) jobs.push('cover');
+      pageSlots.forEach((url, index) => {
+        if (!url) jobs.push(index);
+      });
 
-      // 4. Continue generation in batches of 3 starting from existing index
-      const BATCH_SIZE = 3;
-      while (interiorUrls.length < interiorCount) {
-        const startIndex = interiorUrls.length;
-        const currentBatchSize = Math.min(BATCH_SIZE, interiorCount - startIndex);
-        const batchIndices = Array.from({ length: currentBatchSize }, (_, i) => startIndex + i);
+      let finished = (coverUrl ? 1 : 0) + pageSlots.filter(Boolean).length;
+      setCurrentProgress({ current: finished, total: totalBookAssets });
+      setProgressText(`Drawing ${toTitleCase(childName)}'s cover and pages together...`);
 
-        setProgressText(
-          `Illustrating ${toTitleCase(childName)}'s pages ${startIndex + 1} to ${startIndex + currentBatchSize} of ${interiorCount}...`
-        );
-
-        const batchPromises = batchIndices.map(() =>
-          fetchWithRetry({
-            imageBase64: readyPhoto,
-            childName,
-            theme,
-            isCover: false,
-            orientation: bookOrientation,
-            orderId: orderToken
-          })
-        );
-
-        const batchResults = await Promise.all(batchPromises);
-        interiorUrls.push(...batchResults);
-
-        // Safe cache update so storage quota exceptions never break the loop
+      const savePages = () => {
         try {
-          localStorage.setItem(`mcs_progress_pages_${orderToken}`, JSON.stringify(interiorUrls));
+          localStorage.setItem(`mcs_progress_pages_${orderToken}`, JSON.stringify(pageSlots));
         } catch (storageError) {
           console.warn('LocalStorage quota reached, continuing generation in memory:', storageError);
         }
+      };
 
-        setCurrentProgress({ current: 1 + interiorUrls.length, total: totalPages });
-        await sleep(1000);
+      let nextJob = 0;
+      const drawOne = async (job: 'cover' | number) => {
+        const imageUrl = await fetchWithRetry({
+          imageBase64: readyPhoto,
+          childName,
+          theme,
+          isCover: job === 'cover',
+          orientation: bookOrientation,
+          orderId: orderToken
+        });
+        if (job === 'cover') {
+          coverUrl = imageUrl;
+          try {
+            localStorage.setItem(`mcs_progress_cover_${orderToken}`, imageUrl);
+          } catch (e) {
+            console.warn('Cover progress caching skipped due to quota limits:', e);
+          }
+        } else {
+          pageSlots[job] = imageUrl;
+          savePages();
+        }
+        finished += 1;
+        setCurrentProgress({ current: finished, total: totalBookAssets });
+      };
+
+      const workers = Array.from({ length: Math.min(5, jobs.length) }, async () => {
+        while (nextJob < jobs.length) {
+          const job = jobs[nextJob];
+          nextJob += 1;
+          await drawOne(job);
+        }
+      });
+      await Promise.all(workers);
+
+      if (!coverUrl || pageSlots.some((url) => !url)) {
+        throw new Error('A page did not finish. Press Resume Generation to continue from the pages that are already saved.');
       }
+      const interiorUrls = pageSlots as string[];
 
       setProgressText('Assembling high-resolution printable PDF...');
       const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls, bookOrientation);
