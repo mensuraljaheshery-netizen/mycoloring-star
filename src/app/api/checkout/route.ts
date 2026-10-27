@@ -10,6 +10,12 @@ const CHECKOUT_PAYLINKS: Record<string, string | undefined> = {
   '32': process.env.WHOP_PAYLINK_32,
   '48': process.env.WHOP_PAYLINK_48,
 
+  // Second child, after a paid book: $3, $5, $8, $11
+  '4s': process.env.WHOP_PAYLINK_4_SIBLING,
+  '8s': process.env.WHOP_PAYLINK_8_SIBLING,
+  '16s': process.env.WHOP_PAYLINK_16_SIBLING,
+  '32s': process.env.WHOP_PAYLINK_32_SIBLING,
+
   // 3-Book Bundles
   'bundle_3x16': process.env.WHOP_PAYLINK_BUNDLE_3X16,
   'bundle_3x32': process.env.WHOP_PAYLINK_BUNDLE_3X32,
@@ -19,13 +25,19 @@ const CHECKOUT_PAYLINKS: Record<string, string | undefined> = {
   'test_mini_3kids': process.env.WHOP_PAYLINK_TEST_MINI_3KIDS || process.env.WHOP_PAYLINK_8,
 };
 
+export async function GET() {
+  const siblingReady = ['4s', '8s', '16s', '32s'].every((key) => Boolean(CHECKOUT_PAYLINKS[key]));
+  return NextResponse.json({ siblingReady });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { packageSize } = body;
 
     const pkgKey = String(packageSize || '16');
-    const checkoutUrl = CHECKOUT_PAYLINKS[pkgKey] || CHECKOUT_PAYLINKS['16'];
+    const fullPriceKey = pkgKey.endsWith('s') ? pkgKey.slice(0, -1) : '';
+    const checkoutUrl = CHECKOUT_PAYLINKS[pkgKey] || (fullPriceKey ? CHECKOUT_PAYLINKS[fullPriceKey] : undefined) || CHECKOUT_PAYLINKS['16'];
 
     if (!checkoutUrl) {
       return NextResponse.json(
