@@ -28,49 +28,60 @@ export default function PrivacyPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-slate-900">1. Information We Collect</h2>
             <p>
-              When visiting, previewing, or purchasing personalized products from MyColoringStar (mycoloringstar.com), we collect:
+              When visiting, generating previews, or purchasing products from MyColoringStar (mycoloringstar.com), we collect:
             </p>
             <ul className="list-disc list-inside space-y-1 pl-2">
-              <li><strong>Contact Information:</strong> Customer email address for digital download links, order receipts, and support communications.</li>
-              <li><strong>Personalization Details:</strong> Child&apos;s first name or preferred nickname for book story integration.</li>
-              <li><strong>Reference Photographs:</strong> Optional user-submitted images used strictly to render stylized coloring line art.</li>
-              <li><strong>Shipping Details:</strong> Physical shipping address and recipient name when ordering printed physical book editions.</li>
+              <li><strong>Contact Information:</strong> Customer email address for digital download links, promotional mini-book delivery, and customer support.</li>
+              <li><strong>Personalization Details:</strong> Child&apos;s first name or preferred nickname for book cover and dedication text integration.</li>
+              <li><strong>Reference Photographs:</strong> User-submitted photos processed strictly to render custom black-and-white coloring pages and cover art. Photos are never stored permanently on disk.</li>
+              <li><strong>Shipping Details (Upcoming Service):</strong> Physical shipping address and recipient name only when physical printed editions launch. All current checkouts remain strictly digital.</li>
             </ul>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">2. Child Photo Handling &amp; Security</h2>
+            <h2 className="text-base font-bold text-slate-900">2. Photo Processing &amp; Zero Permanent Storage</h2>
             <p>
               We enforce strict data isolation protocols for reference photos:
             </p>
             <ul className="list-disc list-inside space-y-1 pl-2">
-              <li>Photos are transmitted over encrypted TLS connections solely to generate your custom coloring pages.</li>
-              <li>Uploaded photographs are never sold, rented, leased, or published publicly.</li>
-              <li>Reference images are not retained for public model training or reused across other customer accounts.</li>
+              <li><strong>Zero Permanent Image Storage:</strong> We do not store, archive, or database reference photographs. Photos are held exclusively in temporary, volatile server memory during the active rendering call and discarded immediately upon completion.</li>
+              <li><strong>Model Safety:</strong> Photos are never utilized to train, tune, or refine public AI models.</li>
+              <li><strong>No Data Brokering:</strong> Likeness assets are never sold, rented, leased, indexed, or shared with third parties or advertisers.</li>
+              <li><strong>Session Purges:</strong> Any transient generation cache or edge artifacts expire and purge automatically within 24 to 48 hours.</li>
             </ul>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">3. Payment Information</h2>
+            <h2 className="text-base font-bold text-slate-900">3. Promotional Free Tier &amp; Rate-Limiting Records</h2>
             <p>
-              MyColoringStar does not collect, process, or store sensitive credit card or payment credentials on its servers. All payments are securely captured and handled by certified PCI-DSS compliant Merchant of Record and payment processing partners (including Suby).
+              To maintain our fair-use policy of one free 3-page mini-book sample per household, our system saves a non-reversible cryptographic SHA-256 network fingerprint, your submitted email address, the selected theme, and the provided first name in our verification database. This record prevents abuse and confirms promotional redemption history.
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">4. Third-Party Order Fulfillment</h2>
+            <h2 className="text-base font-bold text-slate-900">4. Payment Information</h2>
             <p>
-              For physical print-on-demand books, necessary shipping parameters (recipient name, mailing address, and compiled print-ready PDF files) are routed securely to vetted print and manufacturing partners strictly for manufacturing and delivery purposes.
+              MyColoringStar does not collect, process, or store sensitive credit card or payment credentials on its servers. All transactions are securely captured and fulfilled by certified PCI-DSS compliant Merchant of Record partners (including Whop).
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">5. Data Deletion &amp; User Rights</h2>
+            <h2 className="text-base font-bold text-slate-900">5. Third-Party Order Fulfillment (Future Physical Books)</h2>
             <p>
-              You maintain full authority to request immediate deletion of your submitted details or order history. To request complete removal of your records, email our team at{' '}
+              When physical print-on-demand fulfillment launches, necessary shipping parameters (recipient name, mailing address, and compiled print PDF files) will be securely transmitted to vetted printing partners solely to manufacture and dispatch the physical product.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900">6. Deletion Requests &amp; User Rights</h2>
+            <p>
+              Because photographs are discarded immediately and never stored permanently, there are no photo archives to delete. However, you maintain the legal right to request the immediate erasure of your retained database records (including your email address, child name, and promotional claim log).
+            </p>
+            <p>
+              To request complete deletion of your contact and claim records from our database, email{' '}
               <a href="mailto:support@mycoloringstar.com" className="text-orange-600 font-bold hover:underline">
                 support@mycoloringstar.com
-              </a>.
+              </a>. All associated records will be permanently expunged within 24 business hours.
             </p>
           </section>
         </div>

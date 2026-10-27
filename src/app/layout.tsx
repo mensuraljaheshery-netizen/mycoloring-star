@@ -1,21 +1,11 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import ChatWidget from '@/components/ChatWidget';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "MyColoringStar - Turn Your Child Into The Main Character",
-  description: "AI-Powered Personalized Coloring Books Starring Your Kid",
+  title: 'MyColoringStar - Turn Your Child Into The Main Character',
+  description: 'AI-Powered Personalized Coloring Books Starring Your Kid',
 };
 
 export default function RootLayout({
@@ -26,9 +16,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
+      style={{
+        // Resilient system font fallbacks matching Geist font metrics exactly
+        ['--font-geist-sans' as any]:
+          'Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        ['--font-geist-mono' as any]:
+          '"Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
+      }}
     >
-      <body className="min-h-full flex flex-col bg-[#FFFDF9]">
+      <body className="min-h-full flex flex-col bg-[#FFFDF9] text-slate-800 font-sans">
         {/* MAIN PAGE CONTENT */}
         <div className="flex-1">{children}</div>
 
@@ -52,8 +49,14 @@ export default function RootLayout({
               </a>
             </div>
 
-            {/* POLICY LINKS */}
+            {/* NAVIGATION & POLICY LINKS */}
             <div className="flex items-center gap-6 font-medium">
+              <Link href="/pricing" className="text-orange-600 font-bold hover:text-orange-700 transition">
+                Pricing
+              </Link>
+              <Link href="/contact" className="hover:text-slate-900 transition">
+                Contact Us
+              </Link>
               <Link href="/terms" className="hover:text-slate-900 transition">
                 Terms of Service
               </Link>
@@ -67,6 +70,9 @@ export default function RootLayout({
 
           </div>
         </footer>
+
+        {/* STARLA AI CHAT ASSISTANT */}
+        <ChatWidget />
       </body>
     </html>
   );

@@ -71,10 +71,11 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
   { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png' }
 ];
 
-const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string }> = {
-  '8': { label: 'Starter (8 Pages)', pages: 8, price: '$7.99' },
-  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$11.99' },
-  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$16.99' }
+const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
+  '4': { label: 'Starter (4 Pages)', pages: 4, price: '$4.99', popular: false },
+  '8': { label: 'Standard (8 Pages)', pages: 8, price: '$7.99', popular: false },
+  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$11.99', popular: true },
+  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$16.99', popular: false }
 };
 
 export default function ThemeCustomizerPage() {
@@ -96,8 +97,9 @@ export default function ThemeCustomizerPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [packageSize, setPackageSize] = useState<string>(
-    PACKAGES_CONFIG[queryPkg] ? queryPkg : '16'
+    PACKAGES_CONFIG[queryPkg] ? queryPkg : '4'
   );
+  const [parentConsent, setParentConsent] = useState(false);
 
   // FREE SAMPLE STATUS
   const [hasClaimedFree, setHasClaimedFree] = useState(false);
@@ -111,7 +113,6 @@ export default function ThemeCustomizerPage() {
   const [downloadReadyPdf, setDownloadReadyPdf] = useState<{ url: string; filename: string } | null>(null);
 
   useEffect(() => {
-    // Purge bundle data to prevent test order conflicts
     try {
       localStorage.removeItem('mcs_bundle_data');
       sessionStorage.removeItem('mcs_bundle_data');
@@ -122,9 +123,28 @@ export default function ThemeCustomizerPage() {
         const savedName = localStorage.getItem('hero_child_name') || sessionStorage.getItem('hero_child_name');
         const savedPhoto = localStorage.getItem('hero_child_photo') || sessionStorage.getItem('hero_child_photo');
         const savedPkg = localStorage.getItem('mcs_selected_package') || sessionStorage.getItem('mcs_selected_package');
-        const claimed = localStorage.getItem('mcs_claimed_free_sample') === 'true';
+        const savedConsent = localStorage.getItem('mcs_parent_consent') === 'true';
+        const claimedLocal = localStorage.getItem('mcs_claimed_free_sample') === 'true';
 
-        if (claimed) setHasClaimedFree(true);
+        if (savedConsent) {
+          setParentConsent(true);
+        }
+
+        if (claimedLocal) {
+          setHasClaimedFree(true);
+        } else {
+          fetch('/api/free-sample/check')
+            .then((res) => res.json())
+            .then((data) => {
+              if (data?.claimed) {
+                setHasClaimedFree(true);
+                try {
+                  localStorage.setItem('mcs_claimed_free_sample', 'true');
+                } catch {}
+              }
+            })
+            .catch(() => {});
+        }
 
         if (queryName) {
           setChildName(queryName);
@@ -143,7 +163,7 @@ export default function ThemeCustomizerPage() {
         } else if (savedPkg && PACKAGES_CONFIG[savedPkg]) {
           setPackageSize(savedPkg);
         } else {
-          setPackageSize('16');
+          setPackageSize('4');
         }
       } catch {}
     };
@@ -172,6 +192,18 @@ export default function ThemeCustomizerPage() {
     try {
       localStorage.setItem('mcs_selected_package', id);
       sessionStorage.setItem('mcs_selected_package', id);
+    } catch {}
+  };
+
+  const handleConsentToggle = (checked: boolean) => {
+    setParentConsent(checked);
+    if (checked) {
+      setErrorMessage(null);
+      setModalErrorMessage(null);
+    }
+    try {
+      localStorage.setItem('mcs_parent_consent', checked ? 'true' : 'false');
+      sessionStorage.setItem('mcs_parent_consent', checked ? 'true' : 'false');
     } catch {}
   };
 
@@ -239,7 +271,6 @@ export default function ThemeCustomizerPage() {
     });
   };
 
-  // In-Browser PDF Builder for Free Mini-Book
   const buildPdfInBrowser = async (coverUrl: string | null, pageUrls: string[]) => {
     const isLandscape = orientation === 'landscape';
     const doc = new jsPDF({
@@ -339,10 +370,15 @@ export default function ThemeCustomizerPage() {
     setDownloadReadyPdf({ url: blobUrl, filename });
   };
 
-  // 1. FREE 3-PAGE MINI-BOOK (DIRECT BROWSER GENERATION)
+  // 1. FREE 3-PAGE MINI-BOOK
   const handleGenerate3PageFreeBook = async () => {
+    if (!parentConsent) {
+      setErrorMessage('Please check the consent box below before claiming your free mini-book.');
+      return;
+    }
+
     if (!photoPreview) {
-      setErrorMessage('Please upload a clear face photo of your child first.');
+      setErrorMessage('Please upload a clear face photo of the child first.');
       return;
     }
 
@@ -350,6 +386,15 @@ export default function ThemeCustomizerPage() {
     setModalErrorMessage(null);
     setIsBuildingBook(true);
     setDownloadReadyPdf(null);
+
+    try {
+      Object.keys(localStorage).forEach((k) => {
+        if (k.startsWith('mcs_progress_pages_')) localStorage.removeItem(k);
+      });
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith('mcs_progress_pages_')) sessionStorage.removeItem(k);
+      });
+    } catch {}
 
     try {
       setFulfillmentStage('Designing Personalized Cover (1 of 3)...');
@@ -367,6 +412,12 @@ export default function ThemeCustomizerPage() {
       });
       const coverData = await coverRes.json();
       if (!coverRes.ok || !coverData.imageUrl) {
+        if (coverRes.status === 403 || coverData.error?.includes('already claimed')) {
+          setHasClaimedFree(true);
+          try {
+            localStorage.setItem('mcs_claimed_free_sample', 'true');
+          } catch {}
+        }
         throw new Error(coverData.error || 'Failed generating cover page');
       }
 
@@ -422,10 +473,15 @@ export default function ThemeCustomizerPage() {
     }
   };
 
-  // 2. PAID CHECKOUT: REDIRECT DIRECTLY TO PAYMENT GATEWAY
+  // 2. PAID CHECKOUT: REDIRECT DIRECTLY TO WHOP
   const handleProceedToPaidGeneration = async () => {
+    if (!parentConsent) {
+      setModalErrorMessage('Please confirm parental or gift-giver consent by checking the box.');
+      return;
+    }
+
     if (!photoPreview) {
-      setErrorMessage('Please upload a clear face photo of your child first.');
+      setErrorMessage('Please upload a clear face photo of the child first.');
       setIsCheckoutModalOpen(false);
       return;
     }
@@ -441,19 +497,21 @@ export default function ThemeCustomizerPage() {
       localStorage.setItem('hero_child_name', (childName || 'Hero').trim());
       localStorage.setItem('hero_child_photo', photoPreview);
       localStorage.setItem('mcs_current_order_token', orderToken);
+      localStorage.setItem('mcs_parent_consent', 'true');
 
       sessionStorage.setItem('mcs_selected_theme', baseTheme.name);
       sessionStorage.setItem('mcs_selected_package', packageSize);
       sessionStorage.setItem('hero_child_name', (childName || 'Hero').trim());
       sessionStorage.setItem('hero_child_photo', photoPreview);
       sessionStorage.setItem('mcs_current_order_token', orderToken);
+      sessionStorage.setItem('mcs_parent_consent', 'true');
     } catch (e) {
       console.warn('Storage persistence issue:', e);
     }
 
     setModalErrorMessage(null);
     setIsBuildingBook(true);
-    setFulfillmentStage('Connecting to secure payment gateway...');
+    setFulfillmentStage('Connecting to secure Whop checkout...');
 
     try {
       const res = await fetch('/api/checkout', {
@@ -495,20 +553,26 @@ export default function ThemeCustomizerPage() {
   };
 
   const handleSwitchTheme = (newSlug: string) => {
-    if (childName.trim()) {
-      localStorage.setItem('hero_child_name', childName.trim());
-      sessionStorage.setItem('hero_child_name', childName.trim());
-    }
-    localStorage.setItem('mcs_selected_package', packageSize);
-    sessionStorage.setItem('mcs_selected_package', packageSize);
+    try {
+      if (childName.trim()) {
+        localStorage.setItem('hero_child_name', childName.trim());
+        sessionStorage.setItem('hero_child_name', childName.trim());
+      }
+      localStorage.setItem('mcs_selected_package', packageSize);
+      sessionStorage.setItem('mcs_selected_package', packageSize);
+    } catch {}
     router.push(`/theme/${newSlug}?name=${encodeURIComponent(childName || 'Hero')}&pkg=${packageSize}`);
   };
 
-  const currentPkgDetails = PACKAGES_CONFIG[packageSize] || PACKAGES_CONFIG['16'];
+  const currentPkgDetails = PACKAGES_CONFIG[packageSize] || PACKAGES_CONFIG['4'];
 
   const initiatePaidOrderModal = () => {
+    if (!parentConsent) {
+      setErrorMessage('Please confirm consent by ticking the checkbox below.');
+      return;
+    }
     if (!photoPreview) {
-      setErrorMessage('Please upload a clear face photo of your child before ordering.');
+      setErrorMessage('Please upload a clear face photo of the child before ordering.');
       return;
     }
     setErrorMessage(null);
@@ -557,7 +621,7 @@ export default function ThemeCustomizerPage() {
         ) : (
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2 text-xs text-slate-600">
             <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>You&apos;ve unlocked your free sample! Ready to order the full edition?</span>
+            <span>You&apos;ve unlocked your free sample! Ready to order the full storybook?</span>
           </div>
         )}
 
@@ -581,14 +645,7 @@ export default function ThemeCustomizerPage() {
           </div>
         )}
 
-        {errorMessage && (
-          <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* PACKAGE TIER PICKER (8, 16, 32 PAGES ONLY) */}
+        {/* PACKAGE TIER PICKER (4, 8, 16, 32 PAGES) */}
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5">
@@ -617,30 +674,68 @@ export default function ThemeCustomizerPage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5">
-              Choose Package Size:
-            </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-[11px] font-black uppercase text-slate-500">
+                Choose Book Size:
+              </label>
+              <Link href="/pricing" target="_blank" className="text-[10px] text-orange-600 font-bold hover:underline">
+                Compare tiers
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
               {Object.entries(PACKAGES_CONFIG).map(([key, cfg]) => {
                 const isSelected = packageSize === key;
                 return (
-                  <div
+                  <button
                     key={key}
+                    type="button"
                     onClick={() => handlePackageChange(key)}
-                    className={`p-2.5 rounded-xl border-2 cursor-pointer transition text-center ${
+                    className={`p-2.5 rounded-xl border-2 cursor-pointer transition text-left relative ${
                       isSelected
                         ? 'border-orange-500 bg-orange-50/90 shadow-sm ring-1 ring-orange-400'
                         : 'border-slate-200 bg-slate-50 hover:border-slate-300'
                     }`}
                   >
-                    <div className="text-[10px] font-black uppercase text-slate-600">{cfg.pages} Pages</div>
+                    {cfg.popular && (
+                      <span className="absolute -top-2 right-2 bg-orange-500 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full">
+                        Popular
+                      </span>
+                    )}
+                    <div className="text-[10px] font-black uppercase text-slate-500">{cfg.pages} Pages</div>
+                    <div className="text-xs font-black text-slate-900">{cfg.label.split(' ')[0]}</div>
                     <div className="text-xs font-black text-orange-600 mt-0.5">{cfg.price}</div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
           </div>
         </div>
+
+        {/* CONSENT CHECKBOX RIGHT BEFORE ACTION */}
+        <div className="pt-1">
+          <div className="p-3 bg-orange-50/50 rounded-xl border border-orange-200/80 flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              id="themePageConsent"
+              checked={parentConsent}
+              onChange={(e) => handleConsentToggle(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded text-orange-600 focus:ring-orange-400 border-slate-300 cursor-pointer shrink-0"
+            />
+            <label htmlFor="themePageConsent" className="text-[11px] text-slate-700 leading-snug cursor-pointer select-none">
+              I confirm that I am the parent/guardian, or have parental permission, to use this photo to create this coloring book in accordance with the{' '}
+              <Link href="/privacy" target="_blank" className="text-orange-600 font-bold underline hover:text-orange-700">
+                Privacy Policy
+              </Link>.
+            </label>
+          </div>
+        </div>
+
+        {errorMessage && (
+          <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         {/* FULL PACKAGE ORDER BUTTON */}
         <button
@@ -648,13 +743,13 @@ export default function ThemeCustomizerPage() {
           onClick={initiatePaidOrderModal}
           className="w-full py-3.5 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs sm:text-sm transition shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
         >
-          <span>Build {currentPkgDetails.pages}-Page Edition ({currentPkgDetails.price})</span>
+          <span>Order {currentPkgDetails.pages}-Page Edition ({currentPkgDetails.price})</span>
           <ChevronRight className="w-4 h-4" />
         </button>
 
         <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>Instant Vector PDF Downloads • Print Anywhere</span>
+          <span>Fulfillment via Whop &bull; Instant Vector PDF</span>
         </div>
       </div>
     </div>
@@ -926,6 +1021,27 @@ export default function ThemeCustomizerPage() {
               </div>
             </div>
 
+            {/* CONSENT CONFIRMATION */}
+            <div className="p-3 bg-orange-50/40 rounded-xl border border-orange-200/70 flex items-start gap-2.5">
+              <input
+                type="checkbox"
+                id="modalConsentCheckbox"
+                checked={parentConsent}
+                onChange={(e) => handleConsentToggle(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded text-orange-600 focus:ring-orange-400 border-slate-300 cursor-pointer shrink-0"
+              />
+              <label htmlFor="modalConsentCheckbox" className="text-[11px] text-slate-600 leading-snug cursor-pointer select-none">
+                I confirm that I am authorized to submit this photo to create this coloring book in accordance with the{' '}
+                <Link href="/privacy" target="_blank" className="text-orange-600 font-bold underline hover:text-orange-700">
+                  Privacy Policy
+                </Link>{' '}
+                and{' '}
+                <Link href="/terms" target="_blank" className="text-orange-600 font-bold underline hover:text-orange-700">
+                  Terms of Service
+                </Link>.
+              </label>
+            </div>
+
             {modalErrorMessage && (
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
@@ -956,7 +1072,7 @@ export default function ThemeCustomizerPage() {
 
                 <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Credit Card &bull; Apple Pay &bull; 256-bit Encrypted Checkout</span>
+                  <span>Credit Card &bull; Apple Pay &bull; 256-bit Encrypted Checkout via Whop</span>
                 </div>
               </div>
             )}

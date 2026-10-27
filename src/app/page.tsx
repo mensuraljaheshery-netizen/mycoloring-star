@@ -3,7 +3,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Camera, Check, ShieldCheck, Sparkles, ArrowRight, ArrowDown, ChevronDown, Download, AlertCircle } from 'lucide-react';
+import {
+  Camera,
+  Check,
+  ShieldCheck,
+  Sparkles,
+  ArrowRight,
+  ArrowDown,
+  ChevronDown,
+  BookOpen,
+  Printer,
+  Palette,
+  AlertCircle
+} from 'lucide-react';
 
 interface ThemeItem {
   id: number;
@@ -52,40 +64,50 @@ const ALL_34_THEMES: ThemeItem[] = [
   { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png', genderTarget: 'all' }
 ];
 
-const PACKAGES = [
-  { id: '8', name: 'Starter', pages: '8 Interior Pages + Cover', price: '$8.99', popular: false },
-  { id: '16', name: 'Standard', pages: '16 Interior Pages + Cover', price: '$12.99', popular: true },
-  { id: '32', name: 'Deluxe', pages: '32 Interior Pages + Cover', price: '$21.99', popular: false },
-  { id: '48', name: 'Mega Variety', pages: '48 Interior Pages + Cover', price: '$29.99', popular: false }
-];
-
 export default function HomePage() {
   const router = useRouter();
   const [childName, setChildName] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<string>('16');
+  const [hasClaimedFree, setHasClaimedFree] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  
+
   const carouselRef = useRef<HTMLDivElement>(null);
   const themesSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     try {
-      const savedName = sessionStorage.getItem('hero_child_name');
-      const savedPhoto = sessionStorage.getItem('hero_child_photo');
-      const savedPkg = sessionStorage.getItem('mcs_selected_package');
+      const savedName = localStorage.getItem('hero_child_name') || sessionStorage.getItem('hero_child_name');
+      const savedPhoto = localStorage.getItem('hero_child_photo') || sessionStorage.getItem('hero_child_photo');
+      const claimedLocal = localStorage.getItem('mcs_claimed_free_sample') === 'true';
+
       if (savedName) setChildName(savedName);
       if (savedPhoto) setPhotoPreview(savedPhoto);
-      if (savedPkg) setSelectedPackage(savedPkg);
+
+      if (claimedLocal) {
+        setHasClaimedFree(true);
+      } else {
+        fetch('/api/free-sample/check')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data?.claimed) {
+              setHasClaimedFree(true);
+              try {
+                localStorage.setItem('mcs_claimed_free_sample', 'true');
+              } catch {}
+            }
+          })
+          .catch(() => {});
+      }
     } catch {}
   }, []);
 
-  const handlePackageSelect = (pkgId: string) => {
-    setSelectedPackage(pkgId);
+  const handleNameChange = (val: string) => {
+    setChildName(val);
     try {
-      sessionStorage.setItem('mcs_selected_package', pkgId);
+      localStorage.setItem('hero_child_name', val);
+      sessionStorage.setItem('hero_child_name', val);
     } catch {}
   };
 
@@ -129,8 +151,10 @@ export default function HomePage() {
         const compressed = canvas.toDataURL('image/jpeg', 0.85);
         setPhotoPreview(compressed);
         try {
+          localStorage.setItem('hero_child_photo', compressed);
           sessionStorage.setItem('hero_child_photo', compressed);
           sessionStorage.setItem('childPhotoPreview', compressed);
+          localStorage.removeItem('mcs_current_order_token');
         } catch {}
       };
       img.src = event.target?.result as string;
@@ -138,20 +162,34 @@ export default function HomePage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSelectTheme = (slug: string) => {
+  const handleRemovePhoto = () => {
+    setPhotoPreview(null);
+    try {
+      localStorage.removeItem('hero_child_photo');
+      sessionStorage.removeItem('hero_child_photo');
+      sessionStorage.removeItem('childPhotoPreview');
+      localStorage.removeItem('mcs_current_order_token');
+    } catch {}
+  };
+
+  const handleSelectTheme = (slug: string, isFreeClaim = false) => {
     const trimmed = childName.trim() || 'Hero';
     try {
+      localStorage.setItem('hero_child_name', trimmed);
       sessionStorage.setItem('hero_child_name', trimmed);
-      sessionStorage.setItem('mcs_selected_package', selectedPackage);
       if (photoPreview) {
+        localStorage.setItem('hero_child_photo', photoPreview);
         sessionStorage.setItem('hero_child_photo', photoPreview);
         sessionStorage.setItem('childPhotoPreview', photoPreview);
       }
     } catch {}
-    router.push(`/theme/${slug}?name=${encodeURIComponent(trimmed)}&pkg=${selectedPackage}`);
+
+    const freeParam = isFreeClaim ? '&claim=free' : '';
+    router.push(`/theme/${slug}?name=${encodeURIComponent(trimmed)}${freeParam}`);
   };
 
   const scrollToThemes = () => {
+    setValidationError(null);
     if (themesSectionRef.current) {
       themesSectionRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -176,7 +214,7 @@ export default function HomePage() {
     },
     {
       q: 'What do I receive after purchase?',
-      a: 'You receive an instant high-resolution printable PDF containing your child’s customized full-color cover page and the exact number of interior coloring pages ordered (8, 16, 32, or 48 pages).'
+      a: 'You receive an instant high-resolution printable PDF containing your child’s customized full-color cover page, a personalized dedication page, the exact number of interior coloring pages ordered (4, 8, 16, or 32 pages), and an official back cover artist certificate.'
     },
     {
       q: 'Is the book digital or physical?',
@@ -184,11 +222,11 @@ export default function HomePage() {
     },
     {
       q: 'What kind of photo works best?',
-      a: 'A well-lit, close-up photo showing your child looking towards the camera with a clear smile. Avoid photos where the face is heavily shadowed, blurry, or covered by sunglasses or hats.'
+      a: 'A well-lit, close-up photo showing the child looking towards the camera with a clear smile. Avoid photos where the face is heavily shadowed, blurry, or covered by sunglasses or hats.'
     },
     {
       q: 'How does MyColoringStar handle child photos and privacy?',
-      a: 'Uploaded photos are processed in temporary server memory solely to generate the likeness line art for your order. We never sell, share, or train public AI models on your child’s photos. Review our Privacy Policy for full details.'
+      a: 'Uploaded photos are processed in temporary server memory solely to generate the likeness line art for your order. We never sell, share, or train public AI models on child photos. Review our Privacy Policy for full details.'
     },
     {
       q: 'What printer paper is recommended?',
@@ -204,7 +242,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-amber-50/50 via-white to-orange-50/40 text-slate-800">
       
       {/* 1. HERO SECTION */}
-      <section className="relative px-4 pt-12 pb-8 mx-auto max-w-4xl text-center">
+      <section className="relative px-4 pt-12 pb-6 mx-auto max-w-4xl text-center">
         <div className="inline-flex items-center gap-1.5 px-4 py-1.5 mb-3 text-xs sm:text-sm font-semibold tracking-wide text-amber-800 bg-amber-100/90 rounded-full shadow-sm">
           <Sparkles className="w-4 h-4 text-orange-500" /> Turn Your Child Into The Main Character
         </div>
@@ -216,19 +254,64 @@ export default function HomePage() {
           </span>
         </h1>
         
-        <p className="max-w-xl mx-auto text-sm sm:text-base text-slate-600 mb-6">
+        <p className="max-w-xl mx-auto text-sm sm:text-base text-slate-600 mb-4">
           Add their name, attach a photo, pick an adventure world, and get an instant keepsake coloring book ready for crayons.
         </p>
 
-        {/* STEP 1: CONFIGURATION CARD */}
-        <div className="max-w-xl mx-auto p-6 sm:p-8 bg-white border-2 border-orange-200/80 rounded-3xl shadow-lg space-y-5 text-left">
+        {/* QUICK TRUST PILLS */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-bold text-slate-600 pb-2">
+          <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-orange-100 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-orange-500" /> 100% Crisp Vector Outlines
+          </span>
+          <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-orange-100 shadow-sm">
+            <Printer className="w-3.5 h-3.5 text-emerald-600" /> Standard Home Printer (US Letter &amp; A4)
+          </span>
+          <span className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full border border-orange-100 shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" /> Never Used to Train AI Models
+          </span>
+        </div>
+
+        {/* STEP 1: CONFIGURATION CARD (LOW FRICTION) */}
+        <div className="max-w-xl mx-auto mt-6 p-6 sm:p-8 bg-white border-2 border-orange-200/80 rounded-3xl shadow-lg space-y-5 text-left">
           
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <span className="text-xs font-black uppercase tracking-wider text-orange-600">
-              Step 1: Set Up Character &amp; Package
+              Step 1: Enter Name &amp; Photo
             </span>
-            <span className="text-xs font-bold text-slate-400">Takes 15 seconds</span>
+            <span className="text-xs font-bold text-slate-400">Takes 10 seconds</span>
           </div>
+
+          {/* DYNAMIC FIRST VISIT CONVERSION OFFER */}
+          {!hasClaimedFree ? (
+            <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-300/80 rounded-2xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                  🎁 First-Time Visitor Gift
+                </span>
+                <span className="text-xs font-black text-emerald-700">100% Free</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-900">Try Before You Buy</h3>
+                <p className="text-xs text-slate-600 leading-snug mt-0.5">
+                  Get 1 personalized full-color cover starring your child + 2 interior coloring activity pages. Instant PDF download.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSelectTheme('superhero', true)}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Claim Free 3-Page Mini-Book (Instant PDF)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2.5 text-xs text-slate-600">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>You&apos;ve unlocked your free sample! Pick an adventure below to personalize your storybook.</span>
+            </div>
+          )}
 
           {/* Child's Name */}
           <div>
@@ -237,49 +320,11 @@ export default function HomePage() {
             </label>
             <input
               type="text"
-              placeholder="e.g. Leo, Maya, Oliver..."
+              placeholder="e.g. Leo, Maya, Sarah..."
               value={childName}
-              onChange={(e) => setChildName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-slate-50 focus:bg-white font-bold transition text-slate-900 placeholder:font-normal"
             />
-          </div>
-
-          {/* Package Selection */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-black uppercase tracking-wider text-slate-700">
-                Choose Book Size
-              </label>
-              <span className="text-[11px] font-bold text-slate-400">All include full-color cover</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {PACKAGES.map((pkg) => {
-                const isSelected = selectedPackage === pkg.id;
-                return (
-                  <button
-                    key={pkg.id}
-                    type="button"
-                    onClick={() => handlePackageSelect(pkg.id)}
-                    className={`p-2.5 rounded-2xl border-2 text-left transition relative flex flex-col justify-between cursor-pointer ${
-                      isSelected
-                        ? 'border-orange-500 bg-orange-50/80 ring-1 ring-orange-400 shadow-sm'
-                        : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                    }`}
-                  >
-                    {pkg.popular && (
-                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full whitespace-nowrap">
-                        Popular
-                      </span>
-                    )}
-                    <div>
-                      <div className="text-[10px] font-black uppercase text-slate-500">{pkg.name}</div>
-                      <div className="text-xs font-bold text-slate-800">{pkg.id} Pages</div>
-                    </div>
-                    <div className="text-xs font-black text-orange-600 mt-1">{pkg.price}</div>
-                  </button>
-                );
-              })}
-            </div>
           </div>
 
           {/* Child Photo Upload */}
@@ -297,20 +342,14 @@ export default function HomePage() {
                 />
                 <div className="flex-1">
                   <div className="text-xs font-bold text-slate-900 flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5 text-emerald-600" /> Photo attached and optimized!
+                    <Check className="w-3.5 h-3.5 text-emerald-600" /> Photo attached!
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setPhotoPreview(null);
-                      try {
-                        sessionStorage.removeItem('hero_child_photo');
-                        sessionStorage.removeItem('childPhotoPreview');
-                      } catch {}
-                    }}
-                    className="text-xs text-rose-600 hover:underline font-semibold mt-0.5"
+                    onClick={handleRemovePhoto}
+                    className="text-xs text-rose-600 hover:underline font-semibold mt-0.5 cursor-pointer"
                   >
-                    Change or replace photo
+                    Change photo
                   </button>
                 </div>
               </div>
@@ -331,14 +370,14 @@ export default function HomePage() {
                 />
               </label>
             )}
-
-            {validationError && (
-              <div className="mt-2 p-2 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{validationError}</span>
-              </div>
-            )}
           </div>
+
+          {validationError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{validationError}</span>
+            </div>
+          )}
 
           {/* CHOOSE A THEME BUTTON */}
           <button
@@ -346,7 +385,7 @@ export default function HomePage() {
             onClick={scrollToThemes}
             className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-base transition-all shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
           >
-            <span>Choose Adventure Theme ({selectedPackage} Pages)</span>
+            <span>Choose Adventure Theme →</span>
             <ArrowDown className="w-5 h-5 animate-bounce" />
           </button>
 
@@ -354,17 +393,111 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1 text-center">
             <div className="flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Processed in temporary memory. Never sold or trained publicly.</span>
+              <span>Photos are processed in temporary memory solely to generate artwork and are never stored or used to train AI models.</span>
             </div>
             <Link href="/privacy" className="text-orange-600 hover:underline font-bold">
-              How we handle your photos
+              Privacy details
             </Link>
           </div>
 
         </div>
       </section>
 
-      {/* 2. THEMES SHOWCASE */}
+      {/* 2. REAL BEFORE & AFTER TRANSFORMATION SHOWCASE */}
+      <section className="py-12 px-4 max-w-5xl mx-auto">
+        <div className="text-center mb-8">
+          <span className="text-xs font-black uppercase tracking-wider text-orange-600 block mb-1">
+            See How It Works
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+            From Simple Snapshot to Custom Keepsake
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-lg mx-auto">
+            Our engine retains your child&apos;s real smile and facial identity while illustrating clean, bold outlines ready for crayons.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          
+          {/* STEP 1: UPLOADED PHOTO */}
+          <div className="bg-white rounded-3xl border-2 border-slate-200/80 p-5 shadow-sm flex flex-col justify-between text-left space-y-3">
+            <div>
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full mb-2">
+                1. Child&apos;s Photo
+              </span>
+              <h3 className="font-bold text-sm text-slate-900">Clear Smile Snapshot</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Any well-lit front-facing photo from your camera roll.
+              </p>
+            </div>
+            <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner">
+              <img
+                src="/sample-child-photo.png"
+                alt="Original child photo reference"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="text-[11px] text-slate-500 text-center font-medium">
+              ✨ Preserves hairstyle, eyes &amp; smile
+            </div>
+          </div>
+
+          {/* STEP 2: PERSONALIZED COVER */}
+          <div className="bg-white rounded-3xl border-2 border-orange-300 p-5 shadow-md flex flex-col justify-between text-left space-y-3 ring-2 ring-orange-400/20">
+            <div>
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full mb-2">
+                2. Full-Color Cover
+              </span>
+              <h3 className="font-bold text-sm text-slate-900">Custom Comic Book Cover</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Starring your child in their custom hero suit &amp; arched title.
+              </p>
+            </div>
+            <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-orange-50 border border-orange-200 shadow-inner">
+              <img
+                src="/sample-cover.png"
+                alt="Personalized book cover"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = '/theme-previews/superhero.png';
+                }}
+              />
+            </div>
+            <div className="text-[11px] text-orange-600 text-center font-bold">
+              🎨 Arrives as Page 1 of your PDF
+            </div>
+          </div>
+
+          {/* STEP 3: PRINTABLE COLORING PAGE */}
+          <div className="bg-white rounded-3xl border-2 border-emerald-300 p-5 shadow-sm flex flex-col justify-between text-left space-y-3">
+            <div>
+              <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full mb-2">
+                3. Coloring Sheet
+              </span>
+              <h3 className="font-bold text-sm text-slate-900">Printable Vector Line Art</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Solid black outlines with empty white fills. No gray wash.
+              </p>
+            </div>
+            <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-white border-2 border-slate-200 shadow-inner p-1">
+              <img
+                src="/sample-coloring-page.png"
+                alt="Sample printable coloring page"
+                className="w-full h-full object-contain bg-white rounded-xl"
+                onError={(e) => {
+                  e.currentTarget.src = '/theme-previews/superhero.png';
+                }}
+              />
+            </div>
+            <div className="text-[11px] text-emerald-700 text-center font-bold">
+              🖨️ Ready to print at home for crayons
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. THEMES SHOWCASE */}
       <section ref={themesSectionRef} className="px-4 pb-16 max-w-7xl mx-auto scroll-mt-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
           <div>
@@ -375,21 +508,21 @@ export default function HomePage() {
               Pick An Adventure World
             </h2>
             <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
-              Click any world to see {childName.trim() || 'your child'} transformed inside that coloring story.
+              Click any world to customize {childName.trim() || 'your child'}&apos;s storybook.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => scrollCarousel('left')}
-              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition"
+              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition cursor-pointer"
               aria-label="Previous themes"
             >
               ⬅️
             </button>
             <button
               onClick={() => scrollCarousel('right')}
-              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition"
+              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition cursor-pointer"
               aria-label="Next themes"
             >
               ➡️
@@ -459,13 +592,13 @@ export default function HomePage() {
                     {theme.name}
                   </h3>
                   <p className="text-slate-500 text-xs mt-0.5">
-                    Personalized adventure coloring book ({selectedPackage} pages)
+                    Personalized adventure coloring book
                   </p>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-xs font-bold text-orange-600 flex items-center gap-1 group-hover:translate-x-0.5 transition">
-                    Preview {childName.trim() || 'Hero'} <ArrowRight className="w-3.5 h-3.5" />
+                    Customize {childName.trim() || 'Hero'} <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                   <span className="px-3 py-1 rounded-xl bg-slate-100 group-hover:bg-orange-500 group-hover:text-white text-slate-700 font-bold text-xs transition">
                     Select →
@@ -477,7 +610,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. HOW DIGITAL DELIVERY WORKS */}
+      {/* 4. HOW DIGITAL DELIVERY WORKS */}
       <section className="bg-orange-50/60 border-y border-orange-100 py-12 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center max-w-xl mx-auto mb-8">
@@ -492,7 +625,7 @@ export default function HomePage() {
               <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-black text-sm">1</div>
               <h3 className="font-bold text-sm text-slate-900">Custom Likeness Generation</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Our rendering engine crafts unique line-art coloring pages matching your selected adventure world and your child&apos;s joyful facial likeness.
+                Our rendering engine crafts unique line-art coloring pages matching your selected adventure world and the child&apos;s joyful facial likeness.
               </p>
             </div>
 
@@ -515,7 +648,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. COMPREHENSIVE COMMERCIAL FAQ */}
+      {/* 5. COMPREHENSIVE COMMERCIAL FAQ */}
       <section className="py-16 px-4 max-w-4xl mx-auto">
         <div className="text-center mb-10">
           <span className="text-xs font-black uppercase tracking-wider text-orange-600 block mb-1">
@@ -533,7 +666,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900"
+                className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 cursor-pointer"
               >
                 <span>{faq.q}</span>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />

@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-slate-900">2. Service Description</h2>
             <p>
-              MyColoringStar provides personalized digital and physical custom coloring books. Customers submit a child&apos;s name, chosen story theme, and optional reference photograph to produce customized coloring illustrations and storybook cover art.
+              MyColoringStar provides personalized downloadable digital coloring books, with physical printed editions currently in development (&quot;Coming Soon&quot;). Customers submit a child&apos;s name, chosen story theme, and optional reference photograph to produce customized coloring illustrations and storybook cover art.
             </p>
           </section>
 
@@ -47,38 +47,45 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">4. User Content &amp; Parental Authority</h2>
+            <h2 className="text-base font-bold text-slate-900">4. User Content, Likeness Consent &amp; Deletion</h2>
             <p>
-              You represent and warrant that you possess full legal authority and parental consent to submit any photograph uploaded to our platform. You agree not to submit any defamatory, unlawful, or infringing images. Uploaded images are processed solely in temporary sessions to render requested assets and are never sold or utilized for third-party advertising.
+              You represent and warrant that you possess full legal authority and parental consent to submit any photograph uploaded to our platform. You agree not to submit any defamatory, unlawful, or infringing images. Uploaded images are processed solely in temporary sessions to render requested assets and are never sold or utilized for third-party advertising or model training. You may request deletion of uploaded reference data and associated records at any time by contacting support@mycoloringstar.com.
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">5. Digital Goods &amp; Physical Fulfillment</h2>
+            <h2 className="text-base font-bold text-slate-900">5. Digital Goods &amp; Physical Fulfillment (Upcoming)</h2>
             <p>
-              <strong>Digital Downloads:</strong> Delivered as high-resolution printable PDF files via immediate browser download and email confirmation upon successful payment clearance.
+              <strong>Digital Downloads:</strong> Delivered as high-resolution printable PDF files via immediate browser download upon successful rendering and checkout confirmation.
             </p>
             <p>
-              <strong>Physical Printed Books:</strong> Printed on demand through specialized manufacturing facilities and dispatched via postal carrier to the shipping address entered at checkout. Standard production and delivery timetables vary depending on destination.
-            </p>
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">6. Merchant of Record &amp; Transactions</h2>
-            <p>
-              Payments on MyColoringStar are securely handled by our authorized Merchant of Record partners. Your statement will reflect the processor&apos;s designated billing identifier upon order completion.
+              <strong>Physical Printed Books (Coming Soon):</strong> Physical printed editions are currently marked as &quot;Coming Soon&quot; and not available for checkout. Once physical fulfillment is launched, printed books will be produced on demand through specialized manufacturing partners and dispatched via postal carrier. Until that launch, all active purchases on the platform remain strictly digital downloadable PDFs.
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">7. Limitation of Liability</h2>
+            <h2 className="text-base font-bold text-slate-900">6. Promotional Free Tier &amp; Fair Use</h2>
+            <p>
+              We provide a promotional free 3-page mini-book sample limited strictly to one claim per household, email address, or network. Automated attempts to circumvent these limits via proxy networks, bot traffic, or disposable credentials will result in immediate termination of generation access.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900">7. Merchant of Record &amp; Transactions</h2>
+            <p>
+              Payments on MyColoringStar are securely processed through Whop, our Merchant of Record partner. All transactions are encrypted and subject to Whop&apos;s checkout terms and conditions. Your billing statement will reflect Whop&apos;s designated descriptor upon order completion.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-bold text-slate-900">8. Limitation of Liability</h2>
             <p>
               MyColoringStar and its operators shall not be liable for any indirect, incidental, punitive, or consequential damages resulting from the use or inability to access our personalized generation services.
             </p>
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-base font-bold text-slate-900">8. Contact Information</h2>
+            <h2 className="text-base font-bold text-slate-900">9. Contact Information</h2>
             <p>
               For inquiries regarding these Terms of Service, contact our administrative desk at{' '}
               <a href="mailto:support@mycoloringstar.com" className="text-orange-600 font-bold hover:underline">

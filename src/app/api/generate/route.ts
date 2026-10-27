@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 import { getThemeConfig } from '@/lib/themes';
 
 export const maxDuration = 60;
@@ -9,33 +10,133 @@ export const dynamic = 'force-dynamic';
 const configFilePath = path.join(process.cwd(), 'src', 'data', 'site-config.json');
 const themesFilePath = path.join(process.cwd(), 'src', 'data', 'themes-data.json');
 
-function checkAndIncrementUsage(): { allowed: boolean; reason?: string } {
-  try {
-    if (!fs.existsSync(configFilePath)) return { allowed: true };
-    const raw = fs.readFileSync(configFilePath, 'utf8');
-    const config = JSON.parse(raw);
+// Initialize Supabase admin client directly with project credentials
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co';
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  '';
 
-    if (config.maintenanceMode) {
-      return { allowed: false, reason: 'Generation engine is temporarily paused for scheduled maintenance.' };
-    }
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
 
-    const today = new Date().toISOString().split('T')[0];
-    if (config.lastResetDate !== today) {
-      config.generationsToday = 0;
-      config.lastResetDate = today;
-    }
-
-    if (config.generationsToday >= (config.dailyLimit || 500)) {
-      return { allowed: false, reason: 'Daily free generation limit reached for today! Resets at midnight.' };
-    }
-
-    config.generationsToday = (config.generationsToday || 0) + 1;
-    fs.writeFileSync(configFilePath, JSON.stringify(config, null, 2), 'utf8');
-    return { allowed: true };
-  } catch (err) {
-    console.error('Config check error:', err);
+// Rate-limiting and lifetime lock for free 3-page mini books
+async function verifyAndRecordFreeTier(
+  req: NextRequest,
+  isPaidOrder: boolean,
+  isCover: boolean,
+  childName?: string,
+  theme?: string,
+  email?: string
+): Promise<{ allowed: boolean; reason?: string }> {
+  if (isPaidOrder) {
     return { allowed: true };
   }
+
+  const forwarded = req.headers.get('x-forwarded-for');
+  const realIp = req.headers.get('x-real-ip');
+  const cfIp = req.headers.get('cf-connecting-ip');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : realIp || cfIp || '127.0.0.1';
+
+  const cleanEmail = (email || '').toLowerCase().trim();
+
+  try {
+    let query = supabase.from('free_book_claims').select('id, claimed_at');
+
+    if (cleanEmail) {
+      query = query.or(`ip_address.eq.${ip},email.eq.${cleanEmail}`);
+    } else {
+      query = query.eq('ip_address', ip);
+    }
+
+    const { data: existing, error: selectError } = await query.maybeSingle();
+
+    if (selectError) {
+      console.warn('[SUPABASE_SELECT_WARNING]:', selectError.message);
+    }
+
+    if (existing) {
+      return {
+        allowed: false,
+        reason: "You've unlocked your free sample! Ready to order the full edition?"
+      };
+    }
+
+    if (isCover) {
+      const { error: insertError } = await supabase
+        .from('free_book_claims')
+        .insert([{
+          ip_address: ip,
+          email: cleanEmail || null,
+          child_name: childName || 'Hero',
+          theme: theme || 'superhero'
+        }]);
+
+      if (insertError) {
+        console.warn('[SUPABASE_INSERT_WARNING]:', insertError.message);
+      }
+    }
+
+    return { allowed: true };
+  } catch (err: any) {
+    console.warn('[FREE_TIER_CHECK_EXCEPTION]:', err);
+    return { allowed: true };
+  }
+}
+
+function checkMaintenance(): { allowed: boolean; reason?: string } {
+  try {
+    if (fs.existsSync(configFilePath)) {
+      const raw = fs.readFileSync(configFilePath, 'utf8');
+      const config = JSON.parse(raw);
+      if (config.maintenanceMode) {
+        return { allowed: false, reason: 'Generation engine is temporarily paused for scheduled maintenance.' };
+      }
+    }
+  } catch (err) {
+    console.error('Maintenance read error:', err);
+  }
+  return { allowed: true };
+}
+
+const VARIETY_CANDIDATE_THEMES = [
+  'Superhero',
+  'Astronaut',
+  'School Day',
+  'Jungle Explorer',
+  'Outer Space',
+  'Mars Mission',
+  'Animals',
+  'Desert Adventure',
+  'Snow & Winter',
+  'Soccer Stadium',
+  'Basketball',
+  'Under the Sea',
+  'Dinosaur',
+  'Pirate Adventure',
+  'Farm Day',
+  'Fairy Forest',
+  'Knights & Dragons',
+  'Race Car Driver',
+  'Firefighter',
+  'Doctor & Vet',
+  'Chef in Kitchen',
+  'Robot World',
+  'Camping Trip',
+  'Music Band',
+  'Arctic Animals',
+  'Safari',
+  'Wizard Academy'
+];
+
+function resolveActiveTheme(themeName: string): string {
+  const normalized = (themeName || 'Superhero').toLowerCase().trim();
+  if (normalized.includes('variety')) {
+    const randomIndex = Math.floor(Math.random() * VARIETY_CANDIDATE_THEMES.length);
+    return VARIETY_CANDIDATE_THEMES[randomIndex];
+  }
+  return themeName || 'Superhero';
 }
 
 function getRandomSceneAction(themeName: string): string {
@@ -122,29 +223,40 @@ function getThemeCostumeDirective(theme: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const check = checkAndIncrementUsage();
-    if (!check.allowed) {
-      return NextResponse.json({ error: check.reason }, { status: 429 });
+    const maint = checkMaintenance();
+    if (!maint.allowed) {
+      return NextResponse.json({ error: maint.reason }, { status: 503 });
     }
 
     const {
       imageBase64,
       childName,
       theme,
+      email,
       isCover,
       prompt: customPrompt,
       orientation = 'portrait',
-      paperSize = 'letter'
+      paperSize = 'letter',
+      orderId
     } = await req.json();
 
-    const currentThemeName = theme || 'Superhero';
-    const costumeDirective = getThemeCostumeDirective(currentThemeName);
-    const chosenAction = getRandomSceneAction(currentThemeName);
+    const isPaidOrder = Boolean(orderId && (orderId.startsWith('paid_') || orderId.startsWith('ord_')));
+
+    const usageCheck = await verifyAndRecordFreeTier(req, isPaidOrder, Boolean(isCover), childName, theme, email);
+    if (!usageCheck.allowed) {
+      return NextResponse.json({ error: usageCheck.reason }, { status: 403 });
+    }
+
+    const rawThemeName = theme || 'Superhero';
+    const effectiveThemeName = (!isCover && rawThemeName.toLowerCase().includes('variety'))
+      ? resolveActiveTheme(rawThemeName)
+      : rawThemeName;
+
+    const costumeDirective = getThemeCostumeDirective(effectiveThemeName);
+    const chosenAction = getRandomSceneAction(effectiveThemeName);
     const heroName = (childName || 'HERO').toUpperCase();
     const isLandscape = orientation === 'landscape';
 
-    // Map orientation to Gemini standard ratios
-    const targetAspectRatio = isLandscape ? '4:3' : '3:4';
     const formatName = paperSize.toLowerCase() === 'a4' ? 'A4 International Standard (210x297mm)' : 'US Letter (8.5x11 inches)';
 
     const canvasOrientationRule = isLandscape
@@ -154,10 +266,11 @@ export async function POST(req: NextRequest) {
     let prompt = '';
 
     if (isCover) {
-      const displayTheme = currentThemeName.replace(/variety pack/i, 'Variety').toUpperCase();
+      const displayTheme = rawThemeName.replace(/variety pack/i, 'Variety').toUpperCase();
 
       prompt = `Deluxe commercial children's adventure coloring book cover illustration starring the child from the reference photo named "${heroName}".
 ${canvasOrientationRule}
+ANATOMY REQUIREMENTS: Symmetrical, natural human anatomy. Exactly two arms, exactly two legs, exactly five distinct fingers per hand. Zero extra limbs, zero duplicated body parts.
 CANVAS COMPOSITION & VERTICAL HEADROOM RULES:
 - IMPORTANT: Leave ample blank sky space (at least 15% clear margin) at the top of the canvas so typography sits cleanly below the page boundary.
 - The entire title cluster and ribbon banner must sit comfortably below the top edge with generous breathing room.
@@ -168,7 +281,7 @@ CHARACTER ART & LIKENESS:
 - Recreate the child's exact recognizable facial features, smile, hairstyle, and skin tone from the reference photo.
 - Joyful child hero centered comfortably in the foreground.
 COSTUME: ${costumeDirective}
-SCENE: Saturated, dynamic, detailed ${currentThemeName} backdrop.
+SCENE: Saturated, dynamic, detailed ${rawThemeName} backdrop.
 
 CLEAN COVER TYPOGRAPHY:
 - TOP TITLE: Bold, playful 3D cartoon bubble typography arched comfortably across the upper area reading "${heroName}". Vibrant yellow/orange letters with heavy dark outlines and drop shadow.
@@ -179,7 +292,7 @@ CLEAN COVER TYPOGRAPHY:
     } else if (customPrompt) {
       prompt = `Professional printable children's coloring book page featuring the child from the photo as the hero.
 ${canvasOrientationRule}
-CHARACTER LIKENESS: Replicate the child's facial identity, haircut, and joyful smile.
+CHARACTER LIKENESS & ANATOMY: Replicate the child's facial identity, haircut, and joyful smile from reference photo. Natural human anatomy: exactly two arms, exactly two legs, exactly five distinct fingers per hand. Clear limb spacing, zero conjoined limbs, zero extra legs, zero duplicated feet.
 SCENE ACTION: ${customPrompt}
 COSTUME: ${costumeDirective}
 MANDATORY LINE ART STYLE:
@@ -190,10 +303,10 @@ MANDATORY LINE ART STYLE:
     } else {
       prompt = `Professional printable children's coloring book page starring the child from the photo named "${heroName}".
 ${canvasOrientationRule}
-Preserve their distinct facial likeness, haircut, and joyful smile from the photo.
+CHARACTER LIKENESS & ANATOMY: Preserve distinct facial likeness, haircut, and joyful smile from photo. Anatomically correct child proportions: exactly two arms, exactly two legs, exactly five distinct fingers on each hand. Clear separation between arms and torso, no extra limbs, no phantom hands.
 COSTUME: ${costumeDirective}
 SCENE ACTION: ${chosenAction}.
-BACKGROUND: Fun, whimsical cartoon ${currentThemeName} scenery with bold elements filling the ${isLandscape ? 'horizontal wide' : 'vertical'} page for kids to color.
+BACKGROUND: Fun, whimsical cartoon ${effectiveThemeName} scenery with bold elements filling the ${isLandscape ? 'horizontal wide' : 'vertical'} page for kids to color.
 MANDATORY LINE ART STYLE:
 - Crisp, clean thick black ink contour lines on solid white paper.
 - Completely empty white spaces for coloring.
@@ -205,6 +318,7 @@ MANDATORY LINE ART STYLE:
       return NextResponse.json({ error: 'OPENROUTER_API_KEY is missing in environment variables.' }, { status: 500 });
     }
 
+    // Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image) explicitly set
     const modelId = 'google/gemini-3.1-flash-lite-image';
 
     const messages: any[] = [
@@ -226,29 +340,44 @@ MANDATORY LINE ART STYLE:
       });
     }
 
-   const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${openRouterKey.trim()}`,
-        'HTTP-Referer': 'https://www.mycoloringstar.com',
-        'X-Title': 'MyColoringStar'
-      },
-      body: JSON.stringify({
-        model: modelId,
-        messages,
-        modalities: ['image', 'text'],
-        provider: {
-          order: ['Google AI Studio'],
-          allow_fallbacks: true
-        }
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 50000);
+
+    let orRes: Response;
+    try {
+      orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${openRouterKey.trim()}`,
+          'HTTP-Referer': 'https://www.mycoloringstar.com',
+          'X-Title': 'MyColoringStar'
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages,
+          modalities: ['image', 'text'],
+          provider: {
+            order: ['Google AI Studio'],
+            allow_fallbacks: true
+          }
+        }),
+        signal: controller.signal
+      });
+    } catch (fetchErr: any) {
+      clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        throw new Error('Image generation timed out after 50 seconds. Retrying scene...');
+      }
+      throw fetchErr;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const orData = await orRes.json();
     if (!orRes.ok) {
       console.error('OpenRouter Error Details:', JSON.stringify(orData, null, 2));
-      throw new Error(orData.error?.message || `OpenRouter returned status ${orRes.status}`);
+      throw new Error(orData.error?.message || `Model provider returned status ${orRes.status}`);
     }
 
     const choice = orData.choices?.[0];
@@ -289,6 +418,7 @@ MANDATORY LINE ART STYLE:
       throw new Error(`No image URL returned from model: "${textPreview}"`);
     }
 
+    // Direct lightweight URL return to avoid browser storage quota crashes
     return NextResponse.json({ imageUrl });
 
   } catch (err: any) {
