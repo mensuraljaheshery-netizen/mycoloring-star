@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mail, MessageSquare, Clock, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Mail, MessageSquare, Clock, ShieldCheck, CheckCircle2, Phone } from 'lucide-react';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -66,6 +66,30 @@ export default function ContactPage() {
               <span className="text-xs font-black uppercase tracking-wider text-slate-500 block">Response Time</span>
               <span className="text-sm font-bold text-slate-900">Within 24–48 hours</span>
               <p className="text-[11px] text-slate-500 mt-0.5">Monday through Saturday</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/60 flex items-start gap-3 sm:col-span-2">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <Phone className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 block">Phone & WhatsApp</span>
+              <a href="tel:+15205672374" className="text-sm font-bold text-emerald-700 hover:underline">
+                +1 520 567 2374
+              </a>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Call, or{' '}
+                <a
+                  href="https://wa.me/15205672374"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-emerald-700 hover:underline"
+                >
+                  message us on WhatsApp
+                </a>
+                .
+              </p>
             </div>
           </div>
         </div>
