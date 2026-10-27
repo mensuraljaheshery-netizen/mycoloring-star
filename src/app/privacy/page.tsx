@@ -81,7 +81,7 @@ export default function PrivacyPage() {
               To request complete deletion of your contact and claim records from our database, email{' '}
               <a href="mailto:support@mycoloringstar.com" className="text-orange-600 font-bold hover:underline">
                 support@mycoloringstar.com
-              </a>. All associated records will be permanently expunged within 24 business hours.
+              </a>. All associated records will be permanently expunged within 24–48 hours.
             </p>
           </section>
         </div>

@@ -59,7 +59,7 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
   { id: 22, name: 'Chef in Kitchen', category: 'Jobs', slug: 'chef-in-the-kitchen', previewImage: '/theme-previews/chef-in-the-kitchen.png' },
   { id: 23, name: 'Robot World', category: 'Fantasy', slug: 'robot-world', previewImage: '/theme-previews/robot-world.png' },
   { id: 24, name: 'Camping Trip', category: 'Adventure', slug: 'camping-trip', previewImage: '/theme-previews/camping-trip.png' },
-  { id: 25, name: 'Ballet & Dance', category: 'Sports', slug: 'ballet-and-dance', previewImage: '/theme-previews/ballet-and-dance.png' },
+  { id: 25, name: 'Ballet & Dance', category: 'Arts', slug: 'ballet-and-dance', previewImage: '/theme-previews/ballet-and-dance.png' },
   { id: 26, name: 'Music Band', category: 'Jobs', slug: 'music-band', previewImage: '/theme-previews/music-band.png' },
   { id: 27, name: 'Arctic Animals', category: 'Nature', slug: 'arctic-animals', previewImage: '/theme-previews/arctic-animals.png' },
   { id: 28, name: 'Safari', category: 'Nature', slug: 'safari', previewImage: '/theme-previews/safari.png' },

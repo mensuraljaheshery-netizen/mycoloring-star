@@ -2238,7 +2238,7 @@ const rawSeedThemes = [
   { name: 'Chef in the Kitchen', category: 'Jobs', description: 'Baking giant strawberry celebration cupcakes' },
   { name: 'Robot World', category: 'Fantasy', description: 'Building friendly solar robots with gears and dials' },
   { name: 'Camping Trip', category: 'Adventure', description: 'Roasting marshmallows beneath pine trees and starry skies' },
-  { name: 'Ballet and Dance', category: 'Sports', description: 'Leaping gracefully across the grand theater stage' },
+  { name: 'Ballet and Dance', category: 'Arts', description: 'Leaping gracefully across the grand theater stage' },
   { name: 'Music Band', category: 'Jobs', description: 'Rocking out on an electric guitar with energetic rhythm' },
   { name: 'Arctic Animals', category: 'Animals and Nature', description: 'Sliding down ice hills with cheerful baby penguins' },
   { name: 'Safari', category: 'Animals and Nature', description: 'Spotting giraffes and zebras under the umbrella trees' },

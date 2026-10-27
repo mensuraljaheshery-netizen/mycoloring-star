@@ -67,7 +67,10 @@ export default function ChatWidget({ childName, themeName }: ChatWidgetProps) {
           className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs py-3 px-4 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
         >
           <Sparkles className="w-4 h-4" />
-          <span>Ask Starla AI</span>
+          <span className="text-left leading-tight">
+            <span className="block">Ask Starla</span>
+            <span className="block text-[10px] font-medium text-orange-50">Help with themes and printing</span>
+          </span>
         </button>
       )}
 

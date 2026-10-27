@@ -64,8 +64,8 @@ export default function ContactPage() {
             </div>
             <div>
               <span className="text-xs font-black uppercase tracking-wider text-slate-500 block">Response Time</span>
-              <span className="text-sm font-bold text-slate-900">Within 24 Business Hours</span>
-              <p className="text-[11px] text-slate-500 mt-0.5">Monday through Saturday support</p>
+              <span className="text-sm font-bold text-slate-900">Within 24–48 hours</span>
+              <p className="text-[11px] text-slate-500 mt-0.5">Monday through Saturday</p>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function ContactPage() {
               <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
               <h3 className="text-base font-bold text-slate-900">Message Received!</h3>
               <p className="text-xs text-slate-600 max-w-md mx-auto">
-                Thank you for contacting MyColoringStar. Our support desk has received your note and will follow up with you at <strong>{formData.email || 'your email'}</strong> within 24 hours.
+                Thank you for contacting MyColoringStar. Our support desk has received your note and will follow up with you at <strong>{formData.email || 'your email'}</strong> within 24–48 hours.
               </p>
             </div>
           ) : (

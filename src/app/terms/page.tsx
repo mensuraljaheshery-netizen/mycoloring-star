@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-slate-900">2. Service Description</h2>
             <p>
-              MyColoringStar provides personalized downloadable digital coloring books, with physical printed editions currently in development (&quot;Coming Soon&quot;). Customers submit a child&apos;s name, chosen story theme, and optional reference photograph to produce customized coloring illustrations and storybook cover art.
+              MyColoringStar provides personalized downloadable digital coloring books, with physical printed editions currently in development (&quot;Coming Soon&quot;). Customers submit a child&apos;s name, chosen story theme, and a reference photograph, which is required to match likeness, to produce customized coloring illustrations and storybook cover art.
             </p>
           </section>
 

@@ -84,7 +84,7 @@ const DEFAULT_THEME_CATALOG: ThemeCardItem[] = [
   { slug: 'chef-in-the-kitchen', name: 'Chef in the Kitchen', category: 'Jobs', preview: '/theme-previews/chef-in-the-kitchen.png' },
   { slug: 'robot-world', name: 'Robot World', category: 'Fantasy', preview: '/theme-previews/robot-world.png' },
   { slug: 'camping-trip', name: 'Camping Trip', category: 'Adventure', preview: '/theme-previews/camping-trip.png' },
-  { slug: 'ballet-and-dance', name: 'Ballet and Dance', category: 'Sports', preview: '/theme-previews/ballet-and-dance.png' },
+  { slug: 'ballet-and-dance', name: 'Ballet and Dance', category: 'Arts', preview: '/theme-previews/ballet-and-dance.png' },
   { slug: 'music-band', name: 'Music Band', category: 'Jobs', preview: '/theme-previews/music-band.png' },
   { slug: 'arctic-animals', name: 'Arctic Animals', category: 'Animals and Nature', preview: '/theme-previews/arctic-animals.png' },
   { slug: 'safari', name: 'Safari', category: 'Animals and Nature', preview: '/theme-previews/safari.png' },
