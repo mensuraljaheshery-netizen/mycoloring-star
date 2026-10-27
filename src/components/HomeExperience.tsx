@@ -494,11 +494,11 @@ export default function HomePage() {
         <div className="space-y-6 md:space-y-10">
           {[
             {
-              name: 'Leo',
+              name: 'Liam',
               theme: 'Superhero',
               photo: '/sample-child-photo.png',
-              cover: '/sample-cover.png',
-              page: '/sample-coloring-page.png'
+              cover: '/sample-liam-cover.jpg',
+              page: '/sample-liam-page.jpg'
             },
             {
               name: 'Sara',
