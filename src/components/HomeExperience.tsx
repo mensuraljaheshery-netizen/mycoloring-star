@@ -103,12 +103,22 @@ const ALL_34_THEMES: ThemeItem[] = [
   { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png', genderTarget: 'all' }
 ];
 
+function shuffleThemes(items: ThemeItem[]): ThemeItem[] {
+  const next = [...items];
+  for (let i = next.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
 export default function HomePage() {
   const router = useRouter();
   const [childName, setChildName] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [hasClaimedFree, setHasClaimedFree] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [themeOrder, setThemeOrder] = useState<ThemeItem[]>(ALL_34_THEMES);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -120,6 +130,7 @@ export default function HomePage() {
   const themesSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    setThemeOrder(shuffleThemes(ALL_34_THEMES));
     try {
       const offer = sessionStorage.getItem('mcs_next_offer');
       if (offer === 'theme' || offer === 'sibling') setNextOffer(offer);
@@ -275,7 +286,7 @@ export default function HomePage() {
     }
   };
 
-  const filteredThemes = ALL_34_THEMES.filter(
+  const filteredThemes = themeOrder.filter(
     (t) => activeCategory === 'All' || t.category === activeCategory
   );
   const categories = ['All', ...Array.from(new Set(ALL_34_THEMES.map((t) => t.category)))];

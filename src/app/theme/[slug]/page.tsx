@@ -85,6 +85,15 @@ const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: str
   '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$14', popular: false }
 };
 
+function shuffleCatalog<T>(items: T[]): T[] {
+  const next = [...items];
+  for (let i = next.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [next[i], next[j]] = [next[j], next[i]];
+  }
+  return next;
+}
+
 export default function ThemeCustomizerPage() {
   const params = useParams();
   const router = useRouter();
@@ -102,6 +111,7 @@ export default function ThemeCustomizerPage() {
   }, [slug, queryGender]);
 
   const [childName, setChildName] = useState(queryName);
+  const [themeStrip, setThemeStrip] = useState(ALL_34_THEMES);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [packageSize, setPackageSize] = useState<string>(
@@ -135,6 +145,7 @@ export default function ThemeCustomizerPage() {
   }, []);
 
   useEffect(() => {
+    setThemeStrip(shuffleCatalog(ALL_34_THEMES));
     try {
       localStorage.removeItem('mcs_bundle_data');
       sessionStorage.removeItem('mcs_bundle_data');
@@ -908,7 +919,7 @@ export default function ThemeCustomizerPage() {
             ref={scrollContainerRef}
             className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none scroll-smooth"
           >
-            {ALL_34_THEMES.map((t) => {
+            {themeStrip.map((t) => {
               const isActive = t.slug === slug;
               return (
                 <div
