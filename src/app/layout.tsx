@@ -42,7 +42,7 @@ export default function RootLayout({
       }}
     >
       <body className="min-h-full flex flex-col bg-[#FFFDF9] text-slate-800 font-sans">
-        <header className="sticky top-0 z-40 border-b border-[#E07020] bg-[#FC8A33]">
+        <header className="sticky top-0 z-40 border-b border-orange-200 bg-gradient-to-r from-[#FC8A33] via-[#FFB15A] to-[#FFF3E4]">
           <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 font-black text-slate-900 tracking-tight">
               <a href="/" aria-label="MyColoringStar home" className="cursor-pointer">
