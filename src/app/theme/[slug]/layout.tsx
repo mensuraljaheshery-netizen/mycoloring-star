@@ -1,12 +1,7 @@
 import type { Metadata } from 'next';
+import { getThemeListing } from '@/lib/themes';
 
-function titleFromSlug(slug: string) {
-  return slug
-    .split('-')
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+const SITE = 'https://www.mycoloringstar.com';
 
 export async function generateMetadata({
   params,
@@ -14,14 +9,78 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const name = titleFromSlug(slug);
+  const theme = getThemeListing(slug);
+  const title = `Personalized ${theme.name} Coloring Book`;
+  const description = `${theme.description}. Print-at-home PDF starring your child, with a color cover and different scenes inside. Books are $4, $7, $10, or $14. Free 3-page sample.`;
+  const path = `/theme/${theme.slug}`;
+  const image = `/theme-previews/${theme.slug}.png`;
+
   return {
-    title: `${name} Coloring Book`,
-    description: `A personalized ${name} coloring book starring your child. Instant print-at-home PDF from MyColoringStar.`,
-    alternates: { canonical: `/theme/${slug}` },
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      type: 'website',
+      url: path,
+      title: `${title} | MyColoringStar`,
+      description,
+      images: [image],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
-export default function ThemeLayout({ children }: { children: React.ReactNode }) {
-  return children;
+export default async function ThemeLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const theme = getThemeListing(slug);
+  const url = `${SITE}/theme/${theme.slug}`;
+  const image = `${SITE}/theme-previews/${theme.slug}.png`;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Product',
+        name: `Personalized ${theme.name} Coloring Book`,
+        description: theme.description,
+        image,
+        url,
+        category: theme.category,
+        brand: { '@type': 'Brand', name: 'MyColoringStar' },
+        offers: {
+          '@type': 'AggregateOffer',
+          lowPrice: '4',
+          highPrice: '14',
+          priceCurrency: 'USD',
+          offerCount: 4,
+          availability: 'https://schema.org/InStock',
+          url,
+        },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE },
+          { '@type': 'ListItem', position: 2, name: theme.name, item: url },
+        ],
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {children}
+    </>
+  );
 }

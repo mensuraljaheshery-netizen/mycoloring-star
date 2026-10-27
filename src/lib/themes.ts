@@ -2439,3 +2439,42 @@ export function getScenesForAge(theme: ThemeConfig, ageGroup?: string, count: nu
 
   return shuffled.slice(0, count);
 }
+
+export type ThemeListing = {
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+};
+
+export function getThemeListing(slug: string): ThemeListing {
+  const normalized = (slug || '').toLowerCase().trim();
+  if (normalized === 'variety-pack') {
+    return {
+      slug: 'variety-pack',
+      name: 'Surprise Variety Pack',
+      description: 'A mix of scenes from many adventures, except princess and ballet, so any child can be the hero.',
+      category: 'Adventure Mix'
+    };
+  }
+  const theme = themesData[normalized];
+  if (theme) {
+    return {
+      slug: theme.slug,
+      name: theme.name,
+      description: theme.description,
+      category: theme.category
+    };
+  }
+  const name = formatThemeName(normalized || 'coloring');
+  return {
+    slug: normalized || 'coloring',
+    name,
+    description: `A personalized ${name} coloring book starring your child.`,
+    category: 'Adventure'
+  };
+}
+
+export function listPublicThemes(): ThemeListing[] {
+  return [getThemeListing('variety-pack'), ...Object.values(themesData).map((theme) => getThemeListing(theme.slug))];
+}
