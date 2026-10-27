@@ -524,7 +524,7 @@ export default function HomePage() {
               </span>
               <h3 className="font-bold text-sm text-slate-900">Custom Comic Book Cover</h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Starring your child in their custom hero suit &amp; arched title.
+                Starring your child, with their name across the cover.
               </p>
             </div>
             <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-orange-50 border border-orange-200 shadow-inner">
