@@ -6,23 +6,6 @@ import { ArrowLeft, ArrowRight, Check, Sparkles, Printer, ShieldCheck } from 'lu
 
 const TIERS = [
   {
-    id: '4',
-    name: 'Starter Edition',
-    pages: '4 Coloring Pages',
-    price: '$4.99',
-    unitPrice: '$1.25 / page',
-    description: 'Perfect mini adventure for a rainy afternoon.',
-    popular: false,
-    features: [
-      '1 Full-Color Personalized Cover',
-      'Personalized Dedication Page',
-      '4 Unique Storyline Coloring Sheets',
-      'Official Back-Cover Artist Certificate',
-      'Instant High-Res Printable PDF (Letter & A4)',
-      'Unlimited Re-prints at Home'
-    ]
-  },
-  {
     id: '8',
     name: 'Standard Adventure',
     pages: '8 Coloring Pages',
@@ -105,7 +88,7 @@ export default function PricingPage() {
         </div>
 
         {/* PRICING GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {TIERS.map((tier) => (
             <div
               key={tier.id}

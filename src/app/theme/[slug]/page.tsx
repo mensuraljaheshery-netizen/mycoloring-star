@@ -72,7 +72,6 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
 ];
 
 const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
-  '4': { label: 'Starter (4 Pages)', pages: 4, price: '$4.99', popular: false },
   '8': { label: 'Standard (8 Pages)', pages: 8, price: '$7.99', popular: false },
   '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$11.99', popular: true },
   '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$16.99', popular: false }
@@ -98,7 +97,7 @@ export default function ThemeCustomizerPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [packageSize, setPackageSize] = useState<string>(
-    PACKAGES_CONFIG[queryPkg] ? queryPkg : '4'
+    PACKAGES_CONFIG[queryPkg] ? queryPkg : '8'
   );
   const [parentConsent, setParentConsent] = useState(false);
 
@@ -164,7 +163,7 @@ export default function ThemeCustomizerPage() {
         } else if (savedPkg && PACKAGES_CONFIG[savedPkg]) {
           setPackageSize(savedPkg);
         } else {
-          setPackageSize('4');
+          setPackageSize('8');
         }
       } catch {}
     };
@@ -607,7 +606,7 @@ export default function ThemeCustomizerPage() {
     router.push(`/theme/${newSlug}?name=${encodeURIComponent(childName || 'Hero')}&pkg=${packageSize}`);
   };
 
-  const currentPkgDetails = PACKAGES_CONFIG[packageSize] || PACKAGES_CONFIG['4'];
+  const currentPkgDetails = PACKAGES_CONFIG[packageSize] || PACKAGES_CONFIG['8'];
 
   const initiatePaidOrderModal = () => {
     if (!parentConsent) {
@@ -688,7 +687,7 @@ export default function ThemeCustomizerPage() {
           </div>
         )}
 
-        {/* PACKAGE TIER PICKER (4, 8, 16, 32 PAGES) */}
+        {/* PACKAGE TIER PICKER (8, 16, 32 PAGES) */}
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5">

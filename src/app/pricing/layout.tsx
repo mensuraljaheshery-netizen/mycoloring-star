@@ -2,12 +2,11 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'One-time coloring books from $4.99 to $16.99. Instant PDF, US Letter and A4, unlimited reprints at home.',
+  description: 'One-time coloring books from $7.99 to $16.99. Instant PDF, US Letter and A4, unlimited reprints at home.',
   alternates: { canonical: '/pricing' },
 };
 
 const products = [
-  { name: 'Starter Edition', pages: 4, price: '4.99' },
   { name: 'Standard Adventure', pages: 8, price: '7.99' },
   { name: 'Most Popular Adventure', pages: 16, price: '11.99' },
   { name: 'Deluxe Storybook', pages: 32, price: '16.99' },
