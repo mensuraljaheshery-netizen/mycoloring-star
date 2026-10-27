@@ -72,9 +72,9 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
 ];
 
 const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
-  '8': { label: 'Standard (8 Pages)', pages: 8, price: '$7.99', popular: false },
-  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$11.99', popular: true },
-  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$16.99', popular: false }
+  '8': { label: 'Standard (8 Pages)', pages: 8, price: '$7', popular: false },
+  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$10', popular: true },
+  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$14', popular: false }
 };
 
 export default function ThemeCustomizerPage() {
