@@ -42,7 +42,7 @@ export default function RootLayout({
         <header className="sticky top-0 z-40 border-b border-[#E07020] bg-[#FC8A33]">
           <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2 font-black text-slate-900 tracking-tight">
-              <img src="/logo.webp" alt="" className="h-16 w-16 object-cover" />
+              <img src="/logo.webp" alt="" className="h-10 w-10 object-cover" />
               MyColoringStar
             </Link>
             <nav className="flex items-center gap-4 text-xs sm:text-sm font-bold text-slate-900">
