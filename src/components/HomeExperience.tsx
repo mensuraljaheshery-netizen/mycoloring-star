@@ -604,35 +604,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* REVIEWS */}
-      <section className="px-4 pb-10 max-w-5xl mx-auto">
-        <div className="bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-orange-600">Parent reviews</span>
-            <h2 className="text-lg font-black text-slate-900 mt-1">Made a book? Send a review</h2>
-            <p className="text-xs text-slate-600 mt-1 max-w-xl">
-              Choose WhatsApp or email. We add a quote here only after we have read it.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-            <a
-              href="https://wa.me/15205672374?text=Hi%2C%20I%20want%20to%20leave%20a%20review%20for%20my%20MyColoringStar%20coloring%20book."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-sm font-black"
-            >
-              WhatsApp
-            </a>
-            <a
-              href="mailto:support@mycoloringstar.com?subject=MyColoringStar%20review&body=Hi%2C%20I%20want%20to%20leave%20a%20review%20for%20my%20coloring%20book."
-              className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-black"
-            >
-              Email
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* 3. THEMES SHOWCASE */}
       <section ref={themesSectionRef} className="px-4 pb-16 max-w-7xl mx-auto scroll-mt-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-4">
@@ -783,6 +754,37 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+
+      {/* REVIEWS */}
+      <section className="px-4 pb-10 max-w-5xl mx-auto">
+        <div className="bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-orange-600">Parent reviews</span>
+            <h2 className="text-lg font-black text-slate-900 mt-1">Made a book? Send a review</h2>
+            <p className="text-xs text-slate-600 mt-1 max-w-xl">
+              Choose WhatsApp or email. We add a quote here only after we have read it.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+            <a
+              href="https://wa.me/15205672374?text=Hi%2C%20I%20want%20to%20leave%20a%20review%20for%20my%20MyColoringStar%20coloring%20book."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white text-sm font-black"
+            >
+              WhatsApp
+            </a>
+            <a
+              href="mailto:support@mycoloringstar.com?subject=MyColoringStar%20review&body=Hi%2C%20I%20want%20to%20leave%20a%20review%20for%20my%20coloring%20book."
+              className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-black"
+            >
+              Email
+            </a>
+          </div>
+        </div>
+      </section>
+
 
       {/* 5. COMPREHENSIVE COMMERCIAL FAQ */}
       <section className="py-16 px-4 max-w-4xl mx-auto">
