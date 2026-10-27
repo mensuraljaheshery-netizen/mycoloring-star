@@ -112,8 +112,6 @@ export default function HomePage() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [consentError, setConsentError] = useState<string | null>(null);
-  const [parentConsent, setParentConsent] = useState(false);
   const [pendingFreeClaim, setPendingFreeClaim] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -125,11 +123,9 @@ export default function HomePage() {
       const savedName = localStorage.getItem('hero_child_name') || sessionStorage.getItem('hero_child_name');
       const savedPhoto = localStorage.getItem('hero_child_photo') || sessionStorage.getItem('hero_child_photo');
       const claimedLocal = localStorage.getItem('mcs_claimed_free_sample') === 'true';
-      const savedConsent = localStorage.getItem('mcs_parent_consent') === 'true';
 
       if (savedName) setChildName(savedName);
       if (savedPhoto) setPhotoPreview(savedPhoto);
-      if (savedConsent) setParentConsent(true);
 
       if (claimedLocal) {
         setHasClaimedFree(true);
@@ -220,23 +216,12 @@ export default function HomePage() {
     } catch {}
   };
 
-  const persistConsent = (checked: boolean) => {
-    setParentConsent(checked);
-    setConsentError(null);
-    try {
-      localStorage.setItem('mcs_parent_consent', checked ? 'true' : 'false');
-      sessionStorage.setItem('mcs_parent_consent', checked ? 'true' : 'false');
-    } catch {}
-  };
-
   const validateHero = () => {
     const nextName = childName.trim() ? null : 'Enter your child’s first name.';
     const nextPhoto = photoPreview ? null : 'Add a clear front-face photo.';
-    const nextConsent = parentConsent ? null : 'Confirm you are the parent or have permission to use this photo.';
     setNameError(nextName);
     setPhotoError(nextPhoto);
-    setConsentError(nextConsent);
-    const first = nextName || nextPhoto || nextConsent;
+    const first = nextName || nextPhoto;
     setValidationError(first);
     return !first;
   };
@@ -427,17 +412,6 @@ export default function HomePage() {
             )}
             {photoError && <p className="mt-1.5 text-xs font-semibold text-rose-600">{photoError}</p>}
           </div>
-
-          <label className="flex items-start gap-2.5 text-xs text-slate-600 leading-snug">
-            <input
-              type="checkbox"
-              checked={parentConsent}
-              onChange={(e) => persistConsent(e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-orange-500"
-            />
-            <span>I am the parent or guardian, or I have permission to use this photo.</span>
-          </label>
-          {consentError && <p className="text-xs font-semibold text-rose-600">{consentError}</p>}
 
           {/* DYNAMIC FIRST VISIT CONVERSION OFFER */}
           {!hasClaimedFree ? (
