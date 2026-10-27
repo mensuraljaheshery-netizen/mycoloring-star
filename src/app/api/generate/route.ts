@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
-import { getCoverScene, getThemeConfig } from '@/lib/themes';
+import { getCoverScene, getCoverTale, getThemeConfig } from '@/lib/themes';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -265,11 +265,13 @@ export async function POST(req: NextRequest) {
 
     if (isCover) {
       const displayTheme = rawThemeName.replace(/variety pack/i, 'Variety').toUpperCase();
+      const tale = getCoverTale(rawThemeName);
       const titleStyles = [
         `TOP TITLE: Bold playful 3D bubble letters reading "${heroName}". SUBTITLE: a forked comic ribbon directly under the name reading "${displayTheme}".`,
         `TOP TITLE: Huge 3D bubble letters reading "${heroName}". NO ribbon and NO banner under the name. Put the theme only in a clean dark bar along the bottom reading "${heroName}'S ${displayTheme} BOOK".`,
         `TOP TITLE: Bold 3D bubble letters reading "${heroName}". Under it, a plain straight white banner, not a forked ribbon, reading "${displayTheme}".`,
-        `TOP TITLE: The name "${heroName}" stacked in big block letters. NO ribbon. A small line of text under the name reads "${displayTheme}".`
+        `TOP TITLE: The name "${heroName}" stacked in big block letters. NO ribbon. A small line of text under the name reads "${displayTheme}".`,
+        `TOP TITLE: the name "${heroName}" in flowing golden script, not block letters. Under the name, elegant white script reads "${tale}". NO ribbon. A clean dark bar along the bottom reads "${heroName}'S ${displayTheme} BOOK", with a small line under it reading "Coloring Artist:" and a blank line to sign.`
       ];
       const titleStyle = titleStyles[Math.floor(Math.random() * titleStyles.length)];
 
@@ -292,7 +294,7 @@ CLEAN COVER TYPOGRAPHY:
 - ${titleStyle}
 - Letters are vibrant yellow or orange with heavy dark outlines.
 - BOTTOM BADGE: Simple, small brand logo centered near the bottom edge reading "MyColoringStar", unless a bottom title bar is already there.
-- STRICTLY FORBIDDEN: Do NOT write "PERSONALIZED KEEPSAKE EDITION", do NOT write "Coloring Artist", do NOT add blank lines or text boxes to write in.
+- STRICTLY FORBIDDEN: Do NOT write "PERSONALIZED KEEPSAKE EDITION". Write "Coloring Artist" only when the chosen title style asks for it. Do NOT add extra blank boxes.
 - Finished retail comic book cover presentation. Zero clipped text.`;
     } else if (customPrompt) {
       prompt = `Professional printable children's coloring book page featuring the child from the photo as the hero.

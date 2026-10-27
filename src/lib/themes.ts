@@ -2873,6 +2873,50 @@ export function getCoverScene(themeName: string): string {
   return scenes[Math.floor(Math.random() * scenes.length)];
 }
 
+const COVER_TALES: Record<string, string> = {
+  'variety-pack': 'A Tale of Adventures',
+  superhero: 'A Tale of Courage',
+  princess: 'A Tale of Royalty',
+  astronaut: 'A Tale of the Stars',
+  'school-day': 'A Tale of Discovery',
+  'jungle-explorer': 'A Tale of the Wild',
+  'outer-space': 'A Tale of the Stars',
+  'mars-mission': 'A Tale of the Red World',
+  'playing-with-animals': 'A Tale of Friendship',
+  'desert-adventure': 'A Tale of the Dunes',
+  'snow-and-winter': 'A Tale of Winter',
+  'soccer-stadium': 'A Tale of the Match',
+  'basketball-champion': 'A Tale of the Court',
+  'under-the-sea': 'A Tale of the Ocean',
+  'dinosaur-explorer': 'A Tale of Long Ago',
+  'pirate-adventure': 'A Tale of the Sea',
+  'farm-day': 'A Tale of the Farm',
+  'fairy-forest': 'A Tale of Wonder',
+  'knights-and-dragons': 'A Tale of the Kingdom',
+  'race-car-driver': 'A Tale of the Race',
+  firefighter: 'A Tale of Heroes',
+  'doctor-and-vet': 'A Tale of Kindness',
+  'chef-in-the-kitchen': 'A Tale of the Kitchen',
+  'robot-world': 'A Tale of Invention',
+  'camping-trip': 'A Tale of the Woods',
+  'ballet-and-dance': 'A Tale of the Stage',
+  'music-band': 'A Tale of Music',
+  'arctic-animals': 'A Tale of the Ice',
+  safari: 'A Tale of the Savanna',
+  'magical-wizard-academy': 'A Tale of Magic',
+  'birthday-party': 'A Tale of Celebration',
+  halloween: 'A Tale of Autumn',
+  'winter-holidays': 'A Tale of Lights',
+  'eid-and-ramadan': 'A Tale of Celebration',
+  'spring-flowers': 'A Tale of Spring'
+};
+
+export function getCoverTale(themeName: string): string {
+  const raw = (themeName || '').toLowerCase();
+  const slug = raw.includes('variety') ? 'variety-pack' : slugify(themeName || '');
+  return COVER_TALES[slug] || 'A Tale of Adventure';
+}
+
 export type ThemeListing = {
   slug: string;
   name: string;
