@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
-import { getThemeConfig } from '@/lib/themes';
+import { getCoverScene, getThemeConfig } from '@/lib/themes';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -279,7 +279,7 @@ CHARACTER ART & LIKENESS:
 - Recreate the child's exact recognizable facial features, smile, hairstyle, and skin tone from the reference photo.
 - Joyful child hero centered comfortably in the foreground.
 COSTUME: ${costumeDirective}
-SCENE: Saturated, dynamic, detailed ${rawThemeName} backdrop.
+SCENE: ${getCoverScene(rawThemeName)}
 
 CLEAN COVER TYPOGRAPHY:
 - TOP TITLE: Bold, playful 3D cartoon bubble typography arched comfortably across the upper area reading "${heroName}". Vibrant yellow/orange letters with heavy dark outlines and drop shadow.
