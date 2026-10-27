@@ -687,6 +687,14 @@ export default function ThemeCustomizerPage() {
             >
               <Download className="w-4 h-4" /> Download Printable PDF Now
             </a>
+            <a
+              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${childName || 'my child'}'s ${baseTheme.name} coloring book.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-xs flex items-center justify-center gap-2"
+            >
+              Leave a review on WhatsApp
+            </a>
           </div>
         )}
 

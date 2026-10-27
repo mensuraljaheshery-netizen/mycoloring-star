@@ -524,6 +524,15 @@ function OrderSuccessContent() {
               </a>
             </div>
 
+            <a
+              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${completedBook.childName}'s ${completedBook.theme} coloring book.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-xs"
+            >
+              Leave a review on WhatsApp
+            </a>
+
             <div className="pt-2 text-center">
               <Link
                 href="/"
