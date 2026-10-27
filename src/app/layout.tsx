@@ -85,6 +85,9 @@ export default function RootLayout({
               <Link href="/pricing" className="text-orange-600 font-bold hover:text-orange-700 transition">
                 Pricing
               </Link>
+              <Link href="/reviews" className="hover:text-slate-900 transition">
+                Reviews
+              </Link>
               <Link href="/contact" className="hover:text-slate-900 transition">
                 Contact Us
               </Link>
