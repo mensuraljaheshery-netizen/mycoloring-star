@@ -687,14 +687,22 @@ export default function ThemeCustomizerPage() {
             >
               <Download className="w-4 h-4" /> Download Printable PDF Now
             </a>
-            <a
-              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${childName || 'my child'}'s ${baseTheme.name} coloring book.`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-xs flex items-center justify-center gap-2"
-            >
-              Leave a review on WhatsApp
-            </a>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${childName || 'my child'}'s ${baseTheme.name} coloring book.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-3 px-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-xs"
+              >
+                Review on WhatsApp
+              </a>
+              <a
+                href={`mailto:support@mycoloringstar.com?subject=${encodeURIComponent('MyColoringStar review')}&body=${encodeURIComponent(`Hi, I want to leave a review for ${childName || 'my child'}'s ${baseTheme.name} coloring book.`)}`}
+                className="py-3 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs"
+              >
+                Review by email
+              </a>
+            </div>
           </div>
         )}
 

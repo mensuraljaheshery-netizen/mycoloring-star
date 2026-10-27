@@ -524,14 +524,22 @@ function OrderSuccessContent() {
               </a>
             </div>
 
-            <a
-              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${completedBook.childName}'s ${completedBook.theme} coloring book.`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-xs"
-            >
-              Leave a review on WhatsApp
-            </a>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${completedBook.childName}'s ${completedBook.theme} coloring book.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-xs"
+              >
+                Review on WhatsApp
+              </a>
+              <a
+                href={`mailto:support@mycoloringstar.com?subject=${encodeURIComponent('MyColoringStar review')}&body=${encodeURIComponent(`Hi, I want to leave a review for ${completedBook.childName}'s ${completedBook.theme} coloring book.`)}`}
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs"
+              >
+                Review by email
+              </a>
+            </div>
 
             <div className="pt-2 text-center">
               <Link
