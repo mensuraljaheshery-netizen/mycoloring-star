@@ -39,19 +39,20 @@ export default function RootLayout({
       }}
     >
       <body className="min-h-full flex flex-col bg-[#FFFDF9] text-slate-800 font-sans">
-        <header className="sticky top-0 z-40 border-b border-orange-100 bg-white/95 backdrop-blur">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-            <Link href="/" className="font-black text-slate-900 tracking-tight">
+        <header className="sticky top-0 z-40 border-b border-[#E07020] bg-[#FC8A33]">
+          <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
+            <Link href="/" className="flex items-center gap-2 font-black text-slate-900 tracking-tight">
+              <img src="/logo.webp" alt="" className="h-16 w-16 object-cover" />
               MyColoringStar
             </Link>
-            <nav className="flex items-center gap-4 text-xs sm:text-sm font-bold text-slate-600">
-              <Link href="/#how-it-works" className="hover:text-orange-600">
+            <nav className="flex items-center gap-4 text-xs sm:text-sm font-bold text-slate-900">
+              <Link href="/#how-it-works" className="hover:underline">
                 How it works
               </Link>
-              <Link href="/pricing" className="hover:text-orange-600">
+              <Link href="/pricing" className="hover:underline">
                 Pricing
               </Link>
-              <Link href="/contact" className="hover:text-orange-600">
+              <Link href="/contact" className="hover:underline">
                 Support
               </Link>
             </nav>
