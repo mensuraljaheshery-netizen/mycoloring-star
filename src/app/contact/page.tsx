@@ -15,7 +15,11 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default mailto fallback or simple submission acknowledgment
+    const subject = encodeURIComponent(`Support request from ${formData.name}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\nOrder ID: ${formData.orderId || 'Not provided'}\n\n${formData.message}`
+    );
+    window.location.href = `mailto:support@mycoloringstar.com?subject=${subject}&body=${body}`;
     setSubmitted(true);
   };
 
@@ -101,9 +105,9 @@ export default function ContactPage() {
           {submitted ? (
             <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-              <h3 className="text-base font-bold text-slate-900">Message Received!</h3>
+              <h3 className="text-base font-bold text-slate-900">Your email app should open now</h3>
               <p className="text-xs text-slate-600 max-w-md mx-auto">
-                Thank you for contacting MyColoringStar. Our support desk has received your note and will follow up with you at <strong>{formData.email || 'your email'}</strong> within 24–48 hours.
+                The message is addressed to support@mycoloringstar.com. Press send there and we will reply within 24–48 hours. If no email app opens, write to us directly at that address or on WhatsApp.
               </p>
             </div>
           ) : (

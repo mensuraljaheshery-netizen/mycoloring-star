@@ -79,13 +79,14 @@ function OrderSuccessContent() {
     childName: string,
     theme: string,
     coverUrl: string,
-    pageUrls: string[]
+    pageUrls: string[],
+    bookOrientation: 'portrait' | 'landscape' = 'portrait'
   ): Promise<{ url: string; filename: string }> => {
     const formattedName = toTitleCase(childName);
     const formattedTheme = toTitleCase(theme);
 
     const doc = new jsPDF({
-      orientation: 'portrait',
+      orientation: bookOrientation,
       unit: 'pt',
       format: 'letter'
     });
@@ -261,6 +262,10 @@ function OrderSuccessContent() {
       const theme = localStorage.getItem('mcs_selected_theme') || 'superhero';
       const photo = localStorage.getItem('hero_child_photo');
       const orderToken = localStorage.getItem('mcs_current_order_token') || searchParams.get('order_id') || 'default_order';
+      const bookOrientation =
+        (localStorage.getItem('mcs_selected_orientation') || sessionStorage.getItem('mcs_selected_orientation')) === 'landscape'
+          ? 'landscape'
+          : 'portrait';
 
       // 1. Check if finalized PDF is already saved in session
       const cachedPdf = localStorage.getItem(`mcs_completed_pdf_${orderToken}`);
@@ -301,7 +306,7 @@ function OrderSuccessContent() {
           childName,
           theme,
           isCover: true,
-          orientation: 'portrait',
+          orientation: bookOrientation,
           orderId: orderToken
         });
         try {
@@ -341,7 +346,7 @@ function OrderSuccessContent() {
             childName,
             theme,
             isCover: false,
-            orientation: 'portrait',
+            orientation: bookOrientation,
             orderId: orderToken
           })
         );
@@ -361,7 +366,7 @@ function OrderSuccessContent() {
       }
 
       setProgressText('Assembling high-resolution printable PDF...');
-      const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls);
+      const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls, bookOrientation);
 
       // Safe cache cleanup
       try {
@@ -383,7 +388,7 @@ function OrderSuccessContent() {
             childName: toTitleCase(childName),
             theme: toTitleCase(theme),
             packageSize: rawPkg,
-            orientation: 'portrait',
+            orientation: bookOrientation,
             pdfUrl: pdfMeta.url
           })
         });

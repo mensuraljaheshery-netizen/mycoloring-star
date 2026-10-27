@@ -537,6 +537,7 @@ export default function ThemeCustomizerPage() {
 
       localStorage.setItem('mcs_selected_theme', baseTheme.name);
       localStorage.setItem('mcs_selected_package', packageSize);
+      localStorage.setItem('mcs_selected_orientation', orientation);
       localStorage.setItem('hero_child_name', (childName || 'Hero').trim());
       localStorage.setItem('hero_child_photo', photoPreview);
       localStorage.setItem('mcs_current_order_token', orderToken);
@@ -544,6 +545,7 @@ export default function ThemeCustomizerPage() {
 
       sessionStorage.setItem('mcs_selected_theme', baseTheme.name);
       sessionStorage.setItem('mcs_selected_package', packageSize);
+      sessionStorage.setItem('mcs_selected_orientation', orientation);
       sessionStorage.setItem('hero_child_name', (childName || 'Hero').trim());
       sessionStorage.setItem('hero_child_photo', photoPreview);
       sessionStorage.setItem('mcs_current_order_token', orderToken);
@@ -745,7 +747,7 @@ export default function ThemeCustomizerPage() {
                       </span>
                     )}
                     <div className="text-[10px] font-black uppercase text-slate-500">{cfg.pages} Pages</div>
-                    <div className="text-xs font-black text-slate-900">{cfg.label.split(' ')[0]}</div>
+                    <div className="text-xs font-black text-slate-900 leading-tight">{cfg.label.split(' (')[0]}</div>
                     <div className="text-xs font-black text-orange-600 mt-0.5">{cfg.price}</div>
                   </button>
                 );
