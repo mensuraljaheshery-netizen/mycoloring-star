@@ -478,8 +478,8 @@ export default function HomePage() {
       </section>
 
       {/* 2. REAL BEFORE & AFTER TRANSFORMATION SHOWCASE */}
-      <section id="how-it-works" className="py-12 px-4 max-w-5xl mx-auto scroll-mt-20">
-        <div className="text-center mb-8">
+      <section id="how-it-works" className="py-8 md:py-12 px-4 max-w-5xl mx-auto scroll-mt-20">
+        <div className="text-center mb-5 md:mb-8">
           <span className="text-xs font-black uppercase tracking-wider text-orange-600 block mb-1">
             See How It Works
           </span>
@@ -491,7 +491,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="space-y-10">
+        <div className="space-y-6 md:space-y-10">
           {[
             {
               name: 'Leo',
@@ -510,55 +510,55 @@ export default function HomePage() {
           ].map((example) => (
             <div key={example.name}>
               <h3 className="text-sm font-black text-slate-900 mb-3">{example.name} · {example.theme}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                <div className="bg-white rounded-3xl border-2 border-slate-200/80 p-5 shadow-sm flex flex-col justify-between text-left space-y-3">
+              <div className="grid grid-cols-3 gap-2 md:gap-6 items-stretch">
+                <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-slate-200/80 p-2 md:p-5 shadow-sm flex flex-col justify-between text-left space-y-2 md:space-y-3">
                   <div>
-                    <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full mb-2">
-                      1. Child's Photo
+                    <span className="inline-block text-[9px] md:text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-1.5 md:px-2.5 py-0.5 rounded-full mb-1 md:mb-2">
+                      1. Photo
                     </span>
-                    <h3 className="font-bold text-sm text-slate-900">Clear Smile Snapshot</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <h3 className="hidden md:block font-bold text-sm text-slate-900">Clear Smile Snapshot</h3>
+                    <p className="hidden md:block text-xs text-slate-500 mt-0.5">
                       Any well-lit front-facing photo from your camera roll.
                     </p>
                   </div>
-                  <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner">
+                  <div className="relative aspect-[3/4] w-full rounded-xl md:rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-inner">
                     <img src={example.photo} alt={`${example.name}'s original photo`} className="w-full h-full object-cover" />
                   </div>
-                  <div className="text-[11px] text-slate-500 text-center font-medium">
+                  <div className="hidden md:block text-[11px] text-slate-500 text-center font-medium">
                     ✨ Preserves hairstyle, eyes & smile
                   </div>
                 </div>
-                <div className="bg-white rounded-3xl border-2 border-orange-300 p-5 shadow-md flex flex-col justify-between text-left space-y-3 ring-2 ring-orange-400/20">
+                <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-orange-300 p-2 md:p-5 shadow-md flex flex-col justify-between text-left space-y-2 md:space-y-3 md:ring-2 md:ring-orange-400/20">
                   <div>
-                    <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full mb-2">
-                      2. Full-Color Cover
+                    <span className="inline-block text-[9px] md:text-[10px] font-black uppercase tracking-wider bg-orange-100 text-orange-700 px-1.5 md:px-2.5 py-0.5 rounded-full mb-1 md:mb-2">
+                      2. Cover
                     </span>
-                    <h3 className="font-bold text-sm text-slate-900">Custom Comic Book Cover</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <h3 className="hidden md:block font-bold text-sm text-slate-900">Custom Comic Book Cover</h3>
+                    <p className="hidden md:block text-xs text-slate-500 mt-0.5">
                       Starring your child, with their name across the cover.
                     </p>
                   </div>
-                  <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-orange-50 border border-orange-200 shadow-inner">
+                  <div className="relative aspect-[3/4] w-full rounded-xl md:rounded-2xl overflow-hidden bg-orange-50 border border-orange-200 shadow-inner">
                     <img src={example.cover} alt={`${example.name}'s ${example.theme} book cover`} className="w-full h-full object-cover" />
                   </div>
-                  <div className="text-[11px] text-orange-600 text-center font-bold">
+                  <div className="hidden md:block text-[11px] text-orange-600 text-center font-bold">
                     🎨 Arrives as Page 1 of your PDF
                   </div>
                 </div>
-                <div className="bg-white rounded-3xl border-2 border-emerald-300 p-5 shadow-sm flex flex-col justify-between text-left space-y-3">
+                <div className="bg-white rounded-2xl md:rounded-3xl border-2 border-emerald-300 p-2 md:p-5 shadow-sm flex flex-col justify-between text-left space-y-2 md:space-y-3">
                   <div>
-                    <span className="inline-block text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full mb-2">
-                      3. Coloring Sheet
+                    <span className="inline-block text-[9px] md:text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 md:px-2.5 py-0.5 rounded-full mb-1 md:mb-2">
+                      3. Page
                     </span>
-                    <h3 className="font-bold text-sm text-slate-900">Printable Vector Line Art</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <h3 className="hidden md:block font-bold text-sm text-slate-900">Printable Vector Line Art</h3>
+                    <p className="hidden md:block text-xs text-slate-500 mt-0.5">
                       A new inside scene from that theme, ready for crayons. Not a copy of the cover.
                     </p>
                   </div>
-                  <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-white border-2 border-slate-200 shadow-inner p-1">
-                    <img src={example.page} alt={`A coloring page from inside ${example.name}'s book`} className="w-full h-full object-contain bg-white rounded-xl" />
+                  <div className="relative aspect-[3/4] w-full rounded-xl md:rounded-2xl overflow-hidden bg-white border-2 border-slate-200 shadow-inner">
+                    <img src={example.page} alt={`A coloring page from inside ${example.name}'s book`} className="w-full h-full object-contain bg-white rounded-lg md:rounded-xl" />
                   </div>
-                  <div className="text-[11px] text-emerald-700 text-center font-bold">
+                  <div className="hidden md:block text-[11px] text-emerald-700 text-center font-bold">
                     🖨️ Ready to print at home for crayons
                   </div>
                 </div>
@@ -595,7 +595,7 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          <ol className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-700">
+          <ol className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 text-xs text-slate-700">
             <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">1. Photo</strong>A clear picture of the child.</li>
             <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">2. Color cover</strong>Their name and face on page 1.</li>
             <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">3. New scenes</strong>Each coloring page is a different moment.</li>
