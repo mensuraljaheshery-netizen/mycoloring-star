@@ -2440,47 +2440,227 @@ export function getScenesForAge(theme: ThemeConfig, ageGroup?: string, count: nu
   return shuffled.slice(0, count);
 }
 
-const COVER_SCENES: Record<string, string> = {
-  'variety-pack': 'A cheerful adventure collage: the child in a simple hero jacket stands in front of a sunny city, a friendly dinosaur, a rocket, and a pirate ship, with no princess gown and no ballet costume.',
-  superhero: 'The child flies toward the viewer over a bright city skyline, red cape sweeping wide, a plain star on the chest, small planes and birds in the blue sky.',
-  princess: 'The child stands before a storybook castle and a stone bridge, wearing a pink gown and a small tiara, holding a star wand, with squirrels, birds, and a golden carriage nearby.',
-  astronaut: 'The child floats in a white spacesuit beside a round porthole, Earth glowing blue below and friendly stars and a small rocket in the black sky.',
-  'school-day': 'The child stands in a sunny classroom beside a big world globe, art supplies, and a science table with a harmless baking-soda volcano.',
-  'jungle-explorer': 'The child stands on a rope bridge in a bright jungle, binoculars in hand, with toucans, vines, and a hidden stone ruin behind the leaves.',
-  'outer-space': 'The child pilots a friendly round research shuttle past ringed planets, comets, and a smiling moon.',
-  'mars-mission': 'The child in an explorer suit drives a small rover across red canyons, with two moons in the pink sky and a tiny helicopter drone lifting off.',
-  'playing-with-animals': 'The child sits in a sunny meadow picnic with a puppy, a kitten, and a bunny, wildflowers all around.',
-  'desert-adventure': 'The child rides a friendly camel over golden dunes at sunset, with a painted saddle and a distant oasis.',
-  'snow-and-winter': 'The child builds a smiling snow pal in a snowy park, wearing a bright winter coat, with ice skaters and pine trees behind.',
-  'soccer-stadium': 'The child kicks a soccer ball toward the goal in a bright stadium, crowd flags waving and stadium lights shining.',
-  'basketball-champion': 'The child jumps for a basketball dunk in a sunny outdoor court, sneakers off the ground and the net swinging.',
-  'under-the-sea': 'The child swims in a diving helmet beside dolphins and a coral reef, fish and bubbles filling the blue water.',
-  'dinosaur-explorer': 'The child kneels in a green prehistoric valley beside a gentle long-neck dinosaur and a freshly found footprint.',
-  'pirate-adventure': 'The child stands on a wooden ship deck with a treasure map and a friendly parrot, an island and a palm tree on the horizon.',
-  'farm-day': 'The child drives a small red tractor through a sunny farm, with sheep, a barn, and sunflowers.',
-  'fairy-forest': 'The child walks through a glowing mushroom glade with fireflies and a tiny fairy house in a tree root.',
-  'knights-and-dragons': 'The child in a simple knight tunic shares a picnic with a small friendly green dragon on a castle lawn.',
-  'race-car-driver': 'The child sits in an open race car on a colorful track, checkered flags waving and the car number on the door.',
-  firefighter: 'The child stands beside a bright fire engine, helmet under one arm, with a kitten safe in a tree and the crew waving.',
-  'doctor-and-vet': 'The child in a white coat listens to a puppy with a toy stethoscope in a cheerful clinic full of plants.',
-  'chef-in-the-kitchen': 'The child in a chef hat decorates a giant strawberry cake on a wooden kitchen table, with mixing bowls and sprinkles.',
-  'robot-world': 'The child builds a friendly round robot with gears and a smile, in a sunny workshop of colorful tools.',
-  'camping-trip': 'The child roasts a marshmallow at a campfire under pine trees and a starry sky, with a tent and a lantern.',
-  'ballet-and-dance': 'The child leaps across a grand theater stage in a dance costume, velvet curtains and a spotlight behind.',
-  'music-band': 'The child plays an electric guitar on a small concert stage, drums and colorful lights behind.',
-  'arctic-animals': 'The child slides down a smooth ice hill with baby penguins, northern lights soft in the sky.',
-  safari: 'The child stands on a safari jeep spotting giraffes and zebras under a flat-topped tree on the savanna.',
-  'magical-wizard-academy': 'The child holds a glowing orb in a starlit library of floating books and tall arched windows.',
-  'birthday-party': 'The child blows out candles on a birthday cake, balloons and paper streamers filling a sunny room.',
-  halloween: 'The child in a friendly costume walks a porch path lined with glowing jack-o-lanterns and a paper moon.',
-  'winter-holidays': 'The child hangs a shining ornament on a pine tree wrapped in warm lights, gifts stacked below.',
-  'eid-and-ramadan': 'The child stands under hanging crescent lanterns beside a tray of festive sweets and a glowing moon.',
-  'spring-flowers': 'The child plants a tall sunflower in a garden, butterflies and watering can nearby.'
+const COVER_SCENES: Record<string, string[]> = {
+  'variety-pack': [
+    'The child in a simple hero jacket stands in a sunny city square with a friendly dinosaur, a small rocket, and a pirate ship behind. No princess gown and no ballet costume.',
+    'The child rides in an open jeep between a space rover, a farm tractor, and a fire engine on a bright parade street. No princess gown and no ballet costume.',
+    'The child waves from a hot-air balloon above a jungle, a snowy hill, and a desert dune. No princess gown and no ballet costume.',
+    'The child stands on a dock between a sailboat, a race car, and a friendly robot, with mountains behind. No princess gown and no ballet costume.'
+  ],
+  superhero: [
+    'The child flies toward the viewer over a bright city skyline, red cape sweeping wide, a plain star on the chest, small planes in the blue sky.',
+    'The child stands on a rooftop at sunrise, one hand raised, cape blowing, the city far below.',
+    'The child swings on a rescue line between two towers, cars tiny on the bridge underneath.',
+    'The child lands in a sunny park, cape spread, while kids on bikes wave hello.'
+  ],
+  princess: [
+    'The child stands before a storybook castle and a stone bridge, in a pink gown and small tiara, holding a star wand, with birds and a golden carriage nearby.',
+    'The child sits in a rose garden holding a white rabbit, the castle gates glowing behind a rainbow.',
+    'The child waves from a castle balcony above a fountain courtyard, banners flying from the towers.',
+    'The child rides in an open flower-covered carriage along a forest road, squirrels watching from the trees.'
+  ],
+  astronaut: [
+    'The child floats in a white spacesuit beside a round porthole, Earth glowing blue below and a small rocket in the starry sky.',
+    'The child plants a flag on a gray moon crater, Earth hanging big in the black sky.',
+    'The child climbs a ladder into a friendly white rocket on a sunny launch pad, birds watching from a fence.',
+    'The child floats inside a space station, holding a glowing star chart, with a window full of planets.'
+  ],
+  'school-day': [
+    'The child stands in a sunny classroom beside a world globe, art supplies, and a harmless baking-soda volcano.',
+    'The child reads a picture book on the school steps, backpack open and a paper airplane in one hand.',
+    'The child paints at an easel in art class, sunshine through tall windows and friends clapping.',
+    'The child presents a model of the solar system at the front of the class, a ribbon on the desk.'
+  ],
+  'jungle-explorer': [
+    'The child stands on a rope bridge in a bright jungle, binoculars in hand, toucans and a hidden stone ruin behind the leaves.',
+    'The child paddles a small canoe down a jungle river, parrots overhead and lily pads beside the boat.',
+    'The child finds a waterfall clearing, a map in one hand and a friendly monkey on a branch.',
+    'The child walks a stone path through giant ferns, butterflies and a toucan leading the way.'
+  ],
+  'outer-space': [
+    'The child pilots a friendly round research shuttle past ringed planets, comets, and a smiling moon.',
+    'The child floats among colorful planets holding a star net, a comet streaking past.',
+    'The child looks through a big telescope on a space deck, a spiral galaxy filling the window.',
+    'The child rides a small space scooter between asteroids, a ringed planet huge behind.'
+  ],
+  'mars-mission': [
+    'The child drives a small rover across red canyons, two moons in the pink sky and a tiny helicopter drone lifting off.',
+    'The child plants a garden dome on red soil, the habitat tents glowing behind.',
+    'The child walks a dusty ridge with a sample bag, Olympus-like cliffs and a pink sunset.',
+    'The child waves from the rover seat beside a robot arm collecting shiny rocks.'
+  ],
+  'playing-with-animals': [
+    'The child sits in a sunny meadow picnic with a puppy, a kitten, and a bunny, wildflowers all around.',
+    'The child runs through a park with a puppy on a leash and a kite overhead.',
+    'The child feeds ducks at a pond while a kitten watches from a picnic blanket.',
+    'The child hugs a gentle pony in a daisy field, a bunny hopping nearby.'
+  ],
+  'desert-adventure': [
+    'The child rides a friendly camel over golden dunes at sunset, a painted saddle and a distant oasis.',
+    'The child finds a hidden canyon pool, canteen in hand, rock arches glowing orange.',
+    'The child walks a dune ridge at sunrise with a map, a lizard on a warm rock.',
+    'The child camps beside a painted wagon under a huge desert moon, cactus silhouettes around.'
+  ],
+  'snow-and-winter': [
+    'The child builds a smiling snow pal in a snowy park, wearing a bright winter coat, ice skaters and pine trees behind.',
+    'The child sleds down a gentle hill, scarf flying, friends waving at the bottom.',
+    'The child ice skates on a frozen pond with string lights in the trees.',
+    'The child makes a snow angel in a pine clearing, a red cabin smoking softly behind.'
+  ],
+  'soccer-stadium': [
+    'The child kicks a soccer ball toward the goal in a bright stadium, flags waving and lights shining.',
+    'The child celebrates with arms up after a goal, the net still swinging.',
+    'The child dribbles past cones on a sunny practice field, teammates cheering.',
+    'The child heads the ball in midair above a green pitch, the crowd a soft colorful blur.'
+  ],
+  'basketball-champion': [
+    'The child jumps for a basketball dunk on a sunny outdoor court, sneakers off the ground and the net swinging.',
+    'The child shoots a free throw in a bright gym, scoreboard glowing behind.',
+    'The child dribbles down a park court at sunset, friends on the bench.',
+    'The child passes the ball to a teammate under the hoop, autumn trees around the court.'
+  ],
+  'under-the-sea': [
+    'The child swims in a diving helmet beside dolphins and a coral reef, fish and bubbles filling the blue water.',
+    'The child rides a friendly sea turtle over a sunken ship garden of coral.',
+    'The child looks out of a yellow submarine window at whales and a glowing jellyfish.',
+    'The child discovers a treasure chest on the sandy sea floor, seahorses circling.'
+  ],
+  'dinosaur-explorer': [
+    'The child kneels in a green prehistoric valley beside a gentle long-neck dinosaur and a fresh footprint.',
+    'The child walks a fern path with a small three-horn dinosaur, volcano far and quiet in the distance.',
+    'The child sketches a dinosaur in a field notebook while a baby long-neck drinks from a stream.',
+    'The child rides in an open explorer jeep as a herd of gentle duck-billed dinosaurs crosses a meadow.'
+  ],
+  'pirate-adventure': [
+    'The child stands on a wooden ship deck with a treasure map and a friendly parrot, an island on the horizon.',
+    'The child digs cheerfully on a sandy beach, a palm tree marked with an X and the ship anchored offshore.',
+    'The child steers the ship wheel through gentle waves, gulls and a sunset behind.',
+    'The child opens a glowing treasure chest in a sea cave, coins and a friendly crab nearby.'
+  ],
+  'farm-day': [
+    'The child drives a small red tractor through a sunny farm, with sheep, a barn, and sunflowers.',
+    'The child feeds chickens by a red barn, a milk pail and a friendly cow nearby.',
+    'The child picks apples from a low orchard branch, a basket filling with fruit.',
+    'The child rides a pony along a fence at golden hour, the windmill turning behind.'
+  ],
+  'fairy-forest': [
+    'The child walks through a glowing mushroom glade with fireflies and a tiny house in a tree root.',
+    'The child crosses a blossom bridge over a sparkly stream, lanterns in the branches.',
+    'The child finds a circle of tall flowers with a tiny door, butterflies everywhere.',
+    'The child sits on a mossy stump reading a glowing book, fireflies lighting the leaves.'
+  ],
+  'knights-and-dragons': [
+    'The child in a simple knight tunic shares a picnic with a small friendly green dragon on a castle lawn.',
+    'The child rides a pony along a castle wall, a small dragon flying beside with a ribbon.',
+    'The child and a baby dragon look at a map on a tower balcony, banners below.',
+    'The child practices with a wooden shield in a sunny courtyard while a small dragon naps on a fountain.'
+  ],
+  'race-car-driver': [
+    'The child sits in an open race car on a colorful track, checkered flags waving and a number on the door.',
+    'The child holds a trophy beside the race car in the winner circle, confetti falling.',
+    'The child drives through a sunny tunnel of flags, the car low and bright.',
+    'The child waves from the pit lane, helmet under one arm, the crew holding the tires.'
+  ],
+  firefighter: [
+    'The child stands beside a bright fire engine, helmet under one arm, a kitten safe in a tree and the crew waving.',
+    'The child climbs the engine ladder toward a treehouse, the dalmatian watching below.',
+    'The child rolls out a hose on a sunny practice yard, the station doors open behind.',
+    'The child waves from the front seat of the fire engine as it leaves the station, lights shining.'
+  ],
+  'doctor-and-vet': [
+    'The child in a white coat listens to a puppy with a toy stethoscope in a cheerful clinic full of plants.',
+    'The child wraps a soft bandage on a teddy bear while a kitten sits on the exam table.',
+    'The child checks a bunny in a sunny vet garden, birds in a cage nearby.',
+    'The child holds a clipboard beside a gentle pony, a red barn clinic behind.'
+  ],
+  'chef-in-the-kitchen': [
+    'The child in a chef hat decorates a giant strawberry cake on a wooden table, bowls and sprinkles around.',
+    'The child tosses vegetables in a sunny pan, steam curling and herbs on the counter.',
+    'The child rolls cookie dough with a pin, star cookies cooling on a rack.',
+    'The child carries a pizza to a window seat, the kitchen garden visible outside.'
+  ],
+  'robot-world': [
+    'The child builds a friendly round robot with gears and a smile in a sunny workshop of colorful tools.',
+    'The child flies a small robot kite in a park, the robot waving from the string.',
+    'The child and a knee-high helper robot plant flowers beside a shiny workshop.',
+    'The child races a wheeled robot down a rainbow track in a bright lab.'
+  ],
+  'camping-trip': [
+    'The child roasts a marshmallow at a campfire under pine trees and a starry sky, a tent and lantern nearby.',
+    'The child skips stones at a mountain lake, the tent pitched on the grass behind.',
+    'The child reads a map on a sunny trail, a backpack and a wooden bridge ahead.',
+    'The child wakes in a tent doorway to a sunrise over pines, a blue cup in hand.'
+  ],
+  'ballet-and-dance': [
+    'The child leaps across a grand theater stage in a dance costume, velvet curtains and a spotlight behind.',
+    'The child practices at a sunlit barre, mirrors and soft shoes along the wall.',
+    'The child bows on stage with a bouquet, the curtain just opening.',
+    'The child spins in a garden rehearsal, friends clapping under string lights.'
+  ],
+  'music-band': [
+    'The child plays an electric guitar on a small concert stage, drums and colorful lights behind.',
+    'The child sings into a microphone in a sunny garage, posters and a drum kit around.',
+    'The child plays a keyboard on a park bandstand, bunting in the trees.',
+    'The child holds drumsticks above a bright drum set, confetti in the stage lights.'
+  ],
+  'arctic-animals': [
+    'The child slides down a smooth ice hill with baby penguins, northern lights soft in the sky.',
+    'The child walks beside a fluffy arctic fox on a blue ice field, a research cabin behind.',
+    'The child feeds fish to friendly penguins on a sunny ice shore.',
+    'The child rides a small sled pulled by no animals, just a gentle slope, seals waving from the water.'
+  ],
+  safari: [
+    'The child stands on a safari jeep spotting giraffes and zebras under a flat-topped tree.',
+    'The child watches elephants at a watering hole from a safe wooden lookout.',
+    'The child sketches a giraffe in a notebook on the savanna, acacia trees behind.',
+    'The child rides in an open jeep at sunrise, a line of zebras crossing the road.'
+  ],
+  'magical-wizard-academy': [
+    'The child holds a glowing orb in a starlit library of floating books and tall arched windows.',
+    'The child stirs a sparkling harmless potion in a sunny classroom of plants and star charts.',
+    'The child flies on a broom just above a castle courtyard, scarves and banners below.',
+    'The child opens a glowing storybook and paper stars rise over a round tower room.'
+  ],
+  'birthday-party': [
+    'The child blows out candles on a birthday cake, balloons and paper streamers filling a sunny room.',
+    'The child opens a bright present on a picnic blanket, friends and bunting around.',
+    'The child wears a paper crown at a garden party table piled with cupcakes.',
+    'The child jumps beside a bunch of balloons in a park, a cake on a nearby table.'
+  ],
+  halloween: [
+    'The child in a friendly costume walks a porch path lined with glowing jack-o-lanterns and a paper moon.',
+    'The child carves a smiling pumpkin on a doorstep, leaves swirling and a candy bowl nearby.',
+    'The child wears a homemade star costume at a sunny classroom party, paper bats on the wall.',
+    'The child and friends walk a leaf-covered sidewalk with treat bags, porch lights warm and friendly.'
+  ],
+  'winter-holidays': [
+    'The child hangs a shining ornament on a pine tree wrapped in warm lights, gifts stacked below.',
+    'The child wraps a present at a table by a frosted window, ribbon curling across the floor.',
+    'The child looks at neighborhood lights from a snowy front step, cocoa in both hands.',
+    'The child places a star on a small tabletop tree, candles unlit and safe on the mantel behind.'
+  ],
+  'eid-and-ramadan': [
+    'The child stands under hanging crescent lanterns beside a tray of festive sweets and a glowing moon.',
+    'The child helps hang fairy lights on a balcony, the evening sky soft and gold.',
+    'The child carries a plate of cookies to a family table set with brass lanterns and white flowers.',
+    'The child looks up at a large crescent moon from a lantern-lit courtyard, gifts on a low table.'
+  ],
+  'spring-flowers': [
+    'The child plants a tall sunflower in a garden, butterflies and a watering can nearby.',
+    'The child runs through a field of tulips with a flower crown, a blue sky overhead.',
+    'The child waters seedlings in painted pots on a sunny porch, a robin on the rail.',
+    'The child picks a small bouquet in a meadow, a wheelbarrow of flowers behind.'
+  ]
 };
 
 export function getCoverScene(themeName: string): string {
-  const slug = slugify(themeName || '');
-  return COVER_SCENES[slug] || `A vivid, detailed ${themeName} scene with the child as the hero in the foreground.`;
+  const raw = (themeName || '').toLowerCase();
+  const slug = raw.includes('variety') ? 'variety-pack' : slugify(themeName || '');
+  const scenes = COVER_SCENES[slug];
+  if (!scenes || scenes.length === 0) {
+    return `A vivid, detailed ${themeName} scene with the child as the hero in the foreground.`;
+  }
+  return scenes[Math.floor(Math.random() * scenes.length)];
 }
 
 export type ThemeListing = {
