@@ -285,7 +285,8 @@ CANVAS COMPOSITION & VERTICAL HEADROOM RULES:
 
 CHARACTER ART & LIKENESS:
 - Bold 2D animated comic cartoon art style with crisp ink outlines and vibrant saturated cel-shaded colors.
-- Recreate the child's exact recognizable facial features, smile, hairstyle, and skin tone from the reference photo.
+- Recreate the child's exact recognizable facial features, smile, and hairstyle from the reference photo.
+- SKIN TONE: Copy the child's skin tone from the photo exactly. If the photo shows light skin, the illustrated skin must stay light. If the photo shows dark skin, the illustrated skin must stay dark. Do not darken, tan, bronze, or deepen a lighter complexion. Do not lighten a darker complexion. Never substitute a default brown or tan skin color.
 - Joyful child hero centered comfortably in the foreground.
 COSTUME: ${costumeDirective}
 SCENE: ${getCoverScene(rawThemeName)}
@@ -299,7 +300,7 @@ CLEAN COVER TYPOGRAPHY:
     } else if (customPrompt) {
       prompt = `Professional printable children's coloring book page featuring the child from the photo as the hero.
 ${canvasOrientationRule}
-CHARACTER LIKENESS & ANATOMY: Replicate the child's facial identity, haircut, and joyful smile from reference photo. Natural human anatomy: exactly two arms, exactly two legs, exactly five distinct fingers per hand. Clear limb spacing, zero conjoined limbs, zero extra legs, zero duplicated feet.
+CHARACTER LIKENESS & ANATOMY: Replicate the child's facial identity, haircut, and joyful smile from reference photo. Copy the photo's skin tone exactly: light skin stays light, dark skin stays dark. Do not darken a lighter child. Natural human anatomy: exactly two arms, exactly two legs, exactly five distinct fingers per hand. Clear limb spacing, zero conjoined limbs, zero extra legs, zero duplicated feet.
 SCENE ACTION: ${customPrompt}
 COSTUME: ${costumeDirective}
 MANDATORY LINE ART STYLE:
@@ -310,7 +311,7 @@ MANDATORY LINE ART STYLE:
     } else {
       prompt = `Professional printable children's coloring book page starring the child from the photo named "${heroName}".
 ${canvasOrientationRule}
-CHARACTER LIKENESS & ANATOMY: Preserve distinct facial likeness, haircut, and joyful smile from photo. Anatomically correct child proportions: exactly two arms, exactly two legs, exactly five distinct fingers on each hand. Clear separation between arms and torso, no extra limbs, no phantom hands.
+CHARACTER LIKENESS & ANATOMY: Preserve distinct facial likeness, haircut, and joyful smile from photo. Copy the photo's skin tone exactly: light skin stays light, dark skin stays dark. Do not darken a lighter child. Anatomically correct child proportions: exactly two arms, exactly two legs, exactly five distinct fingers on each hand. Clear separation between arms and torso, no extra limbs, no phantom hands.
 COSTUME: ${costumeDirective}
 SCENE ACTION: ${chosenAction}.
 BACKGROUND: Fun, whimsical cartoon ${sceneThemeName} scenery with bold elements filling the ${isLandscape ? 'horizontal wide' : 'vertical'} page for kids to color.
