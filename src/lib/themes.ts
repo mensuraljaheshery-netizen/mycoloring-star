@@ -2340,18 +2340,16 @@ rawSeedThemes.forEach(theme => {
   };
 });
 
-export function getThemeConfig(slug: string, gender: string = 'all'): ThemeConfig {
+export function getThemeConfig(slug: string, _gender: string = 'all'): ThemeConfig {
   const normalized = slug.toLowerCase().trim();
 
   // SPECIAL: Surprise Variety Pack (Pulls randomly across all 34 themes)
   if (normalized === 'variety-pack') {
     const allAvailableScenes: SceneTemplate[] = [];
-    const girlOnlySlugs = ['princess', 'ballet-and-dance', 'mermaid-cove'];
+    const excludedSlugs = ['princess', 'ballet-and-dance', 'mermaid-cove'];
 
-    // Gather scenes from all themes registered in themesData
     Object.entries(themesData).forEach(([themeSlug, themeConfig]) => {
-      // Exclude girl-specific themes if gender is explicitly set to boy
-      if (gender === 'boy' && girlOnlySlugs.includes(themeSlug)) {
+      if (excludedSlugs.includes(themeSlug)) {
         return;
       }
 

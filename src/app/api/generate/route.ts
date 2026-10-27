@@ -25,7 +25,7 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 async function verifyAndRecordFreeTier(
   req: NextRequest,
   isPaidOrder: boolean,
-  isCover: boolean,
+  shouldRecord: boolean,
   childName?: string,
   theme?: string,
   email?: string
@@ -63,7 +63,7 @@ async function verifyAndRecordFreeTier(
       };
     }
 
-    if (isCover) {
+    if (shouldRecord) {
       const { error: insertError } = await supabase
         .from('free_book_claims')
         .insert([{
@@ -100,43 +100,25 @@ function checkMaintenance(): { allowed: boolean; reason?: string } {
   return { allowed: true };
 }
 
-const VARIETY_CANDIDATE_THEMES = [
-  'Superhero',
-  'Astronaut',
-  'School Day',
-  'Jungle Explorer',
-  'Outer Space',
-  'Mars Mission',
-  'Animals',
-  'Desert Adventure',
-  'Snow & Winter',
-  'Soccer Stadium',
-  'Basketball',
-  'Under the Sea',
-  'Dinosaur',
-  'Pirate Adventure',
-  'Farm Day',
-  'Fairy Forest',
-  'Knights & Dragons',
-  'Race Car Driver',
-  'Firefighter',
-  'Doctor & Vet',
-  'Chef in Kitchen',
-  'Robot World',
-  'Camping Trip',
-  'Music Band',
-  'Arctic Animals',
-  'Safari',
-  'Wizard Academy'
-];
+const VARIETY_EXCLUDED = ['princess', 'ballet', 'ballet-and-dance'];
 
-function resolveActiveTheme(themeName: string): string {
-  const normalized = (themeName || 'Superhero').toLowerCase().trim();
-  if (normalized.includes('variety')) {
-    const randomIndex = Math.floor(Math.random() * VARIETY_CANDIDATE_THEMES.length);
-    return VARIETY_CANDIDATE_THEMES[randomIndex];
+function pickVarietyScene(): { themeName: string; prompt: string } {
+  const config = getThemeConfig('variety-pack', 'boy');
+  const scenes = (config.scenes || []).filter((scene) => {
+    const title = (scene.title || '').toLowerCase();
+    return scene.promptDesc && !VARIETY_EXCLUDED.some((name) => title.startsWith(name));
+  });
+
+  if (scenes.length === 0) {
+    return {
+      themeName: 'Superhero',
+      prompt: 'Soaring high above sunlit skyscrapers with a waving superhero cape.'
+    };
   }
-  return themeName || 'Superhero';
+
+  const scene = scenes[Math.floor(Math.random() * scenes.length)];
+  const themeName = scene.title.includes(':') ? scene.title.split(':')[0].trim() : 'Superhero';
+  return { themeName, prompt: scene.promptDesc };
 }
 
 function getRandomSceneAction(themeName: string): string {
@@ -237,23 +219,39 @@ export async function POST(req: NextRequest) {
       prompt: customPrompt,
       orientation = 'portrait',
       paperSize = 'letter',
-      orderId
+      orderId,
+      finalizeFreeClaim
     } = await req.json();
 
     const isPaidOrder = Boolean(orderId && (orderId.startsWith('paid_') || orderId.startsWith('ord_')));
 
-    const usageCheck = await verifyAndRecordFreeTier(req, isPaidOrder, Boolean(isCover), childName, theme, email);
+    if (finalizeFreeClaim) {
+      const usageCheck = await verifyAndRecordFreeTier(req, false, true, childName, theme, email);
+      if (!usageCheck.allowed) {
+        return NextResponse.json({ error: usageCheck.reason }, { status: 403 });
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    const usageCheck = await verifyAndRecordFreeTier(req, isPaidOrder, false, childName, theme, email);
     if (!usageCheck.allowed) {
       return NextResponse.json({ error: usageCheck.reason }, { status: 403 });
     }
 
     const rawThemeName = theme || 'Superhero';
-    const effectiveThemeName = (!isCover && rawThemeName.toLowerCase().includes('variety'))
-      ? resolveActiveTheme(rawThemeName)
-      : rawThemeName;
+    const isVariety = rawThemeName.toLowerCase().includes('variety');
+    let sceneThemeName = rawThemeName;
+    let chosenAction = '';
 
-    const costumeDirective = getThemeCostumeDirective(effectiveThemeName);
-    const chosenAction = getRandomSceneAction(effectiveThemeName);
+    if (!isCover && isVariety) {
+      const picked = pickVarietyScene();
+      sceneThemeName = picked.themeName;
+      chosenAction = picked.prompt;
+    } else if (!isCover) {
+      chosenAction = getRandomSceneAction(rawThemeName);
+    }
+
+    const costumeDirective = getThemeCostumeDirective(isCover ? rawThemeName : sceneThemeName);
     const heroName = (childName || 'HERO').toUpperCase();
     const isLandscape = orientation === 'landscape';
 
@@ -306,7 +304,7 @@ ${canvasOrientationRule}
 CHARACTER LIKENESS & ANATOMY: Preserve distinct facial likeness, haircut, and joyful smile from photo. Anatomically correct child proportions: exactly two arms, exactly two legs, exactly five distinct fingers on each hand. Clear separation between arms and torso, no extra limbs, no phantom hands.
 COSTUME: ${costumeDirective}
 SCENE ACTION: ${chosenAction}.
-BACKGROUND: Fun, whimsical cartoon ${effectiveThemeName} scenery with bold elements filling the ${isLandscape ? 'horizontal wide' : 'vertical'} page for kids to color.
+BACKGROUND: Fun, whimsical cartoon ${sceneThemeName} scenery with bold elements filling the ${isLandscape ? 'horizontal wide' : 'vertical'} page for kids to color.
 MANDATORY LINE ART STYLE:
 - Crisp, clean thick black ink contour lines on solid white paper.
 - Completely empty white spaces for coloring.

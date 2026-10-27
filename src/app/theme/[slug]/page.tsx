@@ -83,6 +83,7 @@ export default function ThemeCustomizerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const freeProgressRef = useRef<{ cover: string; pages: string[]; photoSig: string } | null>(null);
 
   const slug = ((params?.slug as string) || 'superhero').toLowerCase();
   const queryGender = searchParams?.get('gender') || 'all';
@@ -370,6 +371,45 @@ export default function ThemeCustomizerPage() {
     setDownloadReadyPdf({ url: blobUrl, filename });
   };
 
+  const freeProgressKey = `mcs_free_progress_${baseTheme.slug}`;
+
+  const readFreeProgress = () => {
+    const empty = { cover: '', pages: [] as string[], photoSig: '' };
+    try {
+      const raw = sessionStorage.getItem(freeProgressKey) || localStorage.getItem(freeProgressKey);
+      if (!raw) return empty;
+      const parsed = JSON.parse(raw);
+      const photoSig = photoPreview ? `${photoPreview.length}` : '';
+      if (parsed.photoSig && photoSig && parsed.photoSig !== photoSig) return empty;
+      return {
+        cover: typeof parsed.cover === 'string' ? parsed.cover : '',
+        pages: Array.isArray(parsed.pages) ? parsed.pages.filter((url: unknown) => typeof url === 'string' && url) : [],
+        photoSig: parsed.photoSig || photoSig
+      };
+    } catch {
+      return empty;
+    }
+  };
+
+  const writeFreeProgress = (progress: { cover: string; pages: string[]; photoSig: string }) => {
+    freeProgressRef.current = progress;
+    const raw = JSON.stringify(progress);
+    try {
+      sessionStorage.setItem(freeProgressKey, raw);
+    } catch {}
+    try {
+      localStorage.setItem(freeProgressKey, raw);
+    } catch {}
+  };
+
+  const clearFreeProgress = () => {
+    freeProgressRef.current = null;
+    try {
+      sessionStorage.removeItem(freeProgressKey);
+      localStorage.removeItem(freeProgressKey);
+    } catch {}
+  };
+
   // 1. FREE 3-PAGE MINI-BOOK
   const handleGenerate3PageFreeBook = async () => {
     if (!parentConsent) {
@@ -387,87 +427,90 @@ export default function ThemeCustomizerPage() {
     setIsBuildingBook(true);
     setDownloadReadyPdf(null);
 
-    try {
-      Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith('mcs_progress_pages_')) localStorage.removeItem(k);
-      });
-      Object.keys(sessionStorage).forEach((k) => {
-        if (k.startsWith('mcs_progress_pages_')) sessionStorage.removeItem(k);
-      });
-    } catch {}
+    const photoSig = `${photoPreview.length}`;
+    const stored = freeProgressRef.current?.photoSig === photoSig ? freeProgressRef.current : readFreeProgress();
+    const progress = { cover: stored.cover, pages: [...stored.pages], photoSig };
+    freeProgressRef.current = progress;
+
+    const generatePage = async (payload: Record<string, unknown>, label: string) => {
+      let lastError = 'Failed generating this page';
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        setFulfillmentStage(attempt === 1 ? label : `${label} Trying again (${attempt} of 3)...`);
+        try {
+          const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (res.ok && data.imageUrl) return data.imageUrl as string;
+          lastError = data.error || lastError;
+          if (res.status === 403) throw new Error(lastError);
+        } catch (err: any) {
+          lastError = err.message || lastError;
+          if (lastError.toLowerCase().includes('free sample')) throw new Error(lastError);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+      throw new Error(lastError);
+    };
 
     try {
-      setFulfillmentStage('Designing Personalized Cover (1 of 3)...');
-      const coverRes = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      if (!progress.cover) {
+        progress.cover = await generatePage({
           imageBase64: photoPreview,
           childName: childName || 'Hero',
           theme: baseTheme.name,
           isCover: true,
           orientation,
           paperSize: 'letter'
-        })
-      });
-      const coverData = await coverRes.json();
-      if (!coverRes.ok || !coverData.imageUrl) {
-        if (coverRes.status === 403 || coverData.error?.includes('already claimed')) {
-          setHasClaimedFree(true);
-          try {
-            localStorage.setItem('mcs_claimed_free_sample', 'true');
-          } catch {}
-        }
-        throw new Error(coverData.error || 'Failed generating cover page');
+        }, 'Designing Personalized Cover (1 of 3)...');
+        writeFreeProgress(progress);
       }
 
-      setFulfillmentStage('Drawing Interior Coloring Scene 1 of 2 (Page 2 of 3)...');
-      const page1Res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      while (progress.pages.length < 2) {
+        const pageNumber = progress.pages.length + 1;
+        const pageUrl = await generatePage({
           imageBase64: photoPreview,
           childName: childName || 'Hero',
           theme: baseTheme.name,
           isCover: false,
           orientation,
           paperSize: 'letter'
-        })
-      });
-      const page1Data = await page1Res.json();
-      if (!page1Res.ok || !page1Data.imageUrl) {
-        throw new Error(page1Data.error || 'Failed generating interior scene 1');
-      }
-
-      setFulfillmentStage('Drawing Interior Coloring Scene 2 of 2 (Page 3 of 3)...');
-      const page2Res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageBase64: photoPreview,
-          childName: childName || 'Hero',
-          theme: baseTheme.name,
-          isCover: false,
-          orientation,
-          paperSize: 'letter'
-        })
-      });
-      const page2Data = await page2Res.json();
-      if (!page2Res.ok || !page2Data.imageUrl) {
-        throw new Error(page2Data.error || 'Failed generating interior scene 2');
+        }, `Drawing coloring page ${pageNumber} of 2...`);
+        progress.pages.push(pageUrl);
+        writeFreeProgress(progress);
       }
 
       setFulfillmentStage('Compiling printable 3-page mini-book PDF...');
-      await buildPdfInBrowser(coverData.imageUrl, [page1Data.imageUrl, page2Data.imageUrl]);
+      await buildPdfInBrowser(progress.cover, progress.pages.slice(0, 2));
       setFulfillmentStage('Your Free 3-Page Mini-Book is ready!');
+
+      try {
+        await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            finalizeFreeClaim: true,
+            childName: childName || 'Hero',
+            theme: baseTheme.name
+          })
+        });
+      } catch {}
 
       setHasClaimedFree(true);
       try {
         localStorage.setItem('mcs_claimed_free_sample', 'true');
       } catch {}
+      clearFreeProgress();
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || 'Error generating free mini-book.');
+      const finished = (progress.cover ? 1 : 0) + progress.pages.length;
+      setErrorMessage(
+        finished > 0
+          ? `${err.message || 'Error generating free mini-book.'} ${finished} of 3 pages are saved. Press the button again to continue from the page that failed.`
+          : err.message || 'Error generating free mini-book.'
+      );
     } finally {
       setIsBuildingBook(false);
     }
@@ -613,7 +656,7 @@ export default function ThemeCustomizerPage() {
               ) : (
                 <>
                   <BookOpen className="w-4 h-4" />
-                  <span>Claim Free 3-Page Mini-Book (Instant PDF)</span>
+                  <span>{freeProgressRef.current?.cover || freeProgressRef.current?.pages.length ? 'Continue Free 3-Page Mini-Book' : 'Claim Free 3-Page Mini-Book (Instant PDF)'}</span>
                 </>
               )}
             </button>
