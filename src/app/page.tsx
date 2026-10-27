@@ -4,12 +4,12 @@ import HomeExperience from '@/components/HomeExperience';
 export const metadata: Metadata = {
   title: 'Personalized Coloring Books Starring Your Child',
   description:
-    'Turn a photo of your child into a print-at-home coloring book. Free 3-page sample. Paid books are $7–$14, instant PDF, unlimited reprints.',
+    'Turn a photo of your child into a print-at-home coloring book. Free 3-page sample. Paid books are $4–$14, instant PDF, unlimited reprints.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Personalized Coloring Books Starring Your Child',
     description:
-      'Free 3-page sample. Paid coloring books are $7–$14, delivered as a print-at-home PDF.',
+      'Free 3-page sample. Paid coloring books are $4–$14, delivered as a print-at-home PDF.',
     url: 'https://www.mycoloringstar.com/',
     images: [{ url: '/sample-cover.png', alt: 'Sample personalized coloring book cover' }],
   },
@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: 'What do I receive after purchase?',
-    a: 'An instant high-resolution PDF with a customized full-color cover, a dedication page, the coloring pages you ordered (8, 16, or 32), and a back cover.',
+    a: 'An instant high-resolution PDF with a customized full-color cover, a dedication page, the coloring pages you ordered (4, 8, 16, or 32), and a back cover.',
   },
   {
     q: 'Is the book digital or physical?',

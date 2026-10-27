@@ -72,6 +72,7 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
 ];
 
 const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
+  '4': { label: 'Theme Try (4 Pages)', pages: 4, price: '$4', popular: false },
   '8': { label: 'Standard (8 Pages)', pages: 8, price: '$7', popular: false },
   '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$10', popular: true },
   '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$14', popular: false }
@@ -687,7 +688,7 @@ export default function ThemeCustomizerPage() {
           </div>
         )}
 
-        {/* PACKAGE TIER PICKER (8, 16, 32 PAGES) */}
+        {/* PACKAGE TIER PICKER (4, 8, 16, 32 PAGES) */}
         <div className="space-y-3">
           <div>
             <label className="block text-[11px] font-black uppercase text-slate-500 mb-1.5">
