@@ -265,13 +265,20 @@ export async function POST(req: NextRequest) {
 
     if (isCover) {
       const displayTheme = rawThemeName.replace(/variety pack/i, 'Variety').toUpperCase();
+      const titleStyles = [
+        `TOP TITLE: Bold playful 3D bubble letters reading "${heroName}". SUBTITLE: a forked comic ribbon directly under the name reading "${displayTheme}".`,
+        `TOP TITLE: Huge 3D bubble letters reading "${heroName}". NO ribbon and NO banner under the name. Put the theme only in a clean dark bar along the bottom reading "${heroName}'S ${displayTheme} BOOK".`,
+        `TOP TITLE: Bold 3D bubble letters reading "${heroName}". Under it, a plain straight white banner, not a forked ribbon, reading "${displayTheme}".`,
+        `TOP TITLE: The name "${heroName}" stacked in big block letters. NO ribbon. A small line of text under the name reads "${displayTheme}".`
+      ];
+      const titleStyle = titleStyles[Math.floor(Math.random() * titleStyles.length)];
 
       prompt = `Deluxe commercial children's adventure coloring book cover illustration starring the child from the reference photo named "${heroName}".
 ${canvasOrientationRule}
 ANATOMY REQUIREMENTS: Symmetrical, natural human anatomy. Exactly two arms, exactly two legs, exactly five distinct fingers per hand. Zero extra limbs, zero duplicated body parts.
 CANVAS COMPOSITION & VERTICAL HEADROOM RULES:
 - IMPORTANT: Leave ample blank sky space (at least 15% clear margin) at the top of the canvas so typography sits cleanly below the page boundary.
-- The entire title cluster and ribbon banner must sit comfortably below the top edge with generous breathing room.
+- The title must sit comfortably below the top edge with generous breathing room.
 - Full-bleed colorful illustration edge-to-edge on all sides. Zero borders, zero white bars.
 
 CHARACTER ART & LIKENESS:
@@ -282,9 +289,9 @@ COSTUME: ${costumeDirective}
 SCENE: ${getCoverScene(rawThemeName)}
 
 CLEAN COVER TYPOGRAPHY:
-- TOP TITLE: Bold, playful 3D cartoon bubble typography arched comfortably across the upper area reading "${heroName}". Vibrant yellow/orange letters with heavy dark outlines and drop shadow.
-- SUBTITLE: Crisp comic ribbon banner underneath reading "${displayTheme}".
-- BOTTOM BADGE: Simple, small brand logo centered near the bottom edge reading "MyColoringStar".
+- ${titleStyle}
+- Letters are vibrant yellow or orange with heavy dark outlines.
+- BOTTOM BADGE: Simple, small brand logo centered near the bottom edge reading "MyColoringStar", unless a bottom title bar is already there.
 - STRICTLY FORBIDDEN: Do NOT write "PERSONALIZED KEEPSAKE EDITION", do NOT write "Coloring Artist", do NOT add blank lines or text boxes to write in.
 - Finished retail comic book cover presentation. Zero clipped text.`;
     } else if (customPrompt) {
