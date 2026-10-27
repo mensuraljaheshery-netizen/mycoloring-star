@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     images: ['/sample-cover.png'],
   },
+  verification: {
+    google: 'adw6_w43T-3IkjA4z8CetqGbN_eOZsu4rcHhALiHXrg',
+  },
 };
 
 export default function RootLayout({
