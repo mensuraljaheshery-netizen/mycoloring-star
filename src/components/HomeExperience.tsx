@@ -512,7 +512,7 @@ export default function HomePage() {
             {
               name: 'Liam',
               theme: 'Superhero',
-              photo: '/sample-child-photo.png',
+              photo: '/sample-liam-photo.jpg',
               cover: '/sample-liam-cover.jpg',
               page: '/sample-liam-page.jpg'
             },
