@@ -617,6 +617,9 @@ export default function HomePage() {
             <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
               Click any world to customize {childName.trim() || 'your child'}&apos;s storybook.
             </p>
+            <p className="text-sm font-black text-slate-900 mt-1">
+              Full books from $4. The 3-page sample is free.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
