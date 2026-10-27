@@ -569,6 +569,32 @@ export default function HomePage() {
           </div>
 
         </div>
+
+        <div className="mt-8 bg-white border border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-orange-600">Finished example</span>
+              <h3 className="text-lg font-black text-slate-900 mt-1">See exactly what a book looks like</h3>
+              <p className="text-xs text-slate-600 mt-1 max-w-xl">
+                This is a real 4-page Superhero book made for Liam. The cover is in color. Every inside page is a different scene, not a copy of the cover.
+              </p>
+            </div>
+            <a
+              href="/sample-book.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
+            >
+              Open the sample book
+            </a>
+          </div>
+          <ol className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-700">
+            <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">1. Photo</strong>A clear picture of the child.</li>
+            <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">2. Color cover</strong>Their name and face on page 1.</li>
+            <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">3. New scenes</strong>Each coloring page is a different moment.</li>
+            <li className="rounded-2xl bg-orange-50 px-3 py-2"><strong className="block text-slate-900">4. Certificate</strong>A dedication page and a page to sign.</li>
+          </ol>
+        </div>
       </section>
 
       {/* 3. THEMES SHOWCASE */}
