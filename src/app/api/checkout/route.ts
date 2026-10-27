@@ -11,10 +11,10 @@ const CHECKOUT_PAYLINKS: Record<string, string | undefined> = {
   '48': process.env.WHOP_PAYLINK_48,
 
   // Second child, after a paid book: $3, $5, $8, $11
-  '4s': process.env.WHOP_PAYLINK_4_SIBLING,
-  '8s': process.env.WHOP_PAYLINK_8_SIBLING,
-  '16s': process.env.WHOP_PAYLINK_16_SIBLING,
-  '32s': process.env.WHOP_PAYLINK_32_SIBLING,
+  '4s': process.env.WHOP_PAYLINK_4_SIBLING || 'https://whop.com/checkout/plan_x55BkgBOEVEO2',
+  '8s': process.env.WHOP_PAYLINK_8_SIBLING || 'https://whop.com/checkout/plan_9EUcbKuvPC4Ii',
+  '16s': process.env.WHOP_PAYLINK_16_SIBLING || 'https://whop.com/checkout/plan_v0WrfWW8t48Ny',
+  '32s': process.env.WHOP_PAYLINK_32_SIBLING || 'https://whop.com/checkout/plan_5tXmuLK76QRCD',
 
   // 3-Book Bundles
   'bundle_3x16': process.env.WHOP_PAYLINK_BUNDLE_3X16,
