@@ -103,6 +103,8 @@ const ALL_34_THEMES: ThemeItem[] = [
   { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png', genderTarget: 'all' }
 ];
 
+const BEST_PICK_SLUGS = ['superhero', 'dinosaur-explorer', 'princess', 'astronaut', 'under-the-sea', 'playing-with-animals'];
+
 function shuffleThemes(items: ThemeItem[]): ThemeItem[] {
   const next = [...items];
   for (let i = next.length - 1; i > 0; i--) {
@@ -118,6 +120,7 @@ export default function HomePage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [hasClaimedFree, setHasClaimedFree] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [showAllThemes, setShowAllThemes] = useState(false);
   const [themeOrder, setThemeOrder] = useState<ThemeItem[]>(ALL_34_THEMES);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -286,9 +289,11 @@ export default function HomePage() {
     }
   };
 
-  const filteredThemes = themeOrder.filter(
-    (t) => activeCategory === 'All' || t.category === activeCategory
-  );
+  const bestPicks = BEST_PICK_SLUGS.map((slug) => ALL_34_THEMES.find((theme) => theme.slug === slug)).filter((theme): theme is ThemeItem => Boolean(theme));
+  const moreThemes = themeOrder.filter((theme) => !BEST_PICK_SLUGS.includes(theme.slug));
+  const filteredThemes = activeCategory === 'All'
+    ? (showAllThemes ? [...bestPicks, ...moreThemes] : bestPicks)
+    : themeOrder.filter((theme) => theme.category === activeCategory);
   const categories = ['All', ...Array.from(new Set(ALL_34_THEMES.map((t) => t.category)))];
 
   const faqs = [
@@ -742,6 +747,17 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+        {activeCategory === 'All' && !showAllThemes && (
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllThemes(true)}
+              className="px-5 py-3 rounded-xl bg-white border border-slate-200 text-sm font-black text-slate-900 shadow-sm hover:border-orange-300"
+            >
+              See more themes
+            </button>
+          </div>
+        )}
       </section>
 
       {/* 4. HOW DIGITAL DELIVERY WORKS */}
