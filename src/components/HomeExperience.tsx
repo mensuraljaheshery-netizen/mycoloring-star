@@ -126,7 +126,6 @@ export default function HomePage() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [pendingFreeClaim, setPendingFreeClaim] = useState(false);
-  const [nextOffer, setNextOffer] = useState<'theme' | 'sibling' | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -134,10 +133,6 @@ export default function HomePage() {
 
   useEffect(() => {
     setThemeOrder(shuffleThemes(ALL_34_THEMES));
-    try {
-      const offer = sessionStorage.getItem('mcs_next_offer');
-      if (offer === 'theme' || offer === 'sibling') setNextOffer(offer);
-    } catch {}
   }, []);
 
   useEffect(() => {
@@ -347,7 +342,7 @@ export default function HomePage() {
           Add their name, attach a photo, pick an adventure world, and get an instant keepsake coloring book ready for crayons.
         </p>
         <p className="max-w-xl mx-auto text-xs sm:text-sm font-bold text-slate-700 mb-4">
-          Free 3-page sample. Paid books are $4–$14, a digital PDF you print at home, with unlimited reprints.
+          Free 3-page sample. Every paid book is $4, a digital PDF you print at home, with unlimited reprints.
         </p>
         <a href="#how-it-works" className="inline-block text-xs font-bold text-orange-600 hover:underline mb-2">
           See how it works
@@ -367,14 +362,6 @@ export default function HomePage() {
         </div>
 
         {/* STEP 1: CONFIGURATION CARD (LOW FRICTION) */}
-        {nextOffer && (
-          <div className="max-w-xl mx-auto mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-left">
-            <p className="text-sm font-black text-slate-900">
-              {nextOffer === 'sibling' ? 'Add the next child' : 'Pick a different theme'}
-            </p>
-            <p className="text-xs text-slate-600 mt-1">The next book is $3, $5, $8, or $11. The same child and the same theme again stays at the regular price.</p>
-          </div>
-        )}
         <div className="max-w-xl mx-auto mt-6 p-6 sm:p-8 bg-white border-2 border-orange-200/80 rounded-3xl shadow-lg space-y-5 text-left">
           
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -650,7 +637,7 @@ export default function HomePage() {
               Click any world to customize {childName.trim() || 'your child'}&apos;s storybook.
             </p>
             <p className="text-sm font-black text-slate-900 mt-1">
-              Full books from $4. The 3-page sample is free.
+              Full books are $4. The 3-page sample is free.
             </p>
           </div>
 

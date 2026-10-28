@@ -71,18 +71,11 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
   { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png' }
 ];
 
-const SIBLING_PRICE: Record<string, string> = {
-  '4': '$3',
-  '8': '$5',
-  '16': '$8',
-  '32': '$11'
-};
-
 const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
   '4': { label: 'Theme Try (4 Pages)', pages: 4, price: '$4', popular: false },
-  '8': { label: 'Standard (8 Pages)', pages: 8, price: '$7', popular: false },
-  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$10', popular: true },
-  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$14', popular: false }
+  '8': { label: 'Standard (8 Pages)', pages: 8, price: '$4', popular: false },
+  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$4', popular: true },
+  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$4', popular: false }
 };
 
 function shuffleCatalog<T>(items: T[]): T[] {
@@ -118,8 +111,6 @@ export default function ThemeCustomizerPage() {
     PACKAGES_CONFIG[queryPkg] ? queryPkg : '8'
   );
   const [parentConsent, setParentConsent] = useState(false);
-  const [paidNames, setPaidNames] = useState<string[]>([]);
-  const [siblingReady, setSiblingReady] = useState(false);
 
   // FREE SAMPLE STATUS
   const [hasClaimedFree, setHasClaimedFree] = useState(false);
@@ -131,18 +122,6 @@ export default function ThemeCustomizerPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [modalErrorMessage, setModalErrorMessage] = useState<string | null>(null);
   const [downloadReadyPdf, setDownloadReadyPdf] = useState<{ url: string; filename: string } | null>(null);
-
-  useEffect(() => {
-    try {
-      const books = (localStorage.getItem('mcs_paid_books') || '').split('|').map((item) => item.trim()).filter(Boolean);
-      const older = (localStorage.getItem('mcs_paid_children') || '').split('|').map((name) => name.trim()).filter(Boolean).map((name) => `${name.toLowerCase()}::`);
-      setPaidNames([...books, ...older]);
-    } catch {}
-    fetch('/api/checkout')
-      .then((res) => res.json())
-      .then((data) => setSiblingReady(Boolean(data?.siblingReady)))
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     setThemeStrip(shuffleCatalog(ALL_34_THEMES));
@@ -603,7 +582,7 @@ export default function ThemeCustomizerPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          packageSize: siblingOn ? `${packageSize}s` : packageSize,
+          packageSize,
           childName: childName || 'Hero',
           theme: baseTheme.name,
           orientation
@@ -650,15 +629,6 @@ export default function ThemeCustomizerPage() {
   };
 
   const currentPkgDetails = PACKAGES_CONFIG[packageSize] || PACKAGES_CONFIG['8'];
-  const repeatName = childName.trim().toLowerCase();
-  const repeatTheme = (baseTheme?.name || '').trim().toLowerCase();
-  const sameBookAgain = paidNames.includes(`${repeatName}::${repeatTheme}`);
-  const siblingOn =
-    siblingReady &&
-    paidNames.length > 0 &&
-    repeatName.length > 0 &&
-    !sameBookAgain;
-  const displayPrice = siblingOn && SIBLING_PRICE[packageSize] ? SIBLING_PRICE[packageSize] : currentPkgDetails.price;
 
   const initiatePaidOrderModal = () => {
     if (!parentConsent) {
@@ -793,9 +763,6 @@ export default function ThemeCustomizerPage() {
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {siblingOn && (
-                <p className="col-span-2 text-[11px] font-bold text-emerald-700">Repeat price. A different theme for this child, or a book for another child, costs less. The same theme again stays at the regular price.</p>
-              )}
               {Object.entries(PACKAGES_CONFIG).map(([key, cfg]) => {
                 const isSelected = packageSize === key;
                 return (
@@ -816,16 +783,7 @@ export default function ThemeCustomizerPage() {
                     )}
                     <div className="text-[10px] font-black uppercase text-slate-500">{cfg.pages} Pages</div>
                     <div className="text-xs font-black text-slate-900 leading-tight">{cfg.label.split(' (')[0]}</div>
-                    <div className="text-xs font-black text-orange-600 mt-0.5">
-                      {siblingOn && SIBLING_PRICE[key] ? (
-                        <>
-                          <span className="line-through text-slate-400 mr-1">{cfg.price}</span>
-                          {SIBLING_PRICE[key]}
-                        </>
-                      ) : (
-                        cfg.price
-                      )}
-                    </div>
+                    <div className="text-xs font-black text-orange-600 mt-0.5">{cfg.price}</div>
                   </button>
                 );
               })}
@@ -865,7 +823,7 @@ export default function ThemeCustomizerPage() {
           onClick={initiatePaidOrderModal}
           className="w-full py-3.5 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs sm:text-sm transition shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
         >
-          <span>Order {currentPkgDetails.pages}-Page Edition ({displayPrice})</span>
+          <span>Order {currentPkgDetails.pages}-Page Edition ({currentPkgDetails.price})</span>
           <ChevronRight className="w-4 h-4" />
         </button>
 
@@ -1131,7 +1089,7 @@ export default function ThemeCustomizerPage() {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200/60">
                 <span className="text-slate-500 font-semibold">Package Edition:</span>
-                <span className="font-bold text-orange-600">{currentPkgDetails.pages} Pages ({displayPrice})</span>
+                <span className="font-bold text-orange-600">{currentPkgDetails.pages} Pages ({currentPkgDetails.price})</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200/60">
                 <span className="text-slate-500 font-semibold">Orientation:</span>
@@ -1139,7 +1097,7 @@ export default function ThemeCustomizerPage() {
               </div>
               <div className="flex justify-between pt-1 text-sm font-black text-slate-900">
                 <span>Total Due:</span>
-                <span className="text-orange-600 text-base">{displayPrice}</span>
+                <span className="text-orange-600 text-base">{currentPkgDetails.price}</span>
               </div>
             </div>
 
@@ -1188,7 +1146,7 @@ export default function ThemeCustomizerPage() {
                   className="w-full py-3.5 px-4 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm transition shadow-md shadow-orange-500/25 flex items-center justify-center gap-2 cursor-pointer mt-2"
                 >
                   <Lock className="w-4 h-4" />
-                  <span>Proceed to Secure Checkout ({displayPrice})</span>
+                  <span>Proceed to Secure Checkout ({currentPkgDetails.price})</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
 

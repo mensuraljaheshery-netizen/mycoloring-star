@@ -27,9 +27,9 @@ export async function POST(req: NextRequest) {
 
 ### PACKAGES & CURRENT CANONICAL PRICING (NEVER QUOTE OLD PRICES)
 - Theme Try: 4 coloring pages + 1 full-color personalized cover — $4
-- Standard: 8 coloring pages + 1 full-color personalized cover — $7
-- Most Popular: 16 coloring pages + 1 full-color personalized cover — $10
-- Deluxe Storybook: 32 coloring pages + 1 full-color personalized cover — $14
+- Standard: 8 coloring pages + 1 full-color personalized cover — $4
+- Most Popular: 16 coloring pages + 1 full-color personalized cover — $4
+- Deluxe Storybook: 32 coloring pages + 1 full-color personalized cover — $4
 - Format: Every book includes a full-color personalized cover, a story dedication page, interior coloring pages, and an official back-cover artist certificate. All orders are instant high-resolution vector PDF downloads.
 
 ### PAYMENTS & BILLING

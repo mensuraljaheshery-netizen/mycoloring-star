@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing',
-  description: 'One-time coloring books from $4 to $14. Instant PDF, US Letter and A4, unlimited reprints at home.',
+  description: 'Every coloring book is $4. Instant PDF, US Letter and A4, unlimited reprints at home.',
   alternates: { canonical: '/pricing' },
 };
 

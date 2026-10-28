@@ -26,8 +26,8 @@ const TIERS = [
     id: '8',
     name: 'Standard Adventure',
     pages: '8 Coloring Pages',
-    price: '$7',
-    unitPrice: '$0.88 / page',
+    price: '$4',
+    unitPrice: '$0.50 / page',
     description: 'Great for weekend coloring and gifts.',
     popular: false,
     features: [
@@ -43,8 +43,8 @@ const TIERS = [
     id: '16',
     name: 'Most Popular',
     pages: '16 Coloring Pages',
-    price: '$10',
-    unitPrice: '$0.63 / page',
+    price: '$4',
+    unitPrice: '$0.25 / page',
     description: 'The complete adventure storybook.',
     popular: true,
     features: [
@@ -60,8 +60,8 @@ const TIERS = [
     id: '32',
     name: 'Deluxe Storybook',
     pages: '32 Coloring Pages',
-    price: '$14',
-    unitPrice: '$0.44 / page',
+    price: '$4',
+    unitPrice: '$0.13 / page',
     description: 'A full book whenever they want a new theme.',
     popular: false,
     features: [

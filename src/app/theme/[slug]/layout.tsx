@@ -11,7 +11,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const theme = getThemeListing(slug);
   const title = `Personalized ${theme.name} Coloring Book`;
-  const description = `${theme.description}. Print-at-home PDF starring your child, with a color cover and different scenes inside. Books are $4, $7, $10, or $14. Free 3-page sample.`;
+  const description = `${theme.description}. Print-at-home PDF starring your child, with a color cover and different scenes inside. Books are $4. Free 3-page sample.`;
   const path = `/theme/${theme.slug}`;
   const image = `/theme-previews/${theme.slug}.png`;
 
