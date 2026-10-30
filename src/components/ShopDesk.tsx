@@ -27,31 +27,33 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [consent, setConsent] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [logo, setLogo] = useState('');
+  const [whiteLabel, setWhiteLabel] = useState(false);
+  const [headline, setHeadline] = useState('');
+  const [about, setAbout] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
   const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
-    document.title = shopName;
+    document.title = `${shopName} coloring book | MyColoringStar`;
     saveShopProfile(shopName, slug);
     fetch('/api/shop-trial')
       .then((res) => res.json())
       .then((data) => setCredits(typeof data.remaining === 'number' ? data.remaining : 0))
       .catch(() => setCredits(0));
-    try {
-      const savedLogo = localStorage.getItem(`mcs_logo_${slug}`) || '';
-      if (savedLogo) {
-        setLogo(savedLogo);
-        sessionStorage.setItem('mcs_brand_logo', savedLogo);
-      }
-    } catch {}
     fetch(`/api/shop-brand?slug=${encodeURIComponent(slug)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (typeof data.logo === 'string' && data.logo) {
-          setLogo(data.logo);
-          try { sessionStorage.setItem('mcs_brand_logo', data.logo); } catch {}
-        }
+        const monthly = data.plan === 'monthly';
+        setWhiteLabel(monthly);
+        if (monthly) document.title = data.shopName || shopName;
+        if (typeof data.logo === 'string') setLogo(data.logo);
+        setHeadline(typeof data.headline === 'string' ? data.headline : '');
+        setAbout(typeof data.about === 'string' ? data.about : '');
+        setPhone(typeof data.phone === 'string' ? data.phone : '');
+        setCity(typeof data.city === 'string' ? data.city : '');
       })
       .catch(() => {});
   }, [slug, shopName]);
@@ -100,17 +102,24 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       localStorage.setItem('mcs_selected_orientation', 'portrait');
       localStorage.setItem('mcs_current_order_token', orderToken);
       localStorage.setItem('mcs_parent_consent', 'true');
-      sessionStorage.setItem('mcs_brand_name', shopName);
-      sessionStorage.setItem('mcs_brand_slug', slug);
-      sessionStorage.setItem('mcs_brand_order', orderToken);
       sessionStorage.setItem('mcs_current_order_token', orderToken);
-      if (logo) sessionStorage.setItem('mcs_brand_logo', logo);
+      if (whiteLabel) {
+        sessionStorage.setItem('mcs_brand_name', shopName);
+        sessionStorage.setItem('mcs_brand_slug', slug);
+        sessionStorage.setItem('mcs_brand_order', orderToken);
+        if (logo) sessionStorage.setItem('mcs_brand_logo', logo);
+      } else {
+        sessionStorage.removeItem('mcs_brand_name');
+        sessionStorage.removeItem('mcs_brand_slug');
+        sessionStorage.removeItem('mcs_brand_order');
+        sessionStorage.removeItem('mcs_brand_logo');
+      }
     } catch {
       setError('This browser blocked saving the photo. Try again.');
       setStarting(false);
       return;
     }
-    router.push(`/order-success?package=8&shop=${encodeURIComponent(slug)}`);
+    router.push(whiteLabel ? `/order-success?package=8&shop=${encodeURIComponent(slug)}` : '/order-success?package=8');
   };
 
   const visibleThemes = showAll ? themes : themes.slice(0, 6);
@@ -119,14 +128,26 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
     <div className="min-h-screen bg-[#FFFDF9] text-slate-800">
       <header className="sticky top-0 z-40 border-b border-orange-100 bg-white/95 shadow-sm backdrop-blur">
         <div className="max-w-5xl mx-auto px-4 py-2 flex items-center gap-2">
-          {logo ? (
-            <img src={logo} alt="" className="h-10 w-10 rounded-xl object-cover" />
+          {whiteLabel ? (
+            <>
+              {logo ? (
+                <img src={logo} alt="" className="h-10 w-10 rounded-xl object-cover" />
+              ) : (
+                <div className="h-10 w-10 rounded-xl bg-orange-500 text-white font-black flex items-center justify-center">
+                  {initials(shopName)}
+                </div>
+              )}
+              <span className="font-black text-slate-900 tracking-tight">{shopName}</span>
+            </>
           ) : (
-            <div className="h-10 w-10 rounded-xl bg-orange-500 text-white font-black flex items-center justify-center">
-              {initials(shopName)}
-            </div>
+            <>
+              <a href="/">
+                <img src="/logo.webp" alt="MyColoringStar" className="h-10 w-10 object-cover" />
+              </a>
+              <a href="/" className="font-black text-slate-900 tracking-tight">MyColoringStar</a>
+              <span className="text-xs font-bold text-slate-500">at {shopName}</span>
+            </>
           )}
-          <span className="font-black text-slate-900 tracking-tight">{shopName}</span>
         </div>
       </header>
 
@@ -134,10 +155,12 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
         <section className="bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-8 shadow-sm">
           <p className="text-xs font-black uppercase tracking-wider text-orange-600">Coloring book</p>
           <h1 className="mt-2 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            A book starring your child
+            {whiteLabel && headline ? headline : 'A book starring your child'}
           </h1>
           <p className="mt-2 text-sm text-slate-600 max-w-xl">
-            Add a name and a clear photo. Pick an adventure. The shop prints the 8-page book.
+            {whiteLabel && about
+              ? about
+              : `Add a name and a clear photo. Pick an adventure. ${shopName} prints the 8-page book.`}
           </p>
 
           {credits === 0 ? (
@@ -221,7 +244,14 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       </main>
 
       <footer className="border-t border-orange-100 bg-white py-6 px-4 text-center text-xs text-slate-500">
-        <span className="font-black text-slate-900">{shopName}</span>
+        {whiteLabel ? (
+          <div className="space-y-1">
+            <div className="font-black text-slate-900">{shopName}</div>
+            <div>{[phone, city].filter(Boolean).join(' · ')}</div>
+          </div>
+        ) : (
+          <div className="font-black text-slate-900">MyColoringStar</div>
+        )}
       </footer>
     </div>
   );
