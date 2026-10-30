@@ -8,6 +8,7 @@ import {
   SHOP_PACK_SIZE,
   cleanShopName,
   readShopCredits,
+  saveShopProfile,
   shopNameFromSlug,
 } from '@/lib/shop';
 
@@ -23,8 +24,9 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setCredits(readShopCredits(slug));
-  }, [slug]);
+    saveShopProfile(shopName, slug);
+    setCredits(readShopCredits());
+  }, [slug, shopName]);
 
   const onPhoto = (file: File | undefined) => {
     if (!file) return;

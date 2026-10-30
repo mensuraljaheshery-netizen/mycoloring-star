@@ -128,31 +128,43 @@ function OrderSuccessContent() {
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    const brandBar = brandName ? 42 : 0;
 
     // 1. Cover Page
     try {
       const coverBase64 = await ensureBase64(coverUrl);
       const props = doc.getImageProperties(coverBase64);
       const imgRatio = props.width / props.height;
-      const pageRatio = pageWidth / pageHeight;
+      const frameH = pageHeight - brandBar;
+      const pageRatio = pageWidth / frameH;
 
       let drawW = pageWidth;
-      let drawH = pageHeight;
+      let drawH = frameH;
       let drawX = 0;
       let drawY = 0;
 
       if (imgRatio > pageRatio) {
-        drawH = pageHeight;
-        drawW = pageHeight * imgRatio;
+        drawH = frameH;
+        drawW = frameH * imgRatio;
         drawX = -(drawW - pageWidth) / 2;
       } else {
         drawW = pageWidth;
         drawH = pageWidth / imgRatio;
+        drawY = (frameH - drawH) / 2;
       }
 
       doc.addImage(coverBase64, 'PNG', drawX, drawY, drawW, drawH, undefined, 'FAST');
     } catch (err) {
       console.error('Error drawing cover:', err);
+    }
+
+    if (brandName) {
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, pageHeight - brandBar, pageWidth, brandBar, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      doc.text(brandName, pageWidth / 2, pageHeight - 16, { align: 'center' });
     }
 
     // 2. Magical Storybook Title & Dedication Page
@@ -183,6 +195,13 @@ function OrderSuccessContent() {
     doc.setFontSize(20);
     doc.setTextColor(234, 88, 12);
     doc.text(`A ${formattedTheme} Coloring Adventure`, pageWidth / 2, 165, { align: 'center' });
+
+    if (brandName) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(15, 23, 42);
+      doc.text(brandName, pageWidth / 2, 198, { align: 'center' });
+    }
 
     // Dedication Note
     doc.setFont('helvetica', 'normal');
@@ -215,9 +234,16 @@ function OrderSuccessContent() {
     doc.text('____________________________________________________', pageWidth / 2, 485, { align: 'center' });
 
     // Subtle Brand Footprint
-    doc.setFontSize(9);
-    doc.setTextColor(160, 174, 192);
-    doc.text(brandName ? `Made for ${brandName}` : 'Published by MyColoringStar • www.mycoloringstar.com', pageWidth / 2, pageHeight - 45, { align: 'center' });
+    if (brandName) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(15, 23, 42);
+      doc.text(brandName, pageWidth / 2, pageHeight - 52, { align: 'center' });
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(160, 174, 192);
+      doc.text('Published by MyColoringStar • www.mycoloringstar.com', pageWidth / 2, pageHeight - 45, { align: 'center' });
+    }
 
     // 3. Interior Coloring Pages
     for (const pUrl of pageUrls) {
@@ -274,9 +300,16 @@ function OrderSuccessContent() {
     ];
     doc.text(certText, pageWidth / 2, 270, { align: 'center', lineHeightFactor: 1.6 });
 
-    doc.setFontSize(9);
-    doc.setTextColor(160, 174, 192);
-    doc.text(brandName ? brandName : 'MyColoringStar Keepsake Edition • Made with Love', pageWidth / 2, pageHeight - 45, { align: 'center' });
+    if (brandName) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(15, 23, 42);
+      doc.text(brandName, pageWidth / 2, pageHeight - 70, { align: 'center' });
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(160, 174, 192);
+      doc.text('MyColoringStar Keepsake Edition • Made with Love', pageWidth / 2, pageHeight - 45, { align: 'center' });
+    }
 
     const cleanChild = formattedName.replace(/[^a-zA-Z0-9]/g, '_');
     const cleanTheme = formattedTheme.replace(/[^a-zA-Z0-9]/g, '_');
@@ -308,7 +341,7 @@ function OrderSuccessContent() {
       }
       const markShopBook = () => {
         if (brandSlug && !localStorage.getItem(`mcs_shop_spent_${orderToken}`)) {
-          spendShopCredit(brandSlug);
+          spendShopCredit();
           localStorage.setItem(`mcs_shop_spent_${orderToken}`, '1');
         }
       };

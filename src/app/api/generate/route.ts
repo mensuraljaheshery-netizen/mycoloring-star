@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
       const titleStyle = titleStyles[Math.floor(Math.random() * titleStyles.length)];
       const safeBrand = String(brandName || '').replace(/["\n\r]/g, '').trim().slice(0, 40);
       const bottomBadge = safeBrand
-        ? `BOTTOM MARK: If there is no bottom title bar, add small centered text reading "${safeBrand}". If a bottom bar is already there, do not add a second logo. Never write MyColoringStar.`
+        ? `BOTTOM MARK: A solid dark bar along the very bottom must read "${safeBrand}" in clear white letters. Never write MyColoringStar.`
         : `BOTTOM BADGE: Simple, small brand logo centered near the bottom edge reading "MyColoringStar", unless a bottom title bar is already there.`;
 
       prompt = `Deluxe commercial children's adventure coloring book cover illustration starring the child from the reference photo named "${heroName}".
