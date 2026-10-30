@@ -4,9 +4,9 @@ const SAVED_SLUG = 'mcs_saved_shop_slug';
 
 export const SHOP_FREE_BOOKS = 2;
 export const SHOP_PACKS = [
-  { name: 'Starter', price: 10, books: 4, each: 2.5 },
-  { name: 'Regular', price: 20, books: 10, each: 2 },
-  { name: 'Shop pack', price: 30, books: 20, each: 1.5 },
+  { name: 'Starter', price: 15, books: 10, each: 1.5 },
+  { name: 'Popular', price: 30, books: 25, each: 1.2 },
+  { name: 'Best value', price: 60, books: 60, each: 1 },
 ] as const;
 
 export function shopSlug(name: string): string {

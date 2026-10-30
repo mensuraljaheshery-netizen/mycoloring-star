@@ -96,19 +96,19 @@ export default function BusinessPage() {
           Buy books in a pack. Credits never expire.
         </h1>
         <p className="mt-4 text-base sm:text-lg text-slate-600">
-          A bigger pack costs less per book. Parents still see MyColoringStar. Credits stay until the shop uses them, including if they later turn on their own site.
+          A shop pays once and keeps the books until they are used. A bigger pack costs less for each book. Parents still see MyColoringStar.
         </p>
 
         <div className="mt-8 grid sm:grid-cols-3 gap-3">
           {[
-            ['Starter', '$10', '4 books', '$2.50 each'],
-            ['Regular', '$20', '10 books', '$2 each'],
-            ['Shop pack', '$30', '20 books', '$1.50 each'],
-          ].map(([name, price, books, each]) => (
+            ['Starter', '$15', '10 books', '$1.50 each', false],
+            ['Popular', '$30', '25 books', '$1.20 each', true],
+            ['Best value', '$60', '60 books', '$1 each', false],
+          ] as const).map(([name, price, books, each, popular]) => (
             <a
               key={name}
               href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, ${shopName.trim() || 'my shop'} wants the ${name} pack: ${price} for ${books}.`)}`}
-              className="bg-white border-2 border-orange-100 rounded-3xl p-5 hover:border-orange-400"
+              className={`bg-white border-2 rounded-3xl p-5 hover:border-orange-400 ${popular ? 'border-orange-500' : 'border-orange-100'}`}
             >
               <p className="text-xs font-black uppercase tracking-wider text-orange-600">{name}</p>
               <h2 className="mt-1 text-2xl font-black text-slate-900">{price}</h2>
@@ -117,7 +117,7 @@ export default function BusinessPage() {
             </a>
           ))}
         </div>
-        <p className="mt-3 text-sm text-slate-500">From $30 up, every book is $1.50. These prices can go up after the first shops are buying.</p>
+        <p className="mt-3 text-sm text-slate-500">One-time packs, not a monthly bill. Credits stay until they are used. These prices can go up after the first shops are buying.</p>
 
         <div className="mt-8 bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
           <h2 className="text-xl font-black text-slate-900">Build the shop page</h2>
