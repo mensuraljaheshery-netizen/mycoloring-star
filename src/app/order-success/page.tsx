@@ -115,7 +115,8 @@ function OrderSuccessContent() {
     coverUrl: string,
     pageUrls: string[],
     bookOrientation: 'portrait' | 'landscape' = 'portrait',
-    brandName = ''
+    brandName = '',
+    brandLogo = ''
   ): Promise<{ url: string; filename: string }> => {
     const formattedName = toTitleCase(childName);
     const formattedTheme = toTitleCase(theme);
@@ -161,6 +162,13 @@ function OrderSuccessContent() {
     if (brandName) {
       doc.setFillColor(15, 23, 42);
       doc.rect(0, pageHeight - brandBar, pageWidth, brandBar, 'F');
+      if (brandLogo.startsWith('data:image/')) {
+        try {
+          doc.addImage(brandLogo, 'JPEG', 14, pageHeight - 36, 26, 26);
+        } catch {
+          // The name still prints if the logo cannot be drawn.
+        }
+      }
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(255, 255, 255);
@@ -338,7 +346,9 @@ function OrderSuccessContent() {
       const brandSlug = brandName ? (sessionStorage.getItem('mcs_brand_slug') || '') : '';
       if (brandName && brandSlug) {
         setShopReturn(`/s/${brandSlug}?n=${encodeURIComponent(brandName)}`);
+        document.title = brandName;
       }
+      const brandLogo = brandName ? (sessionStorage.getItem('mcs_brand_logo') || '') : '';
       const markShopBook = () => {
         if (brandSlug && !localStorage.getItem(`mcs_shop_spent_${orderToken}`)) {
           spendShopCredit();
@@ -455,7 +465,7 @@ function OrderSuccessContent() {
       const interiorUrls = pageSlots as string[];
 
       setProgressText('Assembling high-resolution printable PDF...');
-      const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls, bookOrientation, brandName);
+      const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls, bookOrientation, brandName, brandLogo);
 
       // Safe cache cleanup
       try {
