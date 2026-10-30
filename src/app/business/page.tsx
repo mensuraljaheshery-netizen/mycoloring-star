@@ -35,6 +35,12 @@ function shrinkLogo(file: File): Promise<string> {
   });
 }
 
+const SHOP_PACKS = [
+  { name: 'Starter', price: '$15', books: '10 books', each: '$1.50 each' },
+  { name: 'Popular', price: '$30', books: '25 books', each: '$1.20 each', popular: true },
+  { name: 'Best value', price: '$60', books: '60 books', each: '$1 each' },
+] as const;
+
 export default function BusinessPage() {
   const [shopName, setShopName] = useState('');
   const [logo, setLogo] = useState('');
@@ -100,20 +106,16 @@ export default function BusinessPage() {
         </p>
 
         <div className="mt-8 grid sm:grid-cols-3 gap-3">
-          {[
-            ['Starter', '$15', '10 books', '$1.50 each', false],
-            ['Popular', '$30', '25 books', '$1.20 each', true],
-            ['Best value', '$60', '60 books', '$1 each', false],
-          ] as const).map(([name, price, books, each, popular]) => (
+          {SHOP_PACKS.map((pack) => (
             <a
-              key={name}
-              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, ${shopName.trim() || 'my shop'} wants the ${name} pack: ${price} for ${books}.`)}`}
-              className={`bg-white border-2 rounded-3xl p-5 hover:border-orange-400 ${popular ? 'border-orange-500' : 'border-orange-100'}`}
+              key={pack.name}
+              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, ${shopName.trim() || 'my shop'} wants the ${pack.name} pack: ${pack.price} for ${pack.books}.`)}`}
+              className={`bg-white border-2 rounded-3xl p-5 hover:border-orange-400 ${'popular' in pack && pack.popular ? 'border-orange-500' : 'border-orange-100'}`}
             >
-              <p className="text-xs font-black uppercase tracking-wider text-orange-600">{name}</p>
-              <h2 className="mt-1 text-2xl font-black text-slate-900">{price}</h2>
-              <p className="mt-2 text-sm font-bold text-slate-900">{books}</p>
-              <p className="text-sm text-slate-600">{each}</p>
+              <p className="text-xs font-black uppercase tracking-wider text-orange-600">{pack.name}</p>
+              <h2 className="mt-1 text-2xl font-black text-slate-900">{pack.price}</h2>
+              <p className="mt-2 text-sm font-bold text-slate-900">{pack.books}</p>
+              <p className="text-sm text-slate-600">{pack.each}</p>
             </a>
           ))}
         </div>
