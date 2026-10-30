@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { getCoverScene, getCoverTale, getThemeConfig } from '@/lib/themes';
+import { requestIp, reserveShopTrial } from '@/lib/shopTrial';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -223,6 +224,14 @@ export async function POST(req: NextRequest) {
       finalizeFreeClaim,
       brandName
     } = await req.json();
+
+    const shopBrand = String(brandName || '').trim();
+    if (shopBrand) {
+      const shopGate = await reserveShopTrial(requestIp(req), String(orderId || ''), shopBrand);
+      if (!shopGate.allowed) {
+        return NextResponse.json({ error: shopGate.reason || 'The 2 free shop books are already used.' }, { status: 403 });
+      }
+    }
 
     const isPaidOrder = Boolean(orderId && (orderId.startsWith('paid_') || orderId.startsWith('ord_')));
 

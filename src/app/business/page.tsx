@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { readShopCredits, readShopProfile, saveShopProfile, shopSlug } from '@/lib/shop';
+import { readShopProfile, saveShopProfile, shopSlug } from '@/lib/shop';
 
 const PACK_NOTE = 'Hi, I want a 10-book shop pack for $20. My shop name is ';
 
@@ -9,11 +9,9 @@ export default function BusinessPage() {
   const [shopName, setShopName] = useState('');
   const [link, setLink] = useState('');
   const [copied, setCopied] = useState(false);
-  const [credits, setCredits] = useState(2);
 
   useEffect(() => {
     const saved = readShopProfile();
-    setCredits(readShopCredits());
     if (!saved) return;
     setShopName(saved.name);
     setLink(`${window.location.origin}/s/${saved.slug}?n=${encodeURIComponent(saved.name)}`);
@@ -27,7 +25,6 @@ export default function BusinessPage() {
     saveShopProfile(name, slug);
     setLink(url);
     setCopied(false);
-    setCredits(readShopCredits());
   };
 
   const copyLink = async () => {
@@ -97,7 +94,7 @@ export default function BusinessPage() {
         <div className="mt-8 border border-slate-900 rounded-3xl p-5 sm:p-6">
           <h2 className="text-xl font-black">Your customer link</h2>
           <p className="mt-1 text-sm text-slate-600">
-            This tablet keeps the shop name. Typing a different name does not give more free books. Books left on this tablet: {credits}.
+            This shop keeps its name on this tablet. The 2 free books follow the internet connection, the same way a parent only gets one free sample. A new shop name does not add more free books.
           </p>
           <label className="block mt-4 text-xs font-black uppercase tracking-wider text-slate-500" htmlFor="shop-name">
             Shop name, as it should appear on the book

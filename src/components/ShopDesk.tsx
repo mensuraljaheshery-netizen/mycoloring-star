@@ -7,7 +7,6 @@ import {
   SHOP_PACK_PRICE,
   SHOP_PACK_SIZE,
   cleanShopName,
-  readShopCredits,
   saveShopProfile,
   shopNameFromSlug,
 } from '@/lib/shop';
@@ -20,12 +19,15 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [photo, setPhoto] = useState<string | null>(null);
   const [themeName, setThemeName] = useState(themes[0]?.name || 'Superhero');
   const [consent, setConsent] = useState(false);
-  const [credits, setCredits] = useState(2);
+  const [credits, setCredits] = useState<number | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     saveShopProfile(shopName, slug);
-    setCredits(readShopCredits());
+    fetch('/api/shop-trial')
+      .then((res) => res.json())
+      .then((data) => setCredits(typeof data.remaining === 'number' ? data.remaining : 0))
+      .catch(() => setCredits(0));
   }, [slug, shopName]);
 
   const onPhoto = (file: File | undefined) => {
@@ -35,9 +37,9 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
     reader.readAsDataURL(file);
   };
 
-  const startBook = () => {
-    if (credits <= 0) {
-      setError('This tablet has no books left. Add a pack before making another.');
+  const startBook = async () => {
+    if (credits !== null && credits <= 0) {
+      setError('This connection already used its 2 free books.');
       return;
     }
     if (!childName.trim() || !photo || !consent) {
@@ -45,6 +47,23 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       return;
     }
     const orderToken = `ord_${Date.now()}`;
+    try {
+      const gate = await fetch('/api/shop-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: orderToken, shopName }),
+      });
+      const gateData = await gate.json();
+      if (!gate.ok || !gateData.allowed) {
+        setCredits(0);
+        setError(gateData.reason || 'This connection already used its 2 free books.');
+        return;
+      }
+      setCredits(typeof gateData.remaining === 'number' ? gateData.remaining : 0);
+    } catch {
+      setError('Could not check the free books. Try again.');
+      return;
+    }
     try {
       localStorage.setItem('hero_child_name', childName.trim());
       localStorage.setItem('hero_child_photo', photo);
@@ -72,9 +91,11 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
         <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Coloring book</p>
         <h1 className="text-3xl font-black mt-1">{shopName}</h1>
         <p className="mt-2 text-sm text-slate-600">An 8-page book starring the child. You print it here.</p>
-        <p className="mt-2 text-xs font-bold text-slate-500">Books left on this tablet: {credits}</p>
+        <p className="mt-2 text-xs font-bold text-slate-500">
+          {credits === null ? 'Checking free books...' : `Free books left on this connection: ${credits}`}
+        </p>
 
-        {credits <= 0 ? (
+        {credits === 0 ? (
           <a href={packLink} target="_blank" rel="noopener noreferrer" className="mt-6 block rounded-2xl bg-slate-900 text-white text-center font-black py-4">
             Add 10 books for $20
           </a>
