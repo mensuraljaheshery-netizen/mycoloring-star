@@ -72,10 +72,7 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
 ];
 
 const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
-  '4': { label: 'Theme Try (4 Pages)', pages: 4, price: '$4', popular: false },
-  '8': { label: 'Standard (8 Pages)', pages: 8, price: '$4', popular: false },
-  '16': { label: 'Most Popular (16 Pages)', pages: 16, price: '$4', popular: true },
-  '32': { label: 'Deluxe Storybook (32 Pages)', pages: 32, price: '$4', popular: false }
+  '8': { label: '8-Page Book', pages: 8, price: '$4', popular: true }
 };
 
 function shuffleCatalog<T>(items: T[]): T[] {
@@ -753,41 +750,10 @@ export default function ThemeCustomizerPage() {
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-[11px] font-black uppercase text-slate-500">
-                Choose Book Size:
-              </label>
-              <Link href="/pricing" target="_blank" className="text-[10px] text-orange-600 font-bold hover:underline">
-                Compare tiers
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(PACKAGES_CONFIG).map(([key, cfg]) => {
-                const isSelected = packageSize === key;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => handlePackageChange(key)}
-                    className={`p-2.5 rounded-xl border-2 cursor-pointer transition text-left relative ${
-                      isSelected
-                        ? 'border-orange-500 bg-orange-50/90 shadow-sm ring-1 ring-orange-400'
-                        : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                    }`}
-                  >
-                    {cfg.popular && (
-                      <span className="absolute -top-2 right-2 bg-orange-500 text-white text-[8px] font-black uppercase px-1.5 py-0.2 rounded-full">
-                        Popular
-                      </span>
-                    )}
-                    <div className="text-[10px] font-black uppercase text-slate-500">{cfg.pages} Pages</div>
-                    <div className="text-xs font-black text-slate-900 leading-tight">{cfg.label.split(' (')[0]}</div>
-                    <div className="text-xs font-black text-orange-600 mt-0.5">{cfg.price}</div>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="rounded-xl border border-orange-200 bg-orange-50 px-3 py-3">
+            <div className="text-[11px] font-black uppercase text-slate-500">The book</div>
+            <div className="text-sm font-black text-slate-900">8 coloring pages + color cover</div>
+            <div className="text-sm font-black text-orange-600">$4, print it at home</div>
           </div>
         </div>
 

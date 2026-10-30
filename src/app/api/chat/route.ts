@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 ### THE CREATION PROCESS (4 SIMPLE STEPS)
 1. Pick an adventure world (from 34 options including Superhero, Princess, Dinosaur, Astronaut, Animals, or Surprise Variety Pack).
 2. Enter the child's name and attach a clear face photo.
-3. Select your package size (4, 8, 16, or 32 pages).
+3. The paid book is 8 coloring pages plus a color cover for $4.
 4. Download your instant high-resolution printable PDF or claim a free mini-book sample.
 
 ### FREE SAMPLE OFFER ("TRY BEFORE YOU BUY")
@@ -26,11 +26,9 @@ export async function POST(req: NextRequest) {
 - Rate-limiting policy: Strictly limited to 1 free mini-book claim per family or household.
 
 ### PACKAGES & CURRENT CANONICAL PRICING (NEVER QUOTE OLD PRICES)
-- Theme Try: 4 coloring pages + 1 full-color personalized cover — $4
-- Standard: 8 coloring pages + 1 full-color personalized cover — $4
-- Most Popular: 16 coloring pages + 1 full-color personalized cover — $4
-- Deluxe Storybook: 32 coloring pages + 1 full-color personalized cover — $4
-- Format: Every book includes a full-color personalized cover, a story dedication page, interior coloring pages, and an official back-cover artist certificate. All orders are instant high-resolution vector PDF downloads.
+- The paid book is 8 coloring pages + 1 full-color personalized cover — $4
+- There is no 16-page or 32-page book for $4. Do not offer those sizes.
+- Format: Every book includes a full-color personalized cover, a story dedication page, 8 interior coloring pages, and an official back-cover artist certificate. All orders are instant high-resolution PDF downloads.
 
 ### PAYMENTS & BILLING
 - Payments are processed securely through Whop, our authorized Merchant of Record partner. We support major credit cards and Apple Pay.

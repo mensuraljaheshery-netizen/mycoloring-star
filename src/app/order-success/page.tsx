@@ -378,8 +378,8 @@ function OrderSuccessContent() {
       }
 
       const urlPkg = searchParams.get('package');
-      const rawPkg = urlPkg || localStorage.getItem('mcs_selected_package') || '4';
-      const totalPages = Math.min(32, Math.max(4, parseInt(rawPkg, 10) || 4));
+      const rawPkg = '8';
+      const totalPages = 8;
       
       // Deliver the full advertised count of coloring sheets (4 = 4 full coloring pages + cover)
       const interiorCount = totalPages;

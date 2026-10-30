@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: 'What do I receive after purchase?',
-    a: 'An instant high-resolution PDF with a customized full-color cover, a dedication page, the coloring pages you ordered (4, 8, 16, or 32), and a back cover.',
+    a: 'An instant high-resolution PDF with a customized full-color cover, a dedication page, 8 coloring pages, and a back cover.',
   },
   {
     q: 'Is the book digital or physical?',

@@ -38,12 +38,6 @@ function shrinkLogo(file: File): Promise<string> {
 export default function BusinessPage() {
   const [shopName, setShopName] = useState('');
   const [logo, setLogo] = useState('');
-  const [headline, setHeadline] = useState('A coloring book starring your child');
-  const [about, setAbout] = useState('');
-  const [phone, setPhone] = useState('');
-  const [city, setCity] = useState('');
-  const [address, setAddress] = useState('');
-  const [email, setEmail] = useState('');
   const [link, setLink] = useState('');
   const [qr, setQr] = useState('');
   const [note, setNote] = useState('');
@@ -58,12 +52,6 @@ export default function BusinessPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.logo) setLogo(data.logo);
-        if (data.headline) setHeadline(data.headline);
-        if (data.about) setAbout(data.about);
-        if (data.phone) setPhone(data.phone);
-        if (data.city) setCity(data.city);
-        if (data.address) setAddress(data.address);
-        if (data.email) setEmail(data.email);
       })
       .catch(() => {});
   }, []);
@@ -90,12 +78,6 @@ export default function BusinessPage() {
         slug,
         shopName: name,
         logo,
-        headline,
-        about,
-        phone,
-        city,
-        address,
-        email,
         plan: 'book',
         credits: 0,
       }),
@@ -140,13 +122,13 @@ export default function BusinessPage() {
 
         <div className="mt-8 bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
           <h2 className="text-xl font-black text-slate-900">Build the shop page</h2>
-          <p className="text-sm text-slate-600">These answers are what the $29 site uses. Until that plan is on, the public link keeps MyColoringStar.</p>
+          <p className="text-sm text-slate-600">Parents who scan the code see MyColoringStar and can make an 8-page book. Your name is on the $29 site only.</p>
           <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
             Shop name
             <input value={shopName} onChange={(event) => setShopName(event.target.value)} placeholder="Luna's Play" className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
           </label>
           <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-            Logo
+            Logo, only needed for the $29 site
             <input type="file" accept="image/*" onChange={async (event) => {
               const file = event.target.files?.[0];
               if (!file) return;
@@ -154,32 +136,6 @@ export default function BusinessPage() {
             }} className="mt-2 block w-full text-sm" />
           </label>
           {logo && <img src={logo} alt="" className="h-16 w-16 rounded-xl object-cover border border-orange-200" />}
-          <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-            Headline parents should see
-            <input value={headline} onChange={(event) => setHeadline(event.target.value)} className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
-          </label>
-          <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-            One line about the shop
-            <input value={about} onChange={(event) => setAbout(event.target.value)} placeholder="We print it while you wait." className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
-          </label>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-              Phone
-              <input value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
-            </label>
-            <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-              City
-              <input value={city} onChange={(event) => setCity(event.target.value)} className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
-            </label>
-          </div>
-          <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-            Address
-            <input value={address} onChange={(event) => setAddress(event.target.value)} className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
-          </label>
-          <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-            Email
-            <input value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
-          </label>
           <button type="button" onClick={saveShop} className="w-full rounded-2xl bg-orange-500 text-white font-black py-3">
             Save and make the QR
           </button>

@@ -298,7 +298,7 @@ export default function HomePage() {
     },
     {
       q: 'What do I receive after purchase?',
-      a: 'You receive an instant high-resolution printable PDF containing your child’s customized full-color cover page, a personalized dedication page, the exact number of interior coloring pages ordered (4, 8, 16, or 32 pages), and an official back cover artist certificate.'
+      a: 'You receive an instant high-resolution printable PDF containing your child’s customized full-color cover page, a personalized dedication page, 8 coloring pages, and an official back cover artist certificate.'
     },
     {
       q: 'Is the book digital or physical?',
@@ -342,7 +342,7 @@ export default function HomePage() {
           Add their name, attach a photo, pick an adventure world, and get an instant keepsake coloring book ready for crayons.
         </p>
         <p className="max-w-xl mx-auto text-xs sm:text-sm font-bold text-slate-700 mb-4">
-          Free 3-page sample. Every paid book is $4, a digital PDF you print at home, with unlimited reprints.
+          Free 3-page sample. The full book is 8 pages for $4, a digital PDF you print at home, with unlimited reprints.
         </p>
         <a href="#how-it-works" className="inline-block text-xs font-bold text-orange-600 hover:underline mb-2">
           See how it works
@@ -637,7 +637,7 @@ export default function HomePage() {
               Click any world to customize {childName.trim() || 'your child'}&apos;s storybook.
             </p>
             <p className="text-sm font-black text-slate-900 mt-1">
-              Full books are $4. The 3-page sample is free.
+              The full book is 8 pages for $4. The 3-page sample is free.
             </p>
           </div>
 

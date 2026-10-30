@@ -6,71 +6,20 @@ import { ArrowLeft, ArrowRight, Check, Sparkles, Printer, ShieldCheck } from 'lu
 
 const TIERS = [
   {
-    id: '4',
-    name: 'Theme Try',
-    pages: '4 Coloring Pages',
-    price: '$4',
-    unitPrice: '$1.00 / page',
-    description: 'A short book for trying another theme.',
-    popular: false,
-    features: [
-      '1 Full-Color Personalized Cover',
-      'Personalized Dedication Page',
-      '4 Unique Storyline Coloring Sheets',
-      'Official Back-Cover Artist Certificate',
-      'Instant High-Res Printable PDF (Letter & A4)',
-      'Unlimited Re-prints at Home'
-    ]
-  },
-  {
     id: '8',
-    name: 'Standard Adventure',
-    pages: '8 Coloring Pages',
+    name: 'The book',
+    pages: '8 coloring pages',
     price: '$4',
-    unitPrice: '$0.50 / page',
-    description: 'Great for weekend coloring and gifts.',
-    popular: false,
-    features: [
-      '1 Full-Color Personalized Cover',
-      'Personalized Dedication Page',
-      '8 Unique Storyline Coloring Sheets',
-      'Official Back-Cover Artist Certificate',
-      'Instant High-Res Printable PDF (Letter & A4)',
-      'Unlimited Re-prints at Home'
-    ]
-  },
-  {
-    id: '16',
-    name: 'Most Popular',
-    pages: '16 Coloring Pages',
-    price: '$4',
-    unitPrice: '$0.25 / page',
-    description: 'The complete adventure storybook.',
+    unitPrice: 'Color cover included',
+    description: 'One theme. Print it at home. Come back for the next adventure.',
     popular: true,
     features: [
-      '1 Full-Color Personalized Cover',
-      'Personalized Dedication Page',
-      '16 Unique Storyline Coloring Sheets',
-      'Official Back-Cover Artist Certificate',
-      'Instant High-Res Printable PDF (Letter & A4)',
-      'Unlimited Re-prints at Home'
-    ]
-  },
-  {
-    id: '32',
-    name: 'Deluxe Storybook',
-    pages: '32 Coloring Pages',
-    price: '$4',
-    unitPrice: '$0.13 / page',
-    description: 'A full book whenever they want a new theme.',
-    popular: false,
-    features: [
-      '1 Full-Color Personalized Cover',
-      'Personalized Dedication Page',
-      '32 Unique Storyline Coloring Sheets',
-      'Official Back-Cover Artist Certificate',
-      'Instant High-Res Printable PDF (Letter & A4)',
-      'Unlimited Re-prints at Home'
+      '1 full-color cover starring your child',
+      'Personalized dedication page',
+      '8 different coloring pages',
+      'Back-cover artist certificate',
+      'Instant PDF for Letter and A4',
+      'Print it as many times as you want'
     ]
   }
 ];
@@ -105,7 +54,7 @@ export default function PricingPage() {
         </div>
 
         {/* PRICING GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <div className="max-w-md mx-auto">
           {TIERS.map((tier) => (
             <div
               key={tier.id}
