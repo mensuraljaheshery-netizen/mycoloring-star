@@ -93,32 +93,31 @@ export default function BusinessPage() {
       <section className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
         <p className="text-xs font-black uppercase tracking-wider text-orange-600">For shops</p>
         <h1 className="mt-3 text-3xl sm:text-5xl font-black tracking-tight text-slate-900">
-          $2 a book. Your own site when you want it.
+          Buy books in a pack. Credits never expire.
         </h1>
         <p className="mt-4 text-base sm:text-lg text-slate-600">
-          A small shop does not have to pay every month. Buy books at $2. Credits never expire, and they stay if you later upgrade. Parents still see MyColoringStar. The $29 plan is only for a shop that wants its own name and logo.
+          A bigger pack costs less per book. Parents still see MyColoringStar. Credits stay until the shop uses them, including if they later turn on their own site.
         </p>
 
-        <div className="mt-8 grid sm:grid-cols-2 gap-3">
-          <div className="bg-white border-2 border-orange-100 rounded-3xl p-5">
-            <p className="text-xs font-black uppercase tracking-wider text-orange-600">Start here</p>
-            <h2 className="mt-1 text-2xl font-black text-slate-900">$2 a book</h2>
-            <ul className="mt-3 space-y-1 text-sm text-slate-600">
-              <li>No monthly bill</li>
-              <li>Credits stay until the shop uses them</li>
-              <li>MyColoringStar stays on the page and the book</li>
-            </ul>
-          </div>
-          <div className="bg-white border-2 border-orange-500 rounded-3xl p-5">
-            <p className="text-xs font-black uppercase tracking-wider text-orange-600">Upgrade</p>
-            <h2 className="mt-1 text-2xl font-black text-slate-900">$29 a month</h2>
-            <ul className="mt-3 space-y-1 text-sm text-slate-600">
-              <li>Their logo, their name, their phone</li>
-              <li>Same book maker, none of our name</li>
-              <li>Credits already bought are not lost</li>
-            </ul>
-          </div>
+        <div className="mt-8 grid sm:grid-cols-3 gap-3">
+          {[
+            ['Starter', '$10', '4 books', '$2.50 each'],
+            ['Regular', '$20', '10 books', '$2 each'],
+            ['Shop pack', '$30', '20 books', '$1.50 each'],
+          ].map(([name, price, books, each]) => (
+            <a
+              key={name}
+              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, ${shopName.trim() || 'my shop'} wants the ${name} pack: ${price} for ${books}.`)}`}
+              className="bg-white border-2 border-orange-100 rounded-3xl p-5 hover:border-orange-400"
+            >
+              <p className="text-xs font-black uppercase tracking-wider text-orange-600">{name}</p>
+              <h2 className="mt-1 text-2xl font-black text-slate-900">{price}</h2>
+              <p className="mt-2 text-sm font-bold text-slate-900">{books}</p>
+              <p className="text-sm text-slate-600">{each}</p>
+            </a>
+          ))}
         </div>
+        <p className="mt-3 text-sm text-slate-500">From $30 up, every book is $1.50. These prices can go up after the first shops are buying.</p>
 
         <div className="mt-8 bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
           <h2 className="text-xl font-black text-slate-900">Build the shop page</h2>

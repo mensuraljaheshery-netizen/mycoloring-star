@@ -3,8 +3,11 @@ const SAVED_NAME = 'mcs_saved_shop_name';
 const SAVED_SLUG = 'mcs_saved_shop_slug';
 
 export const SHOP_FREE_BOOKS = 2;
-export const SHOP_PACK_SIZE = 10;
-export const SHOP_PACK_PRICE = 20;
+export const SHOP_PACKS = [
+  { name: 'Starter', price: 10, books: 4, each: 2.5 },
+  { name: 'Regular', price: 20, books: 10, each: 2 },
+  { name: 'Shop pack', price: 30, books: 20, each: 1.5 },
+] as const;
 
 export function shopSlug(name: string): string {
   const slug = name

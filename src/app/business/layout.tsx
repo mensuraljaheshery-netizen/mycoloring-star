@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'White-label coloring books for shops',
   description:
-    'Gift shops, playgrounds, and photographers can sell an 8-page coloring book under their own name. Two free books, then $2 each.',
+    'Shops buy coloring-book credits in packs. $10 for 4 books, $20 for 10, or $30 for 20. Credits do not expire.',
   alternates: { canonical: '/business' },
 };
 
