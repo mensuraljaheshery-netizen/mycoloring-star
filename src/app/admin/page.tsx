@@ -151,6 +151,8 @@ export default function AdminPage() {
   // Add Cover Prompt State
   const [newCoverPromptInput, setNewCoverPromptInput] = useState('');
   const [isAddingCover, setIsAddingCover] = useState(false);
+  const [shopRows, setShopRows] = useState<Array<{ shopName: string; ipAddress: string; freeBooks: number; paidBooks: number; firstSeen: string; lastSeen: string }>>([]);
+  const [shopNote, setShopNote] = useState('');
 
   useEffect(() => {
     const sessionAuth = sessionStorage.getItem('admin_session_auth');
@@ -158,8 +160,20 @@ export default function AdminPage() {
       setIsAuthenticated(true);
       fetchSettings();
       fetchCustomThemes();
+      fetchShops();
     }
   }, []);
+
+  const fetchShops = async () => {
+    try {
+      const res = await fetch('/api/admin/shops');
+      const data = await res.json();
+      setShopRows(Array.isArray(data.shops) ? data.shops : []);
+      setShopNote(data.error || '');
+    } catch {
+      setShopNote('Could not load shops.');
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -337,6 +351,7 @@ export default function AdminPage() {
       sessionStorage.setItem('admin_session_auth', 'true');
       fetchSettings();
       fetchCustomThemes();
+      fetchShops();
     } catch (err: any) {
       setErrorMsg(err.message || 'Authentication failed');
     } finally {
@@ -565,6 +580,38 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 pt-8 space-y-8">
+        <section className="p-6 bg-slate-900 border border-slate-800 rounded-3xl space-y-3">
+          <div className="text-xs uppercase font-black text-slate-500">Shops using the site</div>
+          {shopNote && <p className="text-xs text-amber-300">{shopNote}</p>}
+          {shopRows.length === 0 ? (
+            <p className="text-sm text-slate-400">No shop books yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-slate-500">
+                  <tr>
+                    <th className="py-2 pr-3">Shop</th>
+                    <th className="py-2 pr-3">Connection</th>
+                    <th className="py-2 pr-3">Free</th>
+                    <th className="py-2 pr-3">Paid</th>
+                    <th className="py-2">Last book</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shopRows.map((shop) => (
+                    <tr key={`${shop.shopName}-${shop.ipAddress}`} className="border-t border-slate-800">
+                      <td className="py-2 pr-3 font-bold text-white">{shop.shopName}</td>
+                      <td className="py-2 pr-3 text-slate-400">{shop.ipAddress}</td>
+                      <td className="py-2 pr-3">{shop.freeBooks}</td>
+                      <td className="py-2 pr-3">{shop.paidBooks}</td>
+                      <td className="py-2 text-slate-400">{shop.lastSeen ? new Date(shop.lastSeen).toLocaleString() : ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
         {saveSuccess && (
           <div className="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center gap-2 animate-fade-in">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
