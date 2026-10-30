@@ -3,11 +3,13 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { shopSlug } from '@/lib/shop';
 
+type ShopTrialResult = { remaining: number; allowed: boolean; reason?: string };
+
 const FREE_BOOKS = 2;
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
@@ -67,7 +69,7 @@ function statusFromUsed(used: number) {
   };
 }
 
-export async function shopTrialRemaining(ip: string) {
+export async function shopTrialRemaining(ip: string): Promise<ShopTrialResult> {
   const used = await freeBooksOnIp(ip);
   if (used === 'missing') {
     const legacy = await legacyUsed(ip);
@@ -78,7 +80,7 @@ export async function shopTrialRemaining(ip: string) {
   return statusFromUsed(used);
 }
 
-export async function reserveShopTrial(ip: string, orderId: string, shopName: string) {
+export async function reserveShopTrial(ip: string, orderId: string, shopName: string): Promise<ShopTrialResult> {
   const token = trialToken(ip, orderId);
   const name = (shopName || 'Shop').slice(0, 80);
   const { data: existing, error: existingError } = await supabase
@@ -120,7 +122,7 @@ export async function reserveShopTrial(ip: string, orderId: string, shopName: st
   return { remaining: Math.max(0, status.remaining - 1), allowed: true };
 }
 
-async function reserveLegacy(ip: string, orderId: string, shopName: string) {
+async function reserveLegacy(ip: string, orderId: string, shopName: string): Promise<ShopTrialResult> {
   const token = trialToken(ip, orderId);
   const { data: existing, error: existingError } = await supabase
     .from('orders')
