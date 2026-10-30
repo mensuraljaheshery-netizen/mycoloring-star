@@ -342,7 +342,7 @@ export default function HomePage() {
           Add their name, attach a photo, pick an adventure world, and get an instant keepsake coloring book ready for crayons.
         </p>
         <p className="max-w-xl mx-auto text-xs sm:text-sm font-bold text-slate-700 mb-4">
-          Free 3-page sample. The full book is 8 pages for $4, a digital PDF you print at home, with unlimited reprints.
+          Free 3-page sample. The full book is 8 pages for $7, a digital PDF you print at home, with unlimited reprints.
         </p>
         <a href="#how-it-works" className="inline-block text-xs font-bold text-orange-600 hover:underline mb-2">
           See how it works
@@ -637,7 +637,7 @@ export default function HomePage() {
               Click any world to customize {childName.trim() || 'your child'}&apos;s storybook.
             </p>
             <p className="text-sm font-black text-slate-900 mt-1">
-              The full book is 8 pages for $4. The 3-page sample is free.
+              The full book is 8 pages for $7. The 3-page sample is free.
             </p>
           </div>
 

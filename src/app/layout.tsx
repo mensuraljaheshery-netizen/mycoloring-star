@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: '%s | MyColoringStar',
   },
   description:
-    'Turn a photo of your child into a print-at-home coloring book. Free 3-page sample. Paid books are $4, instant PDF, unlimited reprints.',
+    'Turn a photo of your child into a print-at-home coloring book. Free 3-page sample. The full book is 8 pages for $7.',
   openGraph: {
     type: 'website',
     siteName: 'MyColoringStar',

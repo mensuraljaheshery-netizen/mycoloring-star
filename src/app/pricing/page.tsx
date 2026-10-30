@@ -9,7 +9,7 @@ const TIERS = [
     id: '8',
     name: 'The book',
     pages: '8 coloring pages',
-    price: '$4',
+    price: '$7',
     unitPrice: 'Color cover included',
     description: 'One theme. Print it at home. Come back for the next adventure.',
     popular: true,

@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 ### THE CREATION PROCESS (4 SIMPLE STEPS)
 1. Pick an adventure world (from 34 options including Superhero, Princess, Dinosaur, Astronaut, Animals, or Surprise Variety Pack).
 2. Enter the child's name and attach a clear face photo.
-3. The paid book is 8 coloring pages plus a color cover for $4.
+3. The paid book is 8 coloring pages plus a color cover for $7.
 4. Download your instant high-resolution printable PDF or claim a free mini-book sample.
 
 ### FREE SAMPLE OFFER ("TRY BEFORE YOU BUY")
@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
 - Rate-limiting policy: Strictly limited to 1 free mini-book claim per family or household.
 
 ### PACKAGES & CURRENT CANONICAL PRICING (NEVER QUOTE OLD PRICES)
-- The paid book is 8 coloring pages + 1 full-color personalized cover — $4
-- There is no 16-page or 32-page book for $4. Do not offer those sizes.
+- The paid book is 8 coloring pages + 1 full-color personalized cover — $7
+- There is no 16-page or 32-page book. Do not offer those sizes.
 - Format: Every book includes a full-color personalized cover, a story dedication page, 8 interior coloring pages, and an official back-cover artist certificate. All orders are instant high-resolution PDF downloads.
 
 ### PAYMENTS & BILLING
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     // Clean customer-facing fallback rather than throwing a raw 500 error
     return NextResponse.json({
-      reply: "Hi there! 🌟 I'm Starla. We create personalized coloring books starring your child starting at $4 with instant printable PDF delivery. If you need any special assistance, our team is always ready at support@mycoloringstar.com!"
+      reply: "Hi there! 🌟 I'm Starla. We create personalized coloring books starring your child. The full book is 8 pages for $7, with a free 3-page sample. If you need any special assistance, our team is always ready at support@mycoloringstar.com!"
     });
   } catch (err: any) {
     console.error('Chat API Error:', err);

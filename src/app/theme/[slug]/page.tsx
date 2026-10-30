@@ -72,7 +72,7 @@ const ALL_34_THEMES: ThemeCatalogItem[] = [
 ];
 
 const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: string; popular?: boolean }> = {
-  '8': { label: '8-Page Book', pages: 8, price: '$4', popular: true }
+  '8': { label: '8-Page Book', pages: 8, price: '$7', popular: true }
 };
 
 function shuffleCatalog<T>(items: T[]): T[] {
@@ -753,7 +753,7 @@ export default function ThemeCustomizerPage() {
           <div className="rounded-xl border border-orange-200 bg-orange-50 px-3 py-3">
             <div className="text-[11px] font-black uppercase text-slate-500">The book</div>
             <div className="text-sm font-black text-slate-900">8 coloring pages + color cover</div>
-            <div className="text-sm font-black text-orange-600">$4, print it at home</div>
+            <div className="text-sm font-black text-orange-600">$7, print it at home</div>
           </div>
         </div>
 
