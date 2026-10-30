@@ -220,7 +220,8 @@ export async function POST(req: NextRequest) {
       orientation = 'portrait',
       paperSize = 'letter',
       orderId,
-      finalizeFreeClaim
+      finalizeFreeClaim,
+      brandName
     } = await req.json();
 
     const isPaidOrder = Boolean(orderId && (orderId.startsWith('paid_') || orderId.startsWith('ord_')));
@@ -274,6 +275,10 @@ export async function POST(req: NextRequest) {
         `TOP TITLE: the name "${heroName}" in flowing golden script, not block letters. Under the name, elegant white script reads "${tale}". NO ribbon. A clean dark bar along the bottom reads "${heroName}'S ${displayTheme} BOOK", with a small line under it reading "Coloring Artist:" and a blank line to sign.`
       ];
       const titleStyle = titleStyles[Math.floor(Math.random() * titleStyles.length)];
+      const safeBrand = String(brandName || '').replace(/["\n\r]/g, '').trim().slice(0, 40);
+      const bottomBadge = safeBrand
+        ? `BOTTOM MARK: If there is no bottom title bar, add small centered text reading "${safeBrand}". If a bottom bar is already there, do not add a second logo. Never write MyColoringStar.`
+        : `BOTTOM BADGE: Simple, small brand logo centered near the bottom edge reading "MyColoringStar", unless a bottom title bar is already there.`;
 
       prompt = `Deluxe commercial children's adventure coloring book cover illustration starring the child from the reference photo named "${heroName}".
 ${canvasOrientationRule}
@@ -294,7 +299,7 @@ SCENE: ${getCoverScene(rawThemeName)}
 CLEAN COVER TYPOGRAPHY:
 - ${titleStyle}
 - Letters are vibrant yellow or orange with heavy dark outlines.
-- BOTTOM BADGE: Simple, small brand logo centered near the bottom edge reading "MyColoringStar", unless a bottom title bar is already there.
+- ${bottomBadge}
 - STRICTLY FORBIDDEN: Do NOT write "PERSONALIZED KEEPSAKE EDITION". Write "Coloring Artist" only when the chosen title style asks for it. Do NOT add extra blank boxes.
 - Finished retail comic book cover presentation. Zero clipped text.`;
     } else if (customPrompt) {

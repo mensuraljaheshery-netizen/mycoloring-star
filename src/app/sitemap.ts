@@ -3,7 +3,7 @@ import { listPublicThemes } from '@/lib/themes';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = 'https://www.mycoloringstar.com';
-  const staticRoutes = ['', '/pricing', '/reviews', '/contact', '/faq', '/privacy', '/terms', '/refunds'].map((path) => ({
+  const staticRoutes = ['', '/pricing', '/reviews', '/contact', '/faq', '/privacy', '/terms', '/refunds', '/business'].map((path) => ({
     url: `${base}${path || '/'}`,
     changeFrequency: 'weekly' as const,
     priority: path === '' ? 1 : 0.6,

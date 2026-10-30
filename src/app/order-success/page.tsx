@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { jsPDF } from 'jspdf';
+import { shopFileName, spendShopCredit } from '@/lib/shop';
 import {
   Download,
   RefreshCw,
@@ -38,6 +39,7 @@ function OrderSuccessContent() {
   const [currentProgress, setCurrentProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
   const [completedBook, setCompletedBook] = useState<GeneratedBookResult | null>(null);
+  const [shopReturn, setShopReturn] = useState('');
   const isRunningRef = useRef(false);
 
   const fetchWithRetry = async (payload: any, retries = 3): Promise<string> => {
@@ -112,7 +114,8 @@ function OrderSuccessContent() {
     theme: string,
     coverUrl: string,
     pageUrls: string[],
-    bookOrientation: 'portrait' | 'landscape' = 'portrait'
+    bookOrientation: 'portrait' | 'landscape' = 'portrait',
+    brandName = ''
   ): Promise<{ url: string; filename: string }> => {
     const formattedName = toTitleCase(childName);
     const formattedTheme = toTitleCase(theme);
@@ -214,7 +217,7 @@ function OrderSuccessContent() {
     // Subtle Brand Footprint
     doc.setFontSize(9);
     doc.setTextColor(160, 174, 192);
-    doc.text('Published by MyColoringStar • www.mycoloringstar.com', pageWidth / 2, pageHeight - 45, { align: 'center' });
+    doc.text(brandName ? `Made for ${brandName}` : 'Published by MyColoringStar • www.mycoloringstar.com', pageWidth / 2, pageHeight - 45, { align: 'center' });
 
     // 3. Interior Coloring Pages
     for (const pUrl of pageUrls) {
@@ -273,11 +276,13 @@ function OrderSuccessContent() {
 
     doc.setFontSize(9);
     doc.setTextColor(160, 174, 192);
-    doc.text('MyColoringStar Keepsake Edition • Made with Love', pageWidth / 2, pageHeight - 45, { align: 'center' });
+    doc.text(brandName ? brandName : 'MyColoringStar Keepsake Edition • Made with Love', pageWidth / 2, pageHeight - 45, { align: 'center' });
 
     const cleanChild = formattedName.replace(/[^a-zA-Z0-9]/g, '_');
     const cleanTheme = formattedTheme.replace(/[^a-zA-Z0-9]/g, '_');
-    const filename = `MyColoringStar_${cleanChild}_${cleanTheme}.pdf`;
+    const filename = brandName
+      ? shopFileName(brandName, formattedName, formattedTheme)
+      : `MyColoringStar_${cleanChild}_${cleanTheme}.pdf`;
     const blob = doc.output('blob');
     const url = window.URL.createObjectURL(blob);
     return { url, filename };
@@ -294,6 +299,19 @@ function OrderSuccessContent() {
       const theme = localStorage.getItem('mcs_selected_theme') || 'superhero';
       const photo = localStorage.getItem('hero_child_photo');
       const orderToken = localStorage.getItem('mcs_current_order_token') || searchParams.get('order_id') || 'default_order';
+      const brandName = sessionStorage.getItem('mcs_brand_order') === orderToken
+        ? (sessionStorage.getItem('mcs_brand_name') || '')
+        : '';
+      const brandSlug = brandName ? (sessionStorage.getItem('mcs_brand_slug') || '') : '';
+      if (brandName && brandSlug) {
+        setShopReturn(`/s/${brandSlug}?n=${encodeURIComponent(brandName)}`);
+      }
+      const markShopBook = () => {
+        if (brandSlug && !localStorage.getItem(`mcs_shop_spent_${orderToken}`)) {
+          spendShopCredit(brandSlug);
+          localStorage.setItem(`mcs_shop_spent_${orderToken}`, '1');
+        }
+      };
       const bookOrientation =
         (localStorage.getItem('mcs_selected_orientation') || sessionStorage.getItem('mcs_selected_orientation')) === 'landscape'
           ? 'landscape'
@@ -304,6 +322,7 @@ function OrderSuccessContent() {
       const cachedFilename = localStorage.getItem(`mcs_completed_filename_${orderToken}`);
 
       if (cachedPdf && cachedFilename) {
+        markShopBook();
         setCompletedBook({
           childName,
           theme,
@@ -370,7 +389,8 @@ function OrderSuccessContent() {
           theme,
           isCover: job === 'cover',
           orientation: bookOrientation,
-          orderId: orderToken
+          orderId: orderToken,
+          brandName: job === 'cover' ? brandName : ''
         });
         if (job === 'cover') {
           coverUrl = imageUrl;
@@ -402,7 +422,7 @@ function OrderSuccessContent() {
       const interiorUrls = pageSlots as string[];
 
       setProgressText('Assembling high-resolution printable PDF...');
-      const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls, bookOrientation);
+      const pdfMeta = await createBookPdf(childName, theme, coverUrl, interiorUrls, bookOrientation, brandName);
 
       // Safe cache cleanup
       try {
@@ -432,6 +452,7 @@ function OrderSuccessContent() {
         console.warn('Could not record order in database:', dbErr);
       }
 
+      markShopBook();
       setCompletedBook({
         childName: toTitleCase(childName),
         theme: toTitleCase(theme),
@@ -560,6 +581,7 @@ function OrderSuccessContent() {
               </a>
             </div>
 
+            {!shopReturn && (
             <div className="grid grid-cols-2 gap-2">
               <a
                 href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, I want to leave a review for ${completedBook.childName}'s ${completedBook.theme} coloring book.`)}`}
@@ -576,10 +598,11 @@ function OrderSuccessContent() {
                 Review by email
               </a>
             </div>
+            )}
 
             <div className="pt-2 text-center">
               <Link
-                href="/"
+                href={shopReturn || '/'}
                 className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:underline"
               >
                 Create another book <ArrowRight className="w-3.5 h-3.5" />
