@@ -12,7 +12,7 @@ export async function generateMetadata({
   const query = await searchParams;
   const name = (query.n || '').trim() || shopNameFromSlug(slug);
   return {
-    title: { absolute: `${name} coloring book | MyColoringStar` },
+    title: { absolute: name },
     description: `Make a personalized coloring book at ${name}.`,
     robots: { index: false, follow: false },
   };
