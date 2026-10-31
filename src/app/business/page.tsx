@@ -125,7 +125,7 @@ export default function BusinessPage() {
             <button type="button" onClick={submitAccount} disabled={busy} className="w-full rounded-2xl bg-orange-500 text-white font-black py-3 disabled:opacity-60">
               {busy ? 'Saving...' : mode === 'signup' ? 'Create the shop' : 'Log in'}
             </button>
-            {note && <p className="text-sm font-bold text-slate-700">{note}</p>}
+            {note && <p className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-3 text-sm font-bold text-slate-800">{note}</p>}
           </div>
         ) : (
           <>

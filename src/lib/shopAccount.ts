@@ -131,7 +131,12 @@ export async function createShopAccount(shopName: string, email: string, passwor
     [{ slug, shop_name: name, details, updated_at: new Date().toISOString() }],
     { onConflict: 'slug' }
   );
-  if (error) return { account: null, error: error.message };
+  if (error) {
+    const readable = /row-level security/i.test(error.message)
+      ? 'The shop table is blocking new accounts. In Supabase, open SQL and run: alter table public.shop_profiles disable row level security;'
+      : error.message;
+    return { account: null, error: readable };
+  }
   return { account: { slug, shopName: name, email: normalized, credits: 0 } as ShopAccount, error: '' };
 }
 
