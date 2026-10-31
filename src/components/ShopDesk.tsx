@@ -169,6 +169,17 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
+        {owner && (
+          <div className="mb-6 grid sm:grid-cols-3 gap-3">
+            {CREDIT_PACKS.map((pack) => (
+              <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="bg-white border-2 border-orange-200 rounded-3xl p-4 text-left shadow-sm">
+                <p className="text-xs font-black uppercase tracking-wider text-orange-600">Buy books</p>
+                <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
+                <p className="text-sm font-bold text-slate-900">{pack.books}</p>
+              </button>
+            ))}
+          </div>
+        )}
         <section className="bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-8 shadow-sm">
           <p className="text-xs font-black uppercase tracking-wider text-orange-600">Coloring book</p>
           <h1 className="mt-2 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -179,21 +190,6 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
               ? about
               : `Add a name and a clear photo. Pick an adventure. ${shopName} prints the 8-page book.`}
           </p>
-
-          {owner && booksLeft === 0 && (
-            <div className="mt-6 space-y-3">
-              <p className="text-xs font-black uppercase tracking-wider text-orange-600">Buy books</p>
-              <div className="grid sm:grid-cols-3 gap-3">
-                {CREDIT_PACKS.map((pack) => (
-                  <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="bg-white border-2 border-orange-100 rounded-3xl p-4 text-left">
-                    <p className="text-xs font-black uppercase tracking-wider text-orange-600">{pack.name}</p>
-                    <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
-                    <p className="text-sm text-slate-600">{pack.books}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {credits === 0 && !owner ? (
             <p className="mt-6 rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 text-sm font-bold text-slate-800">
