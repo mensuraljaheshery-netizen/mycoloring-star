@@ -16,7 +16,7 @@ const CHECKOUT_PAYLINKS: Record<string, string | undefined> = {
   'bundle_3x48': process.env.WHOP_PAYLINK_BUNDLE_3X48,
 
   'test_mini_3kids': process.env.WHOP_PAYLINK_TEST_MINI_3KIDS || fourDollar,
-  'shop_15': process.env.WHOP_PAYLINK_SHOP_15,
+  'shop_15': process.env.WHOP_PAYLINK_SHOP_15 || 'https://whop.com/checkout/plan_RkPjeG1sLebpi',
 };
 
 export async function POST(req: NextRequest) {
