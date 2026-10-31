@@ -239,6 +239,7 @@ export async function confirmPending(slug: string) {
   }
   const credits = Math.max(0, Number(details.credits || 0)) + books;
   details.credits = credits;
+  details.bought = Math.max(0, Number(details.bought || 0)) + books;
   delete details.pending;
   const error = await writeDetails(slug, details);
   return { credits, added: error ? 0 : books, error };
@@ -257,7 +258,33 @@ export async function spendAccountCredit(slug: string) {
   const credits = Math.max(0, Number(details.credits || 0));
   if (credits < 1) return { ok: false, credits: 0 };
   details.credits = credits - 1;
+  details.used = Math.max(0, Number(details.used || 0)) + 1;
   const error = await writeDetails(found.row.slug, details);
   if (error) return { ok: false, credits };
   return { ok: true, credits: credits - 1 };
+}
+
+export async function listShopAccounts() {
+  const { data, error } = await supabase
+    .from('shop_profiles')
+    .select('slug, shop_name, details, updated_at')
+    .order('updated_at', { ascending: false })
+    .limit(200);
+  if (error) return { accounts: [], error: error.message };
+  const accounts = (data || [])
+    .map((row) => {
+      const details = readDetails(row.details);
+      if (!details.email) return null;
+      return {
+        shopName: row.shop_name,
+        email: String(details.email),
+        credits: Math.max(0, Number(details.credits || 0)),
+        used: Math.max(0, Number(details.used || 0)),
+        bought: Math.max(0, Number(details.bought || 0)),
+        freeBooks: details.freeGranted ? 2 : 0,
+        updatedAt: row.updated_at || '',
+      };
+    })
+    .filter(Boolean);
+  return { accounts, error: '' };
 }

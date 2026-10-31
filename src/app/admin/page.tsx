@@ -151,6 +151,7 @@ export default function AdminPage() {
   // Add Cover Prompt State
   const [newCoverPromptInput, setNewCoverPromptInput] = useState('');
   const [isAddingCover, setIsAddingCover] = useState(false);
+  const [shopAccounts, setShopAccounts] = useState<Array<{ shopName: string; email: string; credits: number; used: number; bought: number; freeBooks: number; updatedAt: string }>>([]);
   const [shopRows, setShopRows] = useState<Array<{ shopName: string; ipAddress: string; freeBooks: number; paidBooks: number; firstSeen: string; lastSeen: string }>>([]);
   const [shopNote, setShopNote] = useState('');
 
@@ -168,6 +169,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/shops');
       const data = await res.json();
+      setShopAccounts(Array.isArray(data.accounts) ? data.accounts : []);
       setShopRows(Array.isArray(data.shops) ? data.shops : []);
       setShopNote(data.error || '');
     } catch {
@@ -581,8 +583,39 @@ export default function AdminPage() {
 
       <main className="max-w-5xl mx-auto px-6 pt-8 space-y-8">
         <section className="p-6 bg-slate-900 border border-slate-800 rounded-3xl space-y-3">
-          <div className="text-xs uppercase font-black text-slate-500">Shops using the site</div>
+          <div className="text-xs uppercase font-black text-slate-500">Shop accounts ({shopAccounts.length} signed up)</div>
           {shopNote && <p className="text-xs text-amber-300">{shopNote}</p>}
+          {shopAccounts.length === 0 ? (
+            <p className="text-sm text-slate-400">No shop accounts yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-slate-500">
+                  <tr>
+                    <th className="py-2 pr-3">Shop</th>
+                    <th className="py-2 pr-3">Email</th>
+                    <th className="py-2 pr-3">Books left</th>
+                    <th className="py-2 pr-3">Books used</th>
+                    <th className="py-2 pr-3">Bought</th>
+                    <th className="py-2">Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shopAccounts.map((shop) => (
+                    <tr key={shop.email} className="border-t border-slate-800">
+                      <td className="py-2 pr-3 font-bold text-white">{shop.shopName}</td>
+                      <td className="py-2 pr-3 text-slate-400">{shop.email}</td>
+                      <td className="py-2 pr-3">{shop.credits}</td>
+                      <td className="py-2 pr-3">{shop.used}</td>
+                      <td className="py-2 pr-3">{shop.bought}</td>
+                      <td className="py-2 text-slate-400">{shop.updatedAt ? new Date(shop.updatedAt).toLocaleString() : ''}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div className="text-xs uppercase font-black text-slate-500 pt-4">Older shop activity</div>
           {shopRows.length === 0 ? (
             <p className="text-sm text-slate-400">No shop books yet.</p>
           ) : (
