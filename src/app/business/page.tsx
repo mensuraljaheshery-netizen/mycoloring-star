@@ -36,7 +36,7 @@ function shrinkLogo(file: File): Promise<string> {
 }
 
 const SHOP_PACKS = [
-  { name: 'Starter', price: '$15', books: '10 books', each: '$1.50 each' },
+  { name: 'Starter', price: '$15', books: '10 books', each: '$1.50 each', checkoutKey: 'shop_15' },
   { name: 'Popular', price: '$30', books: '25 books', each: '$1.20 each', popular: true },
   { name: 'Best value', price: '$60', books: '60 books', each: '$1 each' },
 ] as const;
@@ -68,6 +68,25 @@ export default function BusinessPage() {
       .then(setQr)
       .catch(() => setQr(''));
   }, [link]);
+
+  const buyPack = async (pack: (typeof SHOP_PACKS)[number]) => {
+    const whatsapp = `https://wa.me/15205672374?text=${encodeURIComponent(`Hi, ${shopName.trim() || 'my shop'} wants the ${pack.name} pack: ${pack.price} for ${pack.books}.`)}`;
+    if (!('checkoutKey' in pack)) {
+      window.location.href = whatsapp;
+      return;
+    }
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageSize: pack.checkoutKey }),
+      });
+      const data = await res.json();
+      window.location.href = data.checkoutUrl || whatsapp;
+    } catch {
+      window.location.href = whatsapp;
+    }
+  };
 
   const saveShop = async () => {
     const name = shopName.trim();
@@ -107,16 +126,17 @@ export default function BusinessPage() {
 
         <div className="mt-8 grid sm:grid-cols-3 gap-3">
           {SHOP_PACKS.map((pack) => (
-            <a
+            <button
               key={pack.name}
-              href={`https://wa.me/15205672374?text=${encodeURIComponent(`Hi, ${shopName.trim() || 'my shop'} wants the ${pack.name} pack: ${pack.price} for ${pack.books}.`)}`}
-              className={`bg-white border-2 rounded-3xl p-5 hover:border-orange-400 ${'popular' in pack && pack.popular ? 'border-orange-500' : 'border-orange-100'}`}
+              type="button"
+              onClick={() => buyPack(pack)}
+              className={`bg-white border-2 rounded-3xl p-5 text-left hover:border-orange-400 ${'popular' in pack && pack.popular ? 'border-orange-500' : 'border-orange-100'}`}
             >
               <p className="text-xs font-black uppercase tracking-wider text-orange-600">{pack.name}</p>
               <h2 className="mt-1 text-2xl font-black text-slate-900">{pack.price}</h2>
               <p className="mt-2 text-sm font-bold text-slate-900">{pack.books}</p>
               <p className="text-sm text-slate-600">{pack.each}</p>
-            </a>
+            </button>
           ))}
         </div>
         <p className="mt-3 text-sm text-slate-500">One-time packs, not a monthly bill. Credits stay until they are used. These prices can go up after the first shops are buying.</p>

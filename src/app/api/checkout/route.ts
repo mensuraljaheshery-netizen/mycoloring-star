@@ -16,13 +16,16 @@ const CHECKOUT_PAYLINKS: Record<string, string | undefined> = {
   'bundle_3x48': process.env.WHOP_PAYLINK_BUNDLE_3X48,
 
   'test_mini_3kids': process.env.WHOP_PAYLINK_TEST_MINI_3KIDS || fourDollar,
+  'shop_15': process.env.WHOP_PAYLINK_SHOP_15,
 };
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const pkgKey = String(body.packageSize || '4').replace(/s$/, '');
-    const checkoutUrl = CHECKOUT_PAYLINKS[pkgKey] || fourDollar;
+    const checkoutUrl = pkgKey.startsWith('shop_')
+      ? CHECKOUT_PAYLINKS[pkgKey]
+      : (CHECKOUT_PAYLINKS[pkgKey] || fourDollar);
 
     if (!checkoutUrl) {
       return NextResponse.json(
