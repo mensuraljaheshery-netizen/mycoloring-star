@@ -160,9 +160,44 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
           </p>
 
           {credits === 0 ? (
+            owner ? (
+              <div className="mt-6 space-y-3">
+                <p className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 text-sm font-bold text-slate-800">
+                  The free books are used. Buy a pack if you want to keep making books.
+                </p>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  {[
+                    { name: 'Starter', price: '$15', books: '10 books', checkoutKey: 'shop_15' },
+                    { name: 'Popular', price: '$30', books: '25 books', checkoutKey: 'shop_30' },
+                    { name: 'Best value', price: '$60', books: '60 books', checkoutKey: 'shop_60' },
+                  ].map((pack) => (
+                    <button
+                      key={pack.checkoutKey}
+                      type="button"
+                      onClick={async () => {
+                        const res = await fetch('/api/shop-account', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ action: 'buy', pack: pack.checkoutKey }),
+                        });
+                        const data = await res.json();
+                        if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+                        else setError(data.error || 'That pack is not ready yet.');
+                      }}
+                      className="bg-white border-2 border-orange-100 rounded-3xl p-4 text-left"
+                    >
+                      <p className="text-xs font-black uppercase tracking-wider text-orange-600">{pack.name}</p>
+                      <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
+                      <p className="text-sm text-slate-600">{pack.books}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
             <p className="mt-6 rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 text-sm font-bold text-slate-800">
               Ask the shop to start this book.
             </p>
+            )
           ) : (
             <div className="mt-6 space-y-5">
               <label className="block text-xs font-black uppercase tracking-wider text-slate-500">

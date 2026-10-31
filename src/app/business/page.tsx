@@ -104,7 +104,7 @@ export default function BusinessPage() {
           Your shop name goes on the book.
         </h1>
         <p className="mt-4 text-base sm:text-lg text-slate-600">
-          Create an account once. The link and the QR code stay with that account, and the books you buy are added there. A parent who scans the code gets a book with your shop name on it, not MyColoringStar.
+          Create an account and get 2 free books. The book form opens right away, with your shop name on it. Buy more books only after those 2 are used.
         </p>
 
         {!account ? (
@@ -134,6 +134,7 @@ export default function BusinessPage() {
           </div>
         ) : (
           <>
+            {account.credits === 0 && (
             <div className="mt-8 grid sm:grid-cols-3 gap-3">
               {SHOP_PACKS.map((pack) => (
                 <button
@@ -149,6 +150,7 @@ export default function BusinessPage() {
                 </button>
               ))}
             </div>
+            )}
             {note && <p className="mt-3 text-sm font-bold text-slate-700">{note}</p>}
 
             <div className="mt-8 bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-6 shadow-sm">
