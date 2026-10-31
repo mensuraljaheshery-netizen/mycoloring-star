@@ -26,6 +26,7 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [themeName, setThemeName] = useState('Superhero');
   const [consent, setConsent] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
+  const [booksLeft, setBooksLeft] = useState<number | null>(null);
   const [logo, setLogo] = useState('');
   const [whiteLabel, setWhiteLabel] = useState(false);
   const [headline, setHeadline] = useState('');
@@ -39,7 +40,10 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
     saveShopProfile(shopName, slug);
     fetch(`/api/shop-trial?shop=${encodeURIComponent(slug)}`)
       .then((res) => res.json())
-      .then((data) => setCredits(typeof data.remaining === 'number' ? data.remaining : 0))
+      .then((data) => {
+        setCredits(typeof data.remaining === 'number' ? data.remaining : 0);
+        setBooksLeft(typeof data.paid === 'number' ? data.paid : 0);
+      })
       .catch(() => setCredits(0));
     fetch(`/api/shop-brand?slug=${encodeURIComponent(slug)}`)
       .then((res) => res.json())
@@ -79,6 +83,7 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
         body: JSON.stringify({ orderId: orderToken, shopName, slug }),
       });
       const gateData = await gate.json();
+      if (typeof gateData.paid === 'number') setBooksLeft(gateData.paid);
       if (!gate.ok || !gateData.allowed) {
         setCredits(0);
         setError('Ask the shop to start this book.');
@@ -126,7 +131,12 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
                 {initials(shopName)}
               </div>
             )}
-            <span className="font-black text-slate-900 tracking-tight">{shopName}</span>
+            <div className="min-w-0">
+              <span className="font-black text-slate-900 tracking-tight">{shopName}</span>
+              <span className="block text-xs font-black text-orange-600">
+                {booksLeft === null ? 'Books left' : `${booksLeft} books left`}
+              </span>
+            </div>
           </>
         </div>
       </header>

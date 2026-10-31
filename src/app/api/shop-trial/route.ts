@@ -21,10 +21,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ allowed: false, remaining: 0, reason: 'Missing order.' }, { status: 400 });
   }
   const status = await reserveShopTrial(requestIp(req), orderId, shopName);
-  if (status.allowed) return NextResponse.json(status);
+  const paidBefore = await accountCredits(slug);
+  if (status.allowed) return NextResponse.json({ ...status, paid: paidBefore });
   const paid = await spendAccountCredit(slug);
   if (!paid.ok) {
     return NextResponse.json({ allowed: false, remaining: 0, reason: 'Ask the shop to add book credits.' }, { status: 403 });
   }
-  return NextResponse.json({ allowed: true, remaining: paid.credits });
+  return NextResponse.json({ allowed: true, remaining: paid.credits, paid: paid.credits });
 }
