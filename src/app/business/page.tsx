@@ -28,7 +28,10 @@ export default function BusinessPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.account) setAccount(data.account);
-        if (data.added) setNote(`${data.added} books were added to this shop.`);
+        if (data.added && data.account?.slug) {
+          const name = encodeURIComponent(data.account.shopName || '');
+          window.location.href = `/s/${data.account.slug}?n=${name}`;
+        }
       })
       .catch(() => {});
   }, []);
@@ -156,7 +159,11 @@ export default function BusinessPage() {
                 <button type="button" onClick={logout} className="text-sm font-black text-slate-500">Log out</button>
               </div>
               {link && (
-                <div className="mt-4 grid sm:grid-cols-[160px_1fr] gap-4 items-center">
+                <div className="mt-4 space-y-4">
+                  <a href={link} className="block w-full rounded-2xl bg-orange-500 text-white font-black py-3 text-center">
+                    Make a book
+                  </a>
+                  <div className="grid sm:grid-cols-[160px_1fr] gap-4 items-center">
                   {qr && <img src={qr} alt="QR code" className="w-40 h-40 rounded-2xl border border-orange-100" />}
                   <div>
                     <p className="text-xs font-bold text-slate-500 break-all">{link}</p>
@@ -164,6 +171,7 @@ export default function BusinessPage() {
                       {copied ? 'Copied' : 'Copy link'}
                     </button>
                     {qr && <a href={qr} download={`${account.slug}-qr.png`} className="ml-4 text-sm font-black text-orange-600">Download QR</a>}
+                  </div>
                   </div>
                 </div>
               )}
