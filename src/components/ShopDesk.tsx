@@ -8,6 +8,12 @@ import { cleanShopName, saveShopProfile, shopNameFromSlug } from '@/lib/shop';
 
 const FIRST_THEMES = ['superhero', 'princess', 'basketball-champion', 'school-day', 'dinosaur-explorer', 'safari'];
 
+const CREDIT_PACKS = [
+  { name: 'Starter', price: '$15', books: '10 books', checkoutKey: 'shop_15' },
+  { name: 'Popular', price: '$30', books: '25 books', checkoutKey: 'shop_30' },
+  { name: 'Best value', price: '$60', books: '60 books', checkoutKey: 'shop_60' },
+];
+
 function initials(name: string) {
   const parts = name.split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0] || 'S') + (parts[1]?.[0] || '')).toUpperCase();
@@ -28,6 +34,7 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [credits, setCredits] = useState<number | null>(null);
   const [booksLeft, setBooksLeft] = useState<number | null>(null);
   const [owner, setOwner] = useState(false);
+  const [buyOpen, setBuyOpen] = useState(false);
   const [logo, setLogo] = useState('');
   const [whiteLabel, setWhiteLabel] = useState(false);
   const [headline, setHeadline] = useState('');
@@ -70,9 +77,21 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
     reader.readAsDataURL(file);
   };
 
+  const buyPack = async (checkoutKey: string) => {
+    const res = await fetch('/api/shop-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'buy', pack: checkoutKey }),
+    });
+    const data = await res.json();
+    if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+    else setError(data.error || 'That pack is not ready yet.');
+  };
+
   const startBook = async () => {
     if (credits !== null && credits <= 0) {
-      setError('Ask the shop to start this book.');
+      if (owner) setBuyOpen(true);
+      else setError('Ask the shop to start this book.');
       return;
     }
     if (!childName.trim() || !photo || !consent) {
@@ -91,7 +110,9 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       if (typeof gateData.paid === 'number') setBooksLeft(gateData.paid);
       if (!gate.ok || !gateData.allowed) {
         setCredits(0);
-        setError('Ask the shop to start this book.');
+        setBooksLeft(0);
+        if (owner) setBuyOpen(true);
+        else setError('Ask the shop to start this book.');
         setStarting(false);
         return;
       }
@@ -159,45 +180,25 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
               : `Add a name and a clear photo. Pick an adventure. ${shopName} prints the 8-page book.`}
           </p>
 
-          {credits === 0 ? (
-            owner ? (
-              <div className="mt-6 space-y-3">
-                <p className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 text-sm font-bold text-slate-800">
-                  The free books are used. Buy a pack if you want to keep making books.
-                </p>
-                <div className="grid sm:grid-cols-3 gap-3">
-                  {[
-                    { name: 'Starter', price: '$15', books: '10 books', checkoutKey: 'shop_15' },
-                    { name: 'Popular', price: '$30', books: '25 books', checkoutKey: 'shop_30' },
-                    { name: 'Best value', price: '$60', books: '60 books', checkoutKey: 'shop_60' },
-                  ].map((pack) => (
-                    <button
-                      key={pack.checkoutKey}
-                      type="button"
-                      onClick={async () => {
-                        const res = await fetch('/api/shop-account', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ action: 'buy', pack: pack.checkoutKey }),
-                        });
-                        const data = await res.json();
-                        if (data.checkoutUrl) window.location.href = data.checkoutUrl;
-                        else setError(data.error || 'That pack is not ready yet.');
-                      }}
-                      className="bg-white border-2 border-orange-100 rounded-3xl p-4 text-left"
-                    >
-                      <p className="text-xs font-black uppercase tracking-wider text-orange-600">{pack.name}</p>
-                      <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
-                      <p className="text-sm text-slate-600">{pack.books}</p>
-                    </button>
-                  ))}
-                </div>
+          {owner && booksLeft === 0 && (
+            <div className="mt-6 space-y-3">
+              <p className="text-xs font-black uppercase tracking-wider text-orange-600">Buy books</p>
+              <div className="grid sm:grid-cols-3 gap-3">
+                {CREDIT_PACKS.map((pack) => (
+                  <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="bg-white border-2 border-orange-100 rounded-3xl p-4 text-left">
+                    <p className="text-xs font-black uppercase tracking-wider text-orange-600">{pack.name}</p>
+                    <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
+                    <p className="text-sm text-slate-600">{pack.books}</p>
+                  </button>
+                ))}
               </div>
-            ) : (
+            </div>
+          )}
+
+          {credits === 0 && !owner ? (
             <p className="mt-6 rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 text-sm font-bold text-slate-800">
               Ask the shop to start this book.
             </p>
-            )
           ) : (
             <div className="mt-6 space-y-5">
               <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
@@ -277,6 +278,25 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       <footer className="border-t border-orange-100 bg-white py-6 px-4 text-center text-xs text-slate-500">
         <div className="font-black text-slate-900">{shopName}</div>
       </footer>
+      {buyOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-end sm:items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-white rounded-3xl p-5 shadow-xl">
+            <p className="text-xs font-black uppercase tracking-wider text-orange-600">Free books used</p>
+            <h2 className="mt-2 text-2xl font-black text-slate-900">Buy books to make another one.</h2>
+            <p className="mt-2 text-sm text-slate-600">The 2 free books are used. Pick a pack to keep going.</p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {CREDIT_PACKS.map((pack) => (
+                <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="border-2 border-orange-100 rounded-2xl p-3 text-left">
+                  <p className="text-[10px] font-black uppercase text-orange-600">{pack.name}</p>
+                  <p className="text-xl font-black text-slate-900">{pack.price}</p>
+                  <p className="text-xs text-slate-600">{pack.books}</p>
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={() => setBuyOpen(false)} className="mt-4 w-full text-sm font-black text-slate-500">Not now</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
