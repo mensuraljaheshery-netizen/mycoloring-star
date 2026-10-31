@@ -66,6 +66,7 @@ export default function BusinessPage() {
     }
     setAccount(data.account);
     setPassword('');
+    if (data.note) setNote(data.note);
   };
 
   const buyPack = async (pack: (typeof SHOP_PACKS)[number]) => {

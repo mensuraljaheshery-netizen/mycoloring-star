@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requestIp } from '@/lib/shopTrial';
 import {
   SHOP_COOKIE,
   accountFromSlug,
@@ -46,13 +47,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'signup') {
-    const result = await createShopAccount(String(body.shopName || ''), String(body.email || ''), String(body.password || ''));
+    const ip = requestIp(req);
+    const result = await createShopAccount(String(body.shopName || ''), String(body.email || ''), String(body.password || ''), ip);
     if (!result.account) return NextResponse.json({ error: result.error }, { status: 400 });
-    return withCookie({ account: result.account }, result.account.slug);
+    return withCookie({ account: result.account, note: result.note }, result.account.slug);
   }
 
   if (action === 'login') {
-    const result = await loginShopAccount(String(body.email || ''), String(body.password || ''));
+    const result = await loginShopAccount(String(body.email || ''), String(body.password || ''), requestIp(req));
     if (!result.account) return NextResponse.json({ error: result.error }, { status: 400 });
     return withCookie({ account: result.account }, result.account.slug);
   }

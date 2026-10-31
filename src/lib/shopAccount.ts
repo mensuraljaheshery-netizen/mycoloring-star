@@ -100,32 +100,71 @@ export async function findShopBySlug(slug: string) {
   return { row: data, error: '' };
 }
 
-export async function findShopByEmail(email: string) {
+function nameKey(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+async function listShops() {
   const { data, error } = await supabase.from('shop_profiles').select('slug, shop_name, details').limit(500);
-  if (error) return { row: null, error: error.message };
-  const row = (data || []).find((item) => String(readDetails(item.details).email || '').toLowerCase() === email);
+  return { rows: data || [], error: error?.message || '' };
+}
+
+async function connectionAlreadyUsed(ip: string) {
+  if (!ip || ip === '127.0.0.1') return false;
+  const { count, error } = await supabase
+    .from('shop_activity')
+    .select('id', { count: 'exact', head: true })
+    .eq('ip_address', ip)
+    .in('kind', ['signup', 'free']);
+  if (!error && (count || 0) > 0) return true;
+  const shops = await listShops();
+  return shops.rows.some((row) => String(readDetails(row.details).signupIp || '') === ip);
+}
+
+async function rememberSignup(slug: string, shopName: string, ip: string) {
+  if (!ip) return;
+  await supabase.from('shop_activity').insert([{
+    shop_name: shopName,
+    slug,
+    ip_address: ip,
+    order_token: `signup_${slug}`,
+    kind: 'signup',
+  }]);
+}
+
+export async function findShopByEmail(email: string) {
+  const shops = await listShops();
+  if (shops.error) return { row: null, error: shops.error };
+  const row = shops.rows.find((item) => String(readDetails(item.details).email || '').toLowerCase() === email);
   return { row: row || null, error: '' };
 }
 
-export async function createShopAccount(shopName: string, email: string, password: string) {
+export async function createShopAccount(shopName: string, email: string, password: string, ip = '') {
   const name = cleanShopName(shopName);
   const slug = shopSlug(name);
   const normalized = email.trim().toLowerCase();
   if (name.length < 2 || !normalized.includes('@') || password.length < 6) {
-    return { account: null, error: 'Use a shop name, a real email, and a password of at least 6 characters.' };
+    return { account: null, note: '', error: 'Use a shop name, a real email, and a password of at least 6 characters.' };
   }
   const existingEmail = await findShopByEmail(normalized);
-  if (existingEmail.error) return { account: null, error: existingEmail.error };
-  if (existingEmail.row) return { account: null, error: 'That email already has a shop. Log in instead.' };
-  const existingSlug = await findShopBySlug(slug);
-  if (existingSlug.error) return { account: null, error: existingSlug.error };
-  if (existingSlug.row) return { account: null, error: 'That shop name is already used. Pick another.' };
+  if (existingEmail.error) return { account: null, note: '', error: existingEmail.error };
+  if (existingEmail.row) return { account: null, note: '', error: 'That email already has a shop. Log in instead.' };
+  const shops = await listShops();
+  if (shops.error) return { account: null, note: '', error: shops.error };
+  const key = nameKey(name);
+  if (shops.rows.some((row) => row.slug === slug || nameKey(row.shop_name) === key)) {
+    return { account: null, note: '', error: 'That shop name is already used. Log in, or pick another name.' };
+  }
 
+  const alreadyUsed = await connectionAlreadyUsed(ip);
+  const credits = alreadyUsed ? 0 : 2;
   const details = JSON.stringify({
     email: normalized,
     passwordHash: hashPassword(password),
-    credits: 0,
+    credits,
     plan: 'book',
+    signupIp: ip,
+    freeGranted: credits === 2,
   });
   const { error } = await supabase.from('shop_profiles').upsert(
     [{ slug, shop_name: name, details, updated_at: new Date().toISOString() }],
@@ -135,18 +174,27 @@ export async function createShopAccount(shopName: string, email: string, passwor
     const readable = /row-level security/i.test(error.message)
       ? 'The shop table is blocking new accounts. In Supabase, open SQL and run: alter table public.shop_profiles disable row level security;'
       : error.message;
-    return { account: null, error: readable };
+    return { account: null, note: '', error: readable };
   }
-  return { account: { slug, shopName: name, email: normalized, credits: 0 } as ShopAccount, error: '' };
+  await rememberSignup(slug, name, ip);
+  const note = credits === 2
+    ? '2 free books are on this shop. Buy a pack when they are used.'
+    : 'This connection already used the free books, so this shop starts at 0. Buy a pack to make books.';
+  return { account: { slug, shopName: name, email: normalized, credits } as ShopAccount, note, error: '' };
 }
 
-export async function loginShopAccount(email: string, password: string) {
+export async function loginShopAccount(email: string, password: string, ip = '') {
   const found = await findShopByEmail(email.trim().toLowerCase());
   if (found.error) return { account: null, error: found.error };
   if (!found.row) return { account: null, error: 'No shop uses that email.' };
   const details = readDetails(found.row.details);
   if (!checkPassword(password, String(details.passwordHash || ''))) {
     return { account: null, error: 'Wrong password.' };
+  }
+  if (ip && !details.signupIp) {
+    details.signupIp = ip;
+    await writeDetails(found.row.slug, details);
+    await rememberSignup(found.row.slug, found.row.shop_name, ip);
   }
   return { account: accountFromRow(found.row), error: '' };
 }
