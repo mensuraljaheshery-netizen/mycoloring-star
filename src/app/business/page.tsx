@@ -66,7 +66,8 @@ export default function BusinessPage() {
     }
     setAccount(data.account);
     setPassword('');
-    if (data.note) setNote(data.note);
+    const name = encodeURIComponent(data.account.shopName || '');
+    window.location.href = `/s/${data.account.slug}?n=${name}`;
   };
 
   const buyPack = async (pack: (typeof SHOP_PACKS)[number]) => {

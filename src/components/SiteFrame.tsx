@@ -27,9 +27,11 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
 
   const parentSide = path === '/' || path === '/pricing' || path === '/faq' || path === '/reviews' || path.startsWith('/theme');
 
+  const bookHome = shop ? `/s/${shop.slug}?n=${encodeURIComponent(shop.shopName)}` : '/';
+
   useEffect(() => {
-    if (shop && parentSide) router.replace('/business');
-  }, [shop, parentSide, router]);
+    if (shop && parentSide) router.replace(bookHome);
+  }, [shop, parentSide, bookHome, router]);
 
   const logout = async () => {
     await fetch('/api/shop-account', {
@@ -45,7 +47,7 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-white">{children}</div>;
   }
 
-  const home = shop ? '/business' : '/';
+  const home = shop ? bookHome : '/';
 
   return (
     <>
@@ -61,8 +63,8 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
           </div>
           {shop ? (
             <nav className="flex items-center gap-4 text-xs sm:text-sm font-bold text-slate-900">
-              <Link href="/business" className="hover:underline">My shop</Link>
-              <Link href={`/s/${shop.slug}?n=${encodeURIComponent(shop.shopName)}`} className="hover:underline">Make a book</Link>
+              <Link href="/business" className="hover:underline">Account</Link>
+              <Link href={bookHome} className="hover:underline">Make a book</Link>
               <button type="button" onClick={logout} className="hover:underline">Log out</button>
             </nav>
           ) : (

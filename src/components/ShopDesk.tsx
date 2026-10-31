@@ -27,6 +27,7 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [consent, setConsent] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const [booksLeft, setBooksLeft] = useState<number | null>(null);
+  const [owner, setOwner] = useState(false);
   const [logo, setLogo] = useState('');
   const [whiteLabel, setWhiteLabel] = useState(false);
   const [headline, setHeadline] = useState('');
@@ -38,6 +39,10 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   useEffect(() => {
     document.title = shopName;
     saveShopProfile(shopName, slug);
+    fetch('/api/shop-account')
+      .then((res) => res.json())
+      .then((data) => setOwner(data.account?.slug === slug))
+      .catch(() => {});
     fetch(`/api/shop-trial?shop=${encodeURIComponent(slug)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -131,12 +136,13 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
                 {initials(shopName)}
               </div>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <span className="font-black text-slate-900 tracking-tight">{shopName}</span>
               <span className="block text-xs font-black text-orange-600">
                 {booksLeft === null ? 'Books left' : `${booksLeft} books left`}
               </span>
             </div>
+            {owner && <a href="/business" className="text-xs font-black text-slate-500">Account</a>}
           </>
         </div>
       </header>
