@@ -1,8 +1,7 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
+import { supabaseAdmin } from '@/lib/supabaseServer';
 import { getCoverScene, getCoverTale, getThemeConfig } from '@/lib/themes';
 import { requestIp, reserveShopTrial } from '@/lib/shopTrial';
 
@@ -11,14 +10,6 @@ export const dynamic = 'force-dynamic';
 
 const configFilePath = path.join(process.cwd(), 'src', 'data', 'site-config.json');
 const themesFilePath = path.join(process.cwd(), 'src', 'data', 'themes-data.json');
-
-// Initialize Supabase admin client directly with project credentials
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co';
-const supabaseKey = supabaseServiceKey();
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
 
 // Rate-limiting and lifetime lock for free 3-page mini books
 async function verifyAndRecordFreeTier(
@@ -41,7 +32,7 @@ async function verifyAndRecordFreeTier(
   const cleanEmail = (email || '').toLowerCase().trim();
 
   try {
-    let query = supabase.from('free_book_claims').select('id, claimed_at');
+    let query = supabaseAdmin.from('free_book_claims').select('id, claimed_at');
 
     if (cleanEmail) {
       query = query.or(`ip_address.eq.${ip},email.eq.${cleanEmail}`);
@@ -63,7 +54,7 @@ async function verifyAndRecordFreeTier(
     }
 
     if (shouldRecord) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseAdmin
         .from('free_book_claims')
         .insert([{
           ip_address: ip,

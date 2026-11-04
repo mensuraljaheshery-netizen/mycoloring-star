@@ -1,18 +1,11 @@
 import { createHash } from 'crypto';
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { shopSlug } from '@/lib/shop';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
+import { supabaseAdmin } from '@/lib/supabaseServer';
 
 type ShopTrialResult = { remaining: number; allowed: boolean; reason?: string };
 
 const FREE_BOOKS = 2;
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  supabaseServiceKey(),
-  { auth: { persistSession: false, autoRefreshToken: false } }
-);
 
 export function requestIp(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
@@ -35,7 +28,7 @@ function missingTable(message: string): boolean {
 }
 
 async function freeBooksOnIp(ip: string): Promise<number | 'missing' | null> {
-  const { count, error } = await supabase
+  const { count, error } = await supabaseAdmin
     .from('shop_activity')
     .select('id', { count: 'exact', head: true })
     .eq('ip_address', ip)
@@ -50,7 +43,7 @@ async function freeBooksOnIp(ip: string): Promise<number | 'missing' | null> {
 
 async function legacyUsed(ip: string): Promise<number | null> {
   const prefix = `shoptrial_${ipHash(ip)}_`;
-  const { count, error } = await supabase
+  const { count, error } = await supabaseAdmin
     .from('orders')
     .select('order_token', { count: 'exact', head: true })
     .like('order_token', `${prefix}%`);
@@ -84,7 +77,7 @@ export async function shopTrialRemaining(ip: string): Promise<ShopTrialResult> {
 export async function reserveShopTrial(ip: string, orderId: string, shopName: string): Promise<ShopTrialResult> {
   const token = trialToken(ip, orderId);
   const name = (shopName || 'Shop').slice(0, 80);
-  const { data: existing, error: existingError } = await supabase
+  const { data: existing, error: existingError } = await supabaseAdmin
     .from('shop_activity')
     .select('order_token')
     .eq('order_token', token)
@@ -102,7 +95,7 @@ export async function reserveShopTrial(ip: string, orderId: string, shopName: st
   if (existing) return { remaining: status.remaining, allowed: true };
   if (!status.allowed) return status;
 
-  const { error } = await supabase.from('shop_activity').insert([
+  const { error } = await supabaseAdmin.from('shop_activity').insert([
     {
       shop_name: name,
       slug: shopSlug(name),
@@ -125,7 +118,7 @@ export async function reserveShopTrial(ip: string, orderId: string, shopName: st
 
 async function reserveLegacy(ip: string, orderId: string, shopName: string): Promise<ShopTrialResult> {
   const token = trialToken(ip, orderId);
-  const { data: existing, error: existingError } = await supabase
+  const { data: existing, error: existingError } = await supabaseAdmin
     .from('orders')
     .select('order_token')
     .eq('order_token', token)
@@ -138,7 +131,7 @@ async function reserveLegacy(ip: string, orderId: string, shopName: string): Pro
   const status = statusFromUsed(used);
   if (existing) return { remaining: status.remaining, allowed: true };
   if (!status.allowed) return status;
-  const { error } = await supabase.from('orders').insert([
+  const { error } = await supabaseAdmin.from('orders').insert([
     {
       order_token: token,
       child_name: shopName,
@@ -165,7 +158,7 @@ export type ShopSummary = {
 };
 
 export async function listShops(): Promise<{ shops: ShopSummary[]; error?: string }> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('shop_activity')
     .select('shop_name, ip_address, kind, created_at')
     .order('created_at', { ascending: false })

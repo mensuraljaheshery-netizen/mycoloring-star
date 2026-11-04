@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
+import { supabaseAdmin } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co';
-const supabaseKey = supabaseServiceKey();
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +10,7 @@ export async function GET(req: NextRequest) {
     const cfIp = req.headers.get('cf-connecting-ip');
     const ip = forwarded ? forwarded.split(',')[0].trim() : (realIp || cfIp || '127.0.0.1');
 
-    const { data: existing, error } = await supabase
+    const { data: existing, error } = await supabaseAdmin
       .from('free_book_claims')
       .select('id')
       .eq('ip_address', ip)

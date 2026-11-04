@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
+import { supabaseAdmin } from '@/lib/supabaseServer';
 
 export const dynamic = 'force-dynamic';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  supabaseServiceKey()
-);
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,8 +36,8 @@ export async function POST(req: NextRequest) {
         metadata
       });
 
-      if (supabaseServiceKey() !== 'placeholder-key') {
-        await supabase.from('free_book_claims').insert([
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        await supabaseAdmin.from('free_book_claims').insert([
           {
             fingerprint: `suby-paid-${data.id || Date.now()}`,
             ip_address: 'suby-payment',

@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co';
-const supabaseKey = supabaseServiceKey();
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false, autoRefreshToken: false }
-});
+import { supabaseAdmin } from '@/lib/supabaseServer';
 
 export async function POST(req: NextRequest) {
   try {
     const { orderToken, childName, theme, packageSize, orientation, pdfUrl } = await req.json();
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('orders')
       .upsert(
         [

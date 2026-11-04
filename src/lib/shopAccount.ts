@@ -1,15 +1,6 @@
 import crypto from 'crypto';
-import { createClient } from '@supabase/supabase-js';
 import { cleanShopName, shopSlug } from '@/lib/shop';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
-
-const COOKIE = 'mcs_shop';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  supabaseServiceKey(),
-  { auth: { persistSession: false, autoRefreshToken: false } }
-);
+import { supabaseAdmin } from '@/lib/supabaseServer';
 
 export const SHOP_CREDIT_PACKS: Record<string, { books: number; url?: string }> = {
   shop_15: { books: 10, url: process.env.WHOP_PAYLINK_SHOP_15 || 'https://whop.com/checkout/plan_RkPjeG1sLebpi' },
@@ -26,8 +17,10 @@ export type ShopAccount = {
   credits: number;
 };
 
+const COOKIE = 'mcs_shop';
+
 function secret() {
-  return supabaseServiceKey();
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || 'mcs-shop-session';
 }
 
 function readDetails(raw: unknown): Details {
@@ -92,7 +85,7 @@ function accountFromRow(row: { slug: string; shop_name: string; details: unknown
 }
 
 export async function findShopBySlug(slug: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('shop_profiles')
     .select('slug, shop_name, details')
     .eq('slug', slug)
@@ -106,13 +99,13 @@ function nameKey(name: string) {
 }
 
 async function listShops() {
-  const { data, error } = await supabase.from('shop_profiles').select('slug, shop_name, details').limit(500);
+  const { data, error } = await supabaseAdmin.from('shop_profiles').select('slug, shop_name, details').limit(500);
   return { rows: data || [], error: error?.message || '' };
 }
 
 async function connectionAlreadyUsed(ip: string) {
   if (!ip || ip === '127.0.0.1') return false;
-  const { count, error } = await supabase
+  const { count, error } = await supabaseAdmin
     .from('shop_activity')
     .select('id', { count: 'exact', head: true })
     .eq('ip_address', ip)
@@ -124,7 +117,7 @@ async function connectionAlreadyUsed(ip: string) {
 
 async function rememberSignup(slug: string, shopName: string, ip: string) {
   if (!ip) return;
-  await supabase.from('shop_activity').insert([{
+  await supabaseAdmin.from('shop_activity').insert([{
     shop_name: shopName,
     slug,
     ip_address: ip,
@@ -167,7 +160,7 @@ export async function createShopAccount(shopName: string, email: string, passwor
     signupIp: ip,
     freeGranted: credits === 2,
   });
-  const { error } = await supabase.from('shop_profiles').upsert(
+  const { error } = await supabaseAdmin.from('shop_profiles').upsert(
     [{ slug, shop_name: name, details, updated_at: new Date().toISOString() }],
     { onConflict: 'slug' }
   );
@@ -209,7 +202,7 @@ export async function accountFromSlug(slug: string) {
 }
 
 async function writeDetails(slug: string, details: Details) {
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('shop_profiles')
     .update({ details: JSON.stringify(details), updated_at: new Date().toISOString() })
     .eq('slug', slug);
@@ -266,7 +259,7 @@ export async function spendAccountCredit(slug: string) {
 }
 
 export async function listShopAccounts() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('shop_profiles')
     .select('slug, shop_name, details, updated_at')
     .order('updated_at', { ascending: false })

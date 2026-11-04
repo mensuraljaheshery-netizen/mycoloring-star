@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { supabaseServiceKey } from '@/lib/supabaseKey';
+import { supabaseAdmin } from '@/lib/supabaseServer';
 import { cleanShopName, shopSlug } from '@/lib/shop';
 
 export const dynamic = 'force-dynamic';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  supabaseServiceKey(),
-  { auth: { persistSession: false, autoRefreshToken: false } }
-);
 
 function missing(message: string) {
   return /shop_profiles|schema cache|does not exist|could not find the table/i.test(message);
@@ -27,14 +20,14 @@ function readDetails(raw: unknown) {
 
 export async function GET(req: NextRequest) {
   const slug = shopSlug(req.nextUrl.searchParams.get('slug') || '');
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('shop_profiles')
     .select('shop_name, logo_data, details')
     .eq('slug', slug)
     .maybeSingle();
 
   if (error) {
-    const bare = await supabase.from('shop_profiles').select('shop_name, logo_data').eq('slug', slug).maybeSingle();
+    const bare = await supabaseAdmin.from('shop_profiles').select('shop_name, logo_data').eq('slug', slug).maybeSingle();
     if (bare.error) {
       return NextResponse.json({
         shopName: '',
@@ -80,7 +73,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ saved: false, reason: 'Add a shop name and a small logo.' }, { status: 400 });
   }
 
-  const existing = await supabase.from('shop_profiles').select('details').eq('slug', slug).maybeSingle();
+  const existing = await supabaseAdmin.from('shop_profiles').select('details').eq('slug', slug).maybeSingle();
   const previous = readDetails(existing.data?.details) as Record<string, unknown>;
   const details = JSON.stringify({
     headline: String(body.headline || '').slice(0, 120),
@@ -93,13 +86,13 @@ export async function POST(req: NextRequest) {
     credits: Math.max(0, Number(previous.credits || body.credits || 0)),
   });
 
-  const full = await supabase.from('shop_profiles').upsert(
+  const full = await supabaseAdmin.from('shop_profiles').upsert(
     [{ slug, shop_name: shopName, logo_data: logo || null, details, updated_at: new Date().toISOString() }],
     { onConflict: 'slug' }
   );
 
   const error = full.error
-    ? (await supabase.from('shop_profiles').upsert(
+    ? (await supabaseAdmin.from('shop_profiles').upsert(
         [{ slug, shop_name: shopName, logo_data: logo || null, updated_at: new Date().toISOString() }],
         { onConflict: 'slug' }
       )).error
