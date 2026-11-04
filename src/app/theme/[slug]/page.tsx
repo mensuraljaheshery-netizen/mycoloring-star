@@ -898,19 +898,16 @@ export default function ThemeCustomizerPage() {
         <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
           {baseTheme.description}
         </p>
-        {(() => {
-          const sample = THEME_SAMPLES[baseTheme.slug] || { href: '/samples', label: 'See free sample books' };
-          return (
-            <a
-              href={sample.href}
-              target={sample.href.endsWith('.pdf') ? '_blank' : undefined}
-              rel={sample.href.endsWith('.pdf') ? 'noopener noreferrer' : undefined}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
-            >
-              {sample.label}
-            </a>
-          );
-        })()}
+        {THEME_SAMPLES[baseTheme.slug] && (
+          <a
+            href={THEME_SAMPLES[baseTheme.slug].href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
+          >
+            {THEME_SAMPLES[baseTheme.slug].label}
+          </a>
+        )}
       </section>
 
       {/* 3. MOBILE ACTION BOX */}
