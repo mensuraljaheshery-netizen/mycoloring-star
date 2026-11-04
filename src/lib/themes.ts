@@ -2806,7 +2806,6 @@ const COVER_SCENES: Record<string, string[]> = {
     "The child opens a bright present on a picnic blanket, friends and bunting around.",
     "The child wears a paper crown at a garden party table piled with cupcakes.",
     "The child jumps beside a bunch of balloons in a park, a cake on a nearby table.",
-    "The child pins the tail area of a friendly donkey poster, blindfold in one hand and friends guiding kindly.",
     "The child carries a homemade banner that has a star, chairs set on the lawn.",
     "The child stacks a tower of presents, ribbons curling to the floor.",
     "The child plays a sunny sprinkler game, party hats on the fence.",
