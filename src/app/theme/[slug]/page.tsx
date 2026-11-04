@@ -75,6 +75,10 @@ const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: str
   '8': { label: '8-Page Book', pages: 8, price: '$7', popular: true }
 };
 
+const THEME_SAMPLES: Record<string, { href: string; label: string }> = {
+  'school-day': { href: '/sample-book-school-day.pdf', label: "See Sara's School Day book" },
+};
+
 function shuffleCatalog<T>(items: T[]): T[] {
   const next = [...items];
   for (let i = next.length - 1; i > 0; i--) {
@@ -889,6 +893,16 @@ export default function ThemeCustomizerPage() {
         <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
           {baseTheme.description}
         </p>
+        {THEME_SAMPLES[baseTheme.slug] && (
+          <a
+            href={THEME_SAMPLES[baseTheme.slug].href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
+          >
+            {THEME_SAMPLES[baseTheme.slug].label}
+          </a>
+        )}
       </section>
 
       {/* 3. MOBILE ACTION BOX */}
