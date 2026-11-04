@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         metadata
       });
 
-      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      if (process.env.NEXT_PUBLIC_SUPABASE_SUPABASE_SERVICE_ROLE_KEY) {
         await supabaseAdmin.from('free_book_claims').insert([
           {
             fingerprint: `suby-paid-${data.id || Date.now()}`,

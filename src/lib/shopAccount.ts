@@ -20,7 +20,7 @@ export type ShopAccount = {
 const COOKIE = 'mcs_shop';
 
 function secret() {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY || 'mcs-shop-session';
+  return process.env.NEXT_PUBLIC_SUPABASE_SUPABASE_SERVICE_ROLE_KEY || 'mcs-shop-session';
 }
 
 function readDetails(raw: unknown): Details {
