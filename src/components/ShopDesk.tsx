@@ -162,6 +162,11 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
               <span className="block text-xs font-black text-orange-600">
                 {booksLeft === null ? 'Books left' : `${booksLeft} books left`}
               </span>
+              {booksLeft !== null && (
+                <span className="block text-[11px] font-bold text-slate-500">
+                  About ${booksLeft * 10} if you sell each for $10
+                </span>
+              )}
             </div>
             {owner && <a href="/business" className="text-xs font-black text-slate-500">Account</a>}
           </>
@@ -173,9 +178,10 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
           <div className="mb-6 grid sm:grid-cols-3 gap-3">
             {CREDIT_PACKS.map((pack) => (
               <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="bg-white border-2 border-orange-200 rounded-3xl p-4 text-left shadow-sm">
-                <p className="text-xs font-black uppercase tracking-wider text-orange-600">Buy books</p>
+                <p className="text-xs font-black uppercase tracking-wider text-orange-600">Buy books to sell</p>
                 <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
                 <p className="text-sm font-bold text-slate-900">{pack.books}</p>
+                <p className="text-xs text-slate-500">Sell each for about $10</p>
               </button>
             ))}
           </div>

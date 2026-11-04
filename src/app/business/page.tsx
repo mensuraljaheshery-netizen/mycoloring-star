@@ -45,6 +45,40 @@ export default function BusinessPage() {
       .catch(() => setQr(''));
   }, [account]);
 
+  const printCounterCard = () => {
+    if (!account || !qr) return;
+    const safeName = account.shopName
+      .replace(/&/g, '&' + 'amp;')
+      .replace(/</g, '&' + 'lt;')
+      .replace(/>/g, '&' + 'gt;')
+      .replace(/"/g, '&' + 'quot;')
+      .replace(/'/g, '&#39;');
+    const popup = window.open('', '_blank', 'noopener,noreferrer');
+    if (!popup) return;
+    popup.document.write(`<!doctype html><html><head><title>${safeName} counter card</title>
+      <style>
+        body { margin: 0; font-family: Arial, sans-serif; color: #0f172a; }
+        .card { width: 5in; margin: 0.4in auto; border: 8px solid #f97316; border-radius: 24px; padding: 28px; text-align: center; }
+        h1 { margin: 0; font-size: 28px; }
+        p { margin: 10px 0 0; font-size: 16px; }
+        img { width: 220px; height: 220px; margin-top: 16px; }
+        ol { text-align: left; margin: 18px auto 0; max-width: 260px; font-size: 16px; line-height: 1.5; }
+      </style></head><body>
+      <div class="card">
+        <h1>${safeName}</h1>
+        <p>Turn your child into a coloring book.</p>
+        <img src="${qr}" alt="QR code" />
+        <ol>
+          <li>Scan the code.</li>
+          <li>Add the child’s photo.</li>
+          <li>We print the book.</li>
+        </ol>
+      </div>
+      <script>window.onload = () => window.print()<\/script>
+      </body></html>`);
+    popup.document.close();
+  };
+
   const submitAccount = async () => {
     setBusy(true);
     setNote('');
@@ -104,7 +138,7 @@ export default function BusinessPage() {
           Your shop name goes on the book.
         </h1>
         <p className="mt-4 text-base sm:text-lg text-slate-600">
-          Create an account and get 2 free books. The book form opens right away, with your shop name on it. You can buy more books at any time.
+          Create an account and get 2 free books. Print the first one and keep it as your sample. Use the second with a real customer. You can buy more books at any time.
         </p>
 
         {!account ? (
@@ -157,6 +191,7 @@ export default function BusinessPage() {
                   <h2 className="text-xl font-black text-slate-900">{account.shopName}</h2>
                   <p className="text-sm text-slate-500">{account.email}</p>
                   <p className="mt-2 text-sm font-black text-orange-600">{account.credits} books left</p>
+                  <p className="text-xs font-bold text-slate-500">About ${account.credits * 10} if you sell each for $10</p>
                 </div>
                 <button type="button" onClick={logout} className="text-sm font-black text-slate-500">Log out</button>
               </div>
@@ -172,7 +207,7 @@ export default function BusinessPage() {
                     <button type="button" onClick={async () => { try { await navigator.clipboard.writeText(link); setCopied(true); } catch { setCopied(false); } }} className="mt-2 text-sm font-black text-orange-600">
                       {copied ? 'Copied' : 'Copy link'}
                     </button>
-                    {qr && <a href={qr} download={`${account.slug}-qr.png`} className="ml-4 text-sm font-black text-orange-600">Download QR</a>}
+                    {qr && <button type="button" onClick={printCounterCard} className="ml-4 text-sm font-black text-orange-600">Print counter card</button>}
                   </div>
                   </div>
                 </div>
