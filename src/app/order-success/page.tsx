@@ -129,7 +129,7 @@ function OrderSuccessContent() {
 
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const brandBar = brandName ? 42 : 0;
+    const brandBar = brandName ? 52 : 0;
 
     // 1. Cover Page
     try {
@@ -137,22 +137,19 @@ function OrderSuccessContent() {
       const props = doc.getImageProperties(coverBase64);
       const imgRatio = props.width / props.height;
       const frameH = pageHeight - brandBar;
-      const pageRatio = pageWidth / frameH;
+      const frameRatio = pageWidth / frameH;
 
       let drawW = pageWidth;
       let drawH = frameH;
-      let drawX = 0;
-      let drawY = 0;
-
-      if (imgRatio > pageRatio) {
-        drawH = frameH;
-        drawW = frameH * imgRatio;
-        drawX = -(drawW - pageWidth) / 2;
-      } else {
-        drawW = pageWidth;
+      if (imgRatio > frameRatio) {
         drawH = pageWidth / imgRatio;
-        drawY = (frameH - drawH) / 2;
+        drawW = pageWidth;
+      } else {
+        drawW = frameH * imgRatio;
+        drawH = frameH;
       }
+      const drawX = (pageWidth - drawW) / 2;
+      const drawY = (frameH - drawH) / 2;
 
       doc.addImage(coverBase64, 'PNG', drawX, drawY, drawW, drawH, undefined, 'FAST');
     } catch (err) {
@@ -162,9 +159,11 @@ function OrderSuccessContent() {
     if (brandName) {
       doc.setFillColor(15, 23, 42);
       doc.rect(0, pageHeight - brandBar, pageWidth, brandBar, 'F');
+      let textX = pageWidth / 2;
       if (brandLogo.startsWith('data:image/')) {
         try {
-          doc.addImage(brandLogo, 'JPEG', 14, pageHeight - 36, 26, 26);
+          doc.addImage(brandLogo, 'JPEG', 16, pageHeight - 40, 28, 28);
+          textX = pageWidth / 2 + 10;
         } catch {
           // The name still prints if the logo cannot be drawn.
         }
@@ -172,7 +171,7 @@ function OrderSuccessContent() {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(255, 255, 255);
-      doc.text(brandName, pageWidth / 2, pageHeight - 16, { align: 'center' });
+      doc.text(brandName, textX, pageHeight - 20, { align: 'center' });
     }
 
     // 2. Magical Storybook Title & Dedication Page
