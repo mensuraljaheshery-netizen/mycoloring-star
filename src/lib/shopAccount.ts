@@ -24,13 +24,15 @@ function secret() {
 }
 
 function readDetails(raw: unknown): Details {
-  if (!raw || typeof raw !== 'string') return {};
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
+  let value = raw;
+  for (let i = 0; i < 2 && typeof value === 'string'; i += 1) {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return {};
+    }
   }
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Details : {};
 }
 
 export function hashPassword(password: string) {
@@ -225,18 +227,30 @@ export async function confirmPending(slug: string) {
   const found = await findShopBySlug(slug);
   if (found.error || !found.row) return { credits: 0, added: 0, error: found.error || 'Log in first.' };
   const details = readDetails(found.row.details);
-  const pending = details.pending as { books?: number; at?: number } | undefined;
+  const creditsNow = Math.max(0, Number(details.credits || 0));
+  const pending = details.pending as { books?: number; at?: number; pack?: string } | undefined;
   const books = Math.max(0, Number(pending?.books || 0));
   const at = Number(pending?.at || 0);
-  if (!books || Date.now() - at < 20000) {
-    return { credits: Math.max(0, Number(details.credits || 0)), added: 0, error: '' };
+  if (!books || !at || Date.now() - at < 20000) {
+    return { credits: creditsNow, added: 0, error: '' };
   }
-  const credits = Math.max(0, Number(details.credits || 0)) + books;
-  details.credits = credits;
+
+  const grantKey = `${pending?.pack || 'pack'}:${at}`;
+  const granted = Array.isArray(details.grantedPacks) ? details.grantedPacks.map(String) : [];
+  const alreadyCounted = granted.includes(grantKey)
+    || (Date.now() - at > 60 * 60 * 1000 && Number(details.bought || 0) >= books);
+  if (alreadyCounted) {
+    delete details.pending;
+    await writeDetails(slug, details);
+    return { credits: creditsNow, added: 0, error: '' };
+  }
+
+  details.credits = creditsNow + books;
   details.bought = Math.max(0, Number(details.bought || 0)) + books;
+  details.grantedPacks = [...granted, grantKey].slice(-20);
   delete details.pending;
   const error = await writeDetails(slug, details);
-  return { credits, added: error ? 0 : books, error };
+  return { credits: error ? creditsNow : creditsNow + books, added: error ? 0 : books, error };
 }
 
 export async function accountCredits(slug: string) {
