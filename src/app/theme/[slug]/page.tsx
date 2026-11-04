@@ -139,21 +139,24 @@ export default function ThemeCustomizerPage() {
           setParentConsent(true);
         }
 
-        if (claimedLocal) {
-          setHasClaimedFree(true);
-        } else {
-          fetch('/api/free-sample/check')
-            .then((res) => res.json())
-            .then((data) => {
-              if (data?.claimed) {
-                setHasClaimedFree(true);
-                try {
-                  localStorage.setItem('mcs_claimed_free_sample', 'true');
-                } catch {}
-              }
-            })
-            .catch(() => {});
-        }
+        fetch('/api/free-sample/check')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data?.claimed) {
+              setHasClaimedFree(true);
+              try {
+                localStorage.setItem('mcs_claimed_free_sample', 'true');
+              } catch {}
+            } else if (data && data.claimed === false) {
+              setHasClaimedFree(false);
+              try {
+                localStorage.removeItem('mcs_claimed_free_sample');
+              } catch {}
+            }
+          })
+          .catch(() => {
+            if (claimedLocal) setHasClaimedFree(true);
+          });
 
         if (queryName) {
           setChildName(queryName);
