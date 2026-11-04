@@ -654,14 +654,14 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {filteredThemes.map((theme) => (
             <div
               key={theme.slug}
               onClick={() => handleSelectTheme(theme.slug)}
-              className="bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1.5 cursor-pointer text-left"
+              className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1.5 cursor-pointer text-left"
             >
-              <div className="relative h-44 w-full overflow-hidden bg-slate-100 border-b border-slate-100">
+              <div className="relative h-28 sm:h-44 w-full overflow-hidden bg-slate-100 border-b border-slate-100">
                 <img
                   src={theme.previewImage}
                   alt={`${theme.name} preview`}
@@ -683,22 +683,22 @@ export default function HomePage() {
                   <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{theme.name}</span>
                 </div>
 
-                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-bold text-white shadow-sm">
+                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold text-white shadow-sm">
                   {theme.category}
                 </div>
               </div>
 
-              <div className="p-4 flex-1 flex flex-col justify-between">
+              <div className="p-2.5 sm:p-4 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-base font-black text-slate-900 group-hover:text-orange-500 transition">
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 group-hover:text-orange-500 transition leading-tight">
                     {theme.name}
                   </h3>
-                  <p className="text-slate-500 text-xs mt-0.5">
+                  <p className="hidden sm:block text-slate-500 text-xs mt-0.5">
                     {THEME_BLURBS[theme.slug] || theme.blurb || 'A personalized coloring adventure'}
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-100">
+                <div className="hidden sm:block mt-4 pt-3 border-t border-slate-100">
                   <span className="text-xs font-bold text-orange-600 flex items-center gap-1 group-hover:translate-x-0.5 transition">
                     Open this theme <ArrowRight className="w-3.5 h-3.5" />
                   </span>
