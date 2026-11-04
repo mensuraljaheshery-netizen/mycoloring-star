@@ -32,6 +32,30 @@ const BOOKS = [
     href: '/sample-book-school-day.pdf',
     file: 'MyColoringStar_Sara_School_Day.pdf',
   },
+  {
+    name: "Liam's Dinosaur book",
+    child: 'Liam',
+    photo: '/sample-liam-photo.jpg',
+    detail: 'A color cover and coloring pages from a real Dinosaur book.',
+    href: '/sample-book-dinosaur.pdf',
+    file: 'MyColoringStar_Liam_Dinosaur_Explorer.pdf',
+  },
+  {
+    name: "Liam's Race Car book",
+    child: 'Liam',
+    photo: '/sample-liam-photo.jpg',
+    detail: 'A color cover and coloring pages from a real Race Car book.',
+    href: '/sample-book-race-car.pdf',
+    file: 'MyColoringStar_Liam_Race_Car.pdf',
+  },
+  {
+    name: "Sara's Birthday book",
+    child: 'Sara',
+    photo: '/sample-sara-photo.jpg',
+    detail: 'A color cover and coloring pages from a real Birthday book.',
+    href: '/sample-book-birthday.pdf',
+    file: 'MyColoringStar_Sara_Birthday_Party.pdf',
+  },
 ];
 
 export default function SamplesPage() {

@@ -77,6 +77,9 @@ const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: str
 
 const THEME_SAMPLES: Record<string, { href: string; label: string }> = {
   'school-day': { href: '/sample-book-school-day.pdf', label: "See Sara's School Day book" },
+  'dinosaur-explorer': { href: '/sample-book-dinosaur.pdf', label: "See Liam's Dinosaur book" },
+  'race-car-driver': { href: '/sample-book-race-car.pdf', label: "See Liam's Race Car book" },
+  'birthday-party': { href: '/sample-book-birthday.pdf', label: "See Sara's Birthday book" },
 };
 
 function shuffleCatalog<T>(items: T[]): T[] {
