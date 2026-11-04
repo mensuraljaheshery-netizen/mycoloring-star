@@ -103,7 +103,7 @@ const ALL_34_THEMES: ThemeItem[] = [
   { id: 34, name: 'Spring Flowers', category: 'Seasonal', slug: 'spring-flowers', previewImage: '/theme-previews/spring-flowers.png', genderTarget: 'all' }
 ];
 
-const BEST_PICK_SLUGS = ['superhero', 'princess', 'basketball-champion', 'school-day', 'dinosaur-explorer'];
+const BEST_PICK_SLUGS = ['superhero', 'princess', 'basketball-champion', 'school-day', 'dinosaur-explorer', 'birthday-party'];
 
 function shuffleThemes(items: ThemeItem[]): ThemeItem[] {
   const next = [...items];
