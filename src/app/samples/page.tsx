@@ -56,6 +56,14 @@ const BOOKS = [
     href: '/sample-book-birthday.pdf',
     file: 'MyColoringStar_Sara_Birthday_Party.pdf',
   },
+  {
+    name: "Liam's Robot World book",
+    child: 'Liam',
+    photo: '/sample-liam-photo.jpg',
+    detail: 'A color cover and coloring pages from a real Robot World book.',
+    href: '/sample-book-robot.pdf',
+    file: 'MyColoringStar_Liam_Robot_World.pdf',
+  },
 ];
 
 export default function SamplesPage() {

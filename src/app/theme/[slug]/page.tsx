@@ -82,6 +82,7 @@ const THEME_SAMPLES: Record<string, { href: string; label: string }> = {
   'dinosaur-explorer': { href: '/sample-book-dinosaur.pdf', label: "See Liam's Dinosaur book" },
   'race-car-driver': { href: '/sample-book-race-car.pdf', label: "See Liam's Race Car book" },
   'birthday-party': { href: '/sample-book-birthday.pdf', label: "See Sara's Birthday book" },
+  'robot-world': { href: '/sample-book-robot.pdf', label: "See Liam's Robot World book" },
 };
 
 function shuffleCatalog<T>(items: T[]): T[] {
