@@ -18,7 +18,7 @@ const STEPS = [
 type ShopAccount = { slug: string; shopName: string; email: string; credits: number };
 
 export default function BusinessPage() {
-  const [mode, setMode] = useState<'signup' | 'login'>('signup');
+  const [mode, setMode] = useState<'signup' | 'login' | 'forgot' | 'reset'>('signup');
   const [shopName, setShopName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,8 +29,14 @@ export default function BusinessPage() {
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
+  const [resetToken, setResetToken] = useState('');
 
   useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get('reset') || '';
+    if (token) {
+      setResetToken(token);
+      setMode('reset');
+    }
     fetch('/api/shop-account')
       .then((res) => res.json())
       .then((data) => {
@@ -108,6 +114,37 @@ export default function BusinessPage() {
     window.location.href = `/s/${data.account.slug}?n=${name}`;
   };
 
+  const sendReset = async () => {
+    setBusy(true);
+    setNote('');
+    const res = await fetch('/api/shop-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'forgot', email }),
+    });
+    const data = await res.json();
+    setBusy(false);
+    setNote(res.ok ? 'Check that email for the reset link. It works for 2 hours.' : (data.error || 'Could not send the reset email.'));
+  };
+
+  const saveNewPassword = async () => {
+    setBusy(true);
+    setNote('');
+    const res = await fetch('/api/shop-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reset', token: resetToken, password }),
+    });
+    const data = await res.json();
+    setBusy(false);
+    if (!res.ok || !data.account) {
+      setNote(data.error || 'Could not save the new password.');
+      return;
+    }
+    const name = encodeURIComponent(data.account.shopName || '');
+    window.location.href = `/s/${data.account.slug}?n=${name}`;
+  };
+
   const buyPack = async (pack: (typeof SHOP_PACKS)[number]) => {
     setNote('');
     const res = await fetch('/api/shop-account', {
@@ -158,6 +195,33 @@ export default function BusinessPage() {
               ))}
             </div>
             <div className="mt-8 max-w-md rounded-3xl border border-orange-100 bg-white p-5 sm:p-6 shadow-sm">
+              {mode === 'reset' ? (
+                <div className="space-y-3">
+                  <h2 className="text-xl font-black text-slate-900">Choose a new password</h2>
+                  <label className="block text-sm font-bold text-slate-700">
+                    New password
+                    <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="At least 6 characters" className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
+                  </label>
+                  <button type="button" onClick={saveNewPassword} disabled={busy} className="w-full rounded-2xl bg-orange-500 text-white font-black py-3 disabled:opacity-60">
+                    {busy ? 'Saving...' : 'Save password and log in'}
+                  </button>
+                  {note && <p className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-3 text-sm font-bold text-slate-800">{note}</p>}
+                </div>
+              ) : mode === 'forgot' ? (
+                <div className="space-y-3">
+                  <h2 className="text-xl font-black text-slate-900">Email a reset link</h2>
+                  <label className="block text-sm font-bold text-slate-700">
+                    Email
+                    <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="shop@email.com" className="mt-1 w-full rounded-2xl border border-orange-200 px-4 py-3 text-base font-medium" />
+                  </label>
+                  <button type="button" onClick={sendReset} disabled={busy} className="w-full rounded-2xl bg-orange-500 text-white font-black py-3 disabled:opacity-60">
+                    {busy ? 'Sending...' : 'Send the reset link'}
+                  </button>
+                  <button type="button" onClick={() => { setMode('login'); setNote(''); }} className="text-sm font-bold text-slate-500">Back to log in</button>
+                  {note && <p className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-3 text-sm font-bold text-slate-800">{note}</p>}
+                </div>
+              ) : (
+              <>
               <div className="flex gap-2">
                 <button type="button" onClick={() => setMode('signup')} className={`rounded-full px-4 py-2 text-sm font-black ${mode === 'signup' ? 'bg-slate-900 text-white' : 'bg-orange-50 text-slate-700'}`}>Create account</button>
                 <button type="button" onClick={() => setMode('login')} className={`rounded-full px-4 py-2 text-sm font-black ${mode === 'login' ? 'bg-slate-900 text-white' : 'bg-orange-50 text-slate-700'}`}>Log in</button>
@@ -180,8 +244,13 @@ export default function BusinessPage() {
                 <button type="button" onClick={submitAccount} disabled={busy} className="w-full rounded-2xl bg-orange-500 text-white font-black py-3 disabled:opacity-60">
                   {busy ? 'Saving...' : mode === 'signup' ? 'Create the shop' : 'Log in'}
                 </button>
+                {mode === 'login' && (
+                  <button type="button" onClick={() => { setMode('forgot'); setNote(''); }} className="text-sm font-bold text-orange-700">Forgot password?</button>
+                )}
                 {note && <p className="rounded-2xl bg-orange-50 border border-orange-200 px-4 py-3 text-sm font-bold text-slate-800">{note}</p>}
               </div>
+              </>
+              )}
             </div>
           </>
         ) : (

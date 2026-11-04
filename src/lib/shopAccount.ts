@@ -195,6 +195,57 @@ export async function loginShopAccount(email: string, password: string, ip = '')
   return { account: accountFromRow(found.row), error: '' };
 }
 
+function readResetToken(token: string) {
+  if (!token || !token.includes('.')) return null;
+  const [body, sig] = token.split('.');
+  const expected = crypto.createHmac('sha256', secret()).update(body).digest('base64url');
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(body, 'base64url').toString());
+    if (!parsed?.slug || !parsed?.nonce || Number(parsed.exp) < Date.now()) return null;
+    return { slug: String(parsed.slug), nonce: String(parsed.nonce), exp: Number(parsed.exp) };
+  } catch {
+    return null;
+  }
+}
+
+export async function createPasswordReset(email: string) {
+  const normalized = email.trim().toLowerCase();
+  const found = await findShopByEmail(normalized);
+  if (found.error) return { ok: false, error: found.error, token: '', shopName: '' };
+  if (!found.row) return { ok: false, error: 'No shop uses that email.', token: '', shopName: '' };
+  const details = readDetails(found.row.details);
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const exp = Date.now() + 2 * 60 * 60 * 1000;
+  details.resetNonce = nonce;
+  details.resetExp = exp;
+  const error = await writeDetails(found.row.slug, details);
+  if (error) return { ok: false, error, token: '', shopName: '' };
+  const body = Buffer.from(JSON.stringify({ slug: found.row.slug, exp, nonce })).toString('base64url');
+  const sig = crypto.createHmac('sha256', secret()).update(body).digest('base64url');
+  return { ok: true, error: '', token: `${body}.${sig}`, shopName: found.row.shop_name || 'Your shop' };
+}
+
+export async function applyPasswordReset(token: string, password: string) {
+  if (password.length < 6) return { account: null, error: 'Use a password of at least 6 characters.' };
+  const parsed = readResetToken(token);
+  if (!parsed) return { account: null, error: 'This reset link has expired. Ask for a new one.' };
+  const found = await findShopBySlug(parsed.slug);
+  if (found.error || !found.row) return { account: null, error: 'This reset link has expired. Ask for a new one.' };
+  const details = readDetails(found.row.details);
+  if (String(details.resetNonce || '') !== parsed.nonce || Number(details.resetExp || 0) < Date.now()) {
+    return { account: null, error: 'This reset link has expired. Ask for a new one.' };
+  }
+  details.passwordHash = hashPassword(password);
+  delete details.resetNonce;
+  delete details.resetExp;
+  const error = await writeDetails(found.row.slug, details);
+  if (error) return { account: null, error };
+  return { account: accountFromRow(found.row), error: '' };
+}
+
 export async function accountFromSlug(slug: string) {
   const found = await findShopBySlug(slug);
   if (found.error || !found.row) return null;

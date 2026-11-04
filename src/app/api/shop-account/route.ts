@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { requestIp } from '@/lib/shopTrial';
 import {
   SHOP_COOKIE,
   accountFromSlug,
+  applyPasswordReset,
   beginPack,
   confirmPending,
+  createPasswordReset,
   createShopAccount,
   loginShopAccount,
   sessionCookieValue,
@@ -55,6 +58,40 @@ export async function POST(req: NextRequest) {
 
   if (action === 'login') {
     const result = await loginShopAccount(String(body.email || ''), String(body.password || ''), requestIp(req));
+    if (!result.account) return NextResponse.json({ error: result.error }, { status: 400 });
+    return withCookie({ account: result.account }, result.account.slug);
+  }
+
+  if (action === 'forgot') {
+    const result = await createPasswordReset(String(body.email || ''));
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) {
+      return NextResponse.json({ error: 'Password email is not set up yet. Write to support@mycoloringstar.com.' }, { status: 500 });
+    }
+    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://www.mycoloringstar.com';
+    const resetUrl = `${origin.replace(/\/$/, '')}/business?reset=${encodeURIComponent(result.token)}`;
+    const resend = new Resend(resendKey);
+    const sender = process.env.NODE_ENV === 'production' && !process.env.RESEND_USE_ONBOARDING
+      ? 'MyColoringStar <orders@mycoloringstar.com>'
+      : 'MyColoringStar <onboarding@resend.dev>';
+    const sent = await resend.emails.send({
+      from: sender,
+      to: [String(body.email || '').trim()],
+      subject: 'Reset your MyColoringStar shop password',
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h1 style="font-size:22px;color:#0f172a">Reset the password for ${result.shopName}</h1>
+        <p style="color:#475569;line-height:1.5">This link works for 2 hours. After you choose a new password, the old one stops working.</p>
+        <p style="margin:28px 0"><a href="${resetUrl}" style="background:#f97316;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:bold">Choose a new password</a></p>
+        <p style="color:#94a3b8;font-size:12px">If you did not ask for this, you can ignore the email.</p>
+      </div>`,
+    });
+    if (sent.error) return NextResponse.json({ error: sent.error.message }, { status: 500 });
+    return NextResponse.json({ sent: true });
+  }
+
+  if (action === 'reset') {
+    const result = await applyPasswordReset(String(body.token || ''), String(body.password || ''));
     if (!result.account) return NextResponse.json({ error: result.error }, { status: 400 });
     return withCookie({ account: result.account }, result.account.slug);
   }
