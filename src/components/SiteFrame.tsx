@@ -69,6 +69,7 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
             </nav>
           ) : (
             <nav className="flex items-center gap-4 text-xs sm:text-sm font-bold text-slate-900">
+              <Link href="/samples" className="rounded-full bg-orange-500 px-3 py-1.5 text-white hover:bg-orange-600">Samples</Link>
               <Link href="/#how-it-works" className="hover:underline">How it works</Link>
               <Link href="/pricing" className="hover:underline">Pricing</Link>
               <Link href="/business" className="hover:underline">For shops</Link>
@@ -92,6 +93,7 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
               </a>
             </div>
             <div className="flex items-center gap-6 font-medium">
+              <Link href="/samples" className="text-orange-600 font-bold hover:text-orange-700 transition">Samples</Link>
               <Link href="/business" className="text-orange-600 font-bold hover:text-orange-700 transition">For shops</Link>
               <Link href="/pricing" className="text-orange-600 font-bold hover:text-orange-700 transition">Pricing</Link>
               <Link href="/reviews" className="hover:text-slate-900 transition">Reviews</Link>

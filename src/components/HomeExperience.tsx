@@ -592,20 +592,10 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-2 shrink-0">
               <a
-                href="/sample-book.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
-              >
-                Liam's Superhero book
-              </a>
-              <a
-                href="/sample-book-princess.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/samples"
                 className="inline-flex items-center justify-center px-4 py-3 rounded-xl bg-orange-500 text-white text-sm font-black hover:bg-orange-600"
               >
-                Sara's Princess book
+                Samples
               </a>
             </div>
           </div>
