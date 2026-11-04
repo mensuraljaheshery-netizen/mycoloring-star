@@ -172,7 +172,7 @@ export async function createShopAccount(shopName: string, email: string, passwor
   );
   if (error) {
     const readable = /row-level security/i.test(error.message)
-      ? 'The shop table is blocking new accounts. In Supabase, open SQL and run: alter table public.shop_profiles disable row level security;'
+      ? 'Shop accounts are locked. Add SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy.'
       : error.message;
     return { account: null, note: '', error: readable };
   }

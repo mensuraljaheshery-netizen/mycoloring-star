@@ -10,7 +10,7 @@ create table if not exists public.shop_activity (
 
 create index if not exists shop_activity_ip_idx on public.shop_activity (ip_address);
 
-alter table public.shop_activity disable row level security;
+alter table public.shop_activity enable row level security;
 
-grant select, insert on public.shop_activity to anon, authenticated, service_role;
-grant usage, select on sequence public.shop_activity_id_seq to anon, authenticated, service_role;
+revoke all on table public.shop_activity from anon, authenticated, public;
+revoke all on sequence public.shop_activity_id_seq from anon, authenticated, public;

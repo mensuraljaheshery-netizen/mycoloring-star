@@ -7,6 +7,6 @@ create table if not exists public.shop_profiles (
 );
 
 alter table public.shop_profiles add column if not exists details text;
-alter table public.shop_profiles disable row level security;
+alter table public.shop_profiles enable row level security;
 
-grant select, insert, update on public.shop_profiles to anon, authenticated, service_role;
+revoke all on table public.shop_profiles from anon, authenticated, public;
