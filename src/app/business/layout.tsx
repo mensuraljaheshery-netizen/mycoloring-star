@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'White-label coloring books for shops',
+  title: 'Coloring books for shops',
   description:
-    'Shops create an account, keep their QR code, and buy coloring-book credits. The shop name is printed on the book.',
+    'A shop account puts your name on an 8-page coloring book. Print it at the counter. No monthly fee.',
   alternates: { canonical: '/business' },
 };
 

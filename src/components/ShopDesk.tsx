@@ -36,9 +36,6 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
   const [owner, setOwner] = useState(false);
   const [buyOpen, setBuyOpen] = useState(false);
   const [logo, setLogo] = useState('');
-  const [whiteLabel, setWhiteLabel] = useState(false);
-  const [headline, setHeadline] = useState('');
-  const [about, setAbout] = useState('');
   const [showAll, setShowAll] = useState(false);
   const [error, setError] = useState('');
   const [starting, setStarting] = useState(false);
@@ -60,12 +57,8 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
     fetch(`/api/shop-brand?slug=${encodeURIComponent(slug)}`)
       .then((res) => res.json())
       .then((data) => {
-        const monthly = data.plan === 'monthly';
-        setWhiteLabel(monthly);
-        if (monthly) document.title = data.shopName || shopName;
         if (typeof data.logo === 'string') setLogo(data.logo);
-        setHeadline(typeof data.headline === 'string' ? data.headline : '');
-        setAbout(typeof data.about === 'string' ? data.about : '');
+        if (data.shopName) document.title = data.shopName;
       })
       .catch(() => {});
   }, [slug, shopName]);
@@ -159,47 +152,30 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
             )}
             <div className="min-w-0 flex-1">
               <span className="font-black text-slate-900 tracking-tight">{shopName}</span>
-              <span className="block text-xs font-black text-orange-600">
-                {booksLeft === null ? 'Books left' : `${booksLeft} books left`}
-              </span>
-              {booksLeft !== null && (
-                <span className="block text-[11px] font-bold text-slate-500">
-                  About ${booksLeft * 10} if you sell each for $10
+              {owner && (
+                <span className="block text-xs font-bold text-slate-500">
+                  {booksLeft === null ? 'Books left' : `${booksLeft} books left`}
                 </span>
               )}
             </div>
-            {owner && <a href="/business" className="text-xs font-black text-slate-500">Account</a>}
+            {owner && <a href="/business" className="rounded-full bg-orange-50 px-3 py-2 text-xs font-black text-orange-700">Account</a>}
           </>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {owner && (
-          <div className="mb-6 grid sm:grid-cols-3 gap-3">
-            {CREDIT_PACKS.map((pack) => (
-              <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="bg-white border-2 border-orange-200 rounded-3xl p-4 text-left shadow-sm">
-                <p className="text-xs font-black uppercase tracking-wider text-orange-600">Buy books to sell</p>
-                <p className="mt-1 text-2xl font-black text-slate-900">{pack.price}</p>
-                <p className="text-sm font-bold text-slate-900">{pack.books}</p>
-                <p className="text-xs text-slate-500">Sell each for about $10</p>
-              </button>
-            ))}
-          </div>
-        )}
-        <section className="bg-white border-2 border-orange-100 rounded-3xl p-5 sm:p-8 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-wider text-orange-600">Coloring book</p>
+      <main className="max-w-3xl mx-auto px-4 py-8">
+        <section className="bg-white border border-orange-100 rounded-3xl p-5 sm:p-8 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-600">Made at {shopName}</p>
           <h1 className="mt-2 text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            {whiteLabel && headline ? headline : `A ${shopName} coloring book`}
+            A coloring book starring your child
           </h1>
-          <p className="mt-2 text-sm text-slate-600 max-w-xl">
-            {whiteLabel && about
-              ? about
-              : `Add a name and a clear photo. Pick an adventure. ${shopName} prints the 8-page book.`}
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Add a first name and one clear photo. Pick a theme. {shopName} prints the 8 pages and staples them.
           </p>
 
           {credits === 0 && !owner ? (
-            <p className="mt-6 rounded-2xl bg-orange-50 border border-orange-200 px-4 py-4 text-sm font-bold text-slate-800">
-              Ask the shop to start this book.
+            <p className="mt-6 rounded-2xl bg-orange-50 border border-orange-100 px-4 py-4 text-sm font-bold text-slate-800">
+              Ask someone at {shopName} to start this book.
             </p>
           ) : (
             <div className="mt-6 space-y-5">
@@ -226,7 +202,7 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
                     <Camera className="w-5 h-5" />
                   </div>
                   <span className="text-xs font-bold text-slate-800">Upload a clear front-face photo</span>
-                  <input type="file" accept="image/*" capture="user" onChange={(event) => onPhoto(event.target.files?.[0])} className="hidden" />
+                  <input type="file" accept="image/*" onChange={(event) => onPhoto(event.target.files?.[0])} className="hidden" />
                 </label>
               )}
 
@@ -283,9 +259,9 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
       {buyOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 flex items-end sm:items-center justify-center p-4">
           <div className="w-full max-w-lg bg-white rounded-3xl p-5 shadow-xl">
-            <p className="text-xs font-black uppercase tracking-wider text-orange-600">Free books used</p>
-            <h2 className="mt-2 text-2xl font-black text-slate-900">Buy books to make another one.</h2>
-            <p className="mt-2 text-sm text-slate-600">The 2 free books are used. Pick a pack to keep going.</p>
+            <p className="text-xs font-black uppercase tracking-wider text-orange-600">No books left</p>
+            <h2 className="mt-2 text-2xl font-black text-slate-900">Buy a pack to make another book.</h2>
+            <p className="mt-2 text-sm text-slate-600">These prices are for the shop, not the customer. A finished book is usually sold for about $10.</p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {CREDIT_PACKS.map((pack) => (
                 <button key={pack.checkoutKey} type="button" onClick={() => buyPack(pack.checkoutKey)} className="border-2 border-orange-100 rounded-2xl p-3 text-left">
