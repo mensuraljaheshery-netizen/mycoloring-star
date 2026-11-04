@@ -207,12 +207,7 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
               )}
 
               <div>
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-black uppercase tracking-wider text-slate-500">Choose an adventure</p>
-                  <button type="button" onClick={() => setShowAll((open) => !open)} className="text-xs font-bold text-orange-600">
-                    {showAll ? 'Show less' : 'See more'}
-                  </button>
-                </div>
+                <p className="text-xs font-black uppercase tracking-wider text-slate-500">Choose an adventure</p>
                 <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {visibleThemes.map((theme) => {
                     const selected = theme.name === themeName;
@@ -229,6 +224,9 @@ export default function ShopDesk({ slug, hintedName }: { slug: string; hintedNam
                     );
                   })}
                 </div>
+                <button type="button" onClick={() => setShowAll((open) => !open)} className="mt-3 text-sm font-bold text-orange-600">
+                  {showAll ? 'Show less' : 'See more'}
+                </button>
               </div>
 
               <label className="flex items-start gap-2 text-sm text-slate-700">
