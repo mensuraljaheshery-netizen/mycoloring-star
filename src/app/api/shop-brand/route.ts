@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { supabaseServiceKey } from '@/lib/supabaseKey';
 import { cleanShopName, shopSlug } from '@/lib/shop';
 
 export const dynamic = 'force-dynamic';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
+  supabaseServiceKey(),
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 

@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createClient } from '@supabase/supabase-js';
+import { supabaseServiceKey } from '@/lib/supabaseKey';
 import { getCoverScene, getCoverTale, getThemeConfig } from '@/lib/themes';
 import { requestIp, reserveShopTrial } from '@/lib/shopTrial';
 
@@ -13,10 +14,7 @@ const themesFilePath = path.join(process.cwd(), 'src', 'data', 'themes-data.json
 
 // Initialize Supabase admin client directly with project credentials
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co';
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  'placeholder-key';
+const supabaseKey = supabaseServiceKey();
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: false, autoRefreshToken: false }

@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { shopSlug } from '@/lib/shop';
+import { supabaseServiceKey } from '@/lib/supabaseKey';
 
 type ShopTrialResult = { remaining: number; allowed: boolean; reason?: string };
 
@@ -9,7 +10,7 @@ const FREE_BOOKS = 2;
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
+  supabaseServiceKey(),
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 

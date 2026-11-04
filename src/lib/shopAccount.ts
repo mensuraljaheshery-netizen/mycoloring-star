@@ -1,12 +1,13 @@
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { cleanShopName, shopSlug } from '@/lib/shop';
+import { supabaseServiceKey } from '@/lib/supabaseKey';
 
 const COOKIE = 'mcs_shop';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jjvjojevlxqykdzlpvqv.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
+  supabaseServiceKey(),
   { auth: { persistSession: false, autoRefreshToken: false } }
 );
 
@@ -26,7 +27,7 @@ export type ShopAccount = {
 };
 
 function secret() {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mcs-shop-session';
+  return supabaseServiceKey();
 }
 
 function readDetails(raw: unknown): Details {
@@ -172,7 +173,7 @@ export async function createShopAccount(shopName: string, email: string, passwor
   );
   if (error) {
     const readable = /row-level security/i.test(error.message)
-      ? 'Shop accounts are locked. Add SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy.'
+      ? 'Shop accounts are locked. The service role key is not being read.'
       : error.message;
     return { account: null, note: '', error: readable };
   }
