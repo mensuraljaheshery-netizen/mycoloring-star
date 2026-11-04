@@ -128,7 +128,6 @@ export default function HomePage() {
   const [pendingFreeClaim, setPendingFreeClaim] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const carouselRef = useRef<HTMLDivElement>(null);
   const themesSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -274,13 +273,6 @@ export default function HomePage() {
     setValidationError(null);
     if (themesSectionRef.current) {
       themesSectionRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    if (carouselRef.current) {
-      const scrollAmount = direction === 'left' ? -380 : 380;
-      carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
@@ -640,23 +632,6 @@ export default function HomePage() {
               The full book is 8 pages for $7. The 3-page sample is free.
             </p>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => scrollCarousel('left')}
-              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition cursor-pointer"
-              aria-label="Previous themes"
-            >
-              ⬅️
-            </button>
-            <button
-              onClick={() => scrollCarousel('right')}
-              className="p-2.5 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 active:scale-95 transition cursor-pointer"
-              aria-label="Next themes"
-            >
-              ➡️
-            </button>
-          </div>
         </div>
 
         {/* Category Filter Pills */}
@@ -676,17 +651,12 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* HORIZONTAL SWIPING TRACK */}
-        <div
-          ref={carouselRef}
-          className="flex gap-5 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory focus:outline-none"
-          style={{ scrollbarWidth: 'thin' }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredThemes.map((theme) => (
             <div
               key={theme.slug}
               onClick={() => handleSelectTheme(theme.slug)}
-              className="min-w-[280px] sm:min-w-[320px] snap-start bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1.5 cursor-pointer text-left"
+              className="bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1.5 cursor-pointer text-left"
             >
               <div className="relative h-44 w-full overflow-hidden bg-slate-100 border-b border-slate-100">
                 <img
@@ -734,14 +704,14 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-        {activeCategory === 'All' && !showAllThemes && (
-          <div className="flex justify-center">
+        {activeCategory === 'All' && (
+          <div className="flex justify-center mt-2">
             <button
               type="button"
-              onClick={() => setShowAllThemes(true)}
+              onClick={() => setShowAllThemes((open) => !open)}
               className="px-5 py-3 rounded-xl bg-white border border-slate-200 text-sm font-black text-slate-900 shadow-sm hover:border-orange-300"
             >
-              See more themes
+              {showAllThemes ? 'Show less' : 'See more themes'}
             </button>
           </div>
         )}
