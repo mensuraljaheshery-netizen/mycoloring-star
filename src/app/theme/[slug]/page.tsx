@@ -76,6 +76,8 @@ const PACKAGES_CONFIG: Record<string, { label: string; pages: number; price: str
 };
 
 const THEME_SAMPLES: Record<string, { href: string; label: string }> = {
+  superhero: { href: '/sample-book.pdf', label: "See Liam's Superhero book" },
+  princess: { href: '/sample-book-princess.pdf', label: "See Sara's Princess book" },
   'school-day': { href: '/sample-book-school-day.pdf', label: "See Sara's School Day book" },
   'dinosaur-explorer': { href: '/sample-book-dinosaur.pdf', label: "See Liam's Dinosaur book" },
   'race-car-driver': { href: '/sample-book-race-car.pdf', label: "See Liam's Race Car book" },
@@ -896,16 +898,19 @@ export default function ThemeCustomizerPage() {
         <p className="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
           {baseTheme.description}
         </p>
-        {THEME_SAMPLES[baseTheme.slug] && (
-          <a
-            href={THEME_SAMPLES[baseTheme.slug].href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
-          >
-            {THEME_SAMPLES[baseTheme.slug].label}
-          </a>
-        )}
+        {(() => {
+          const sample = THEME_SAMPLES[baseTheme.slug] || { href: '/samples', label: 'See free sample books' };
+          return (
+            <a
+              href={sample.href}
+              target={sample.href.endsWith('.pdf') ? '_blank' : undefined}
+              rel={sample.href.endsWith('.pdf') ? 'noopener noreferrer' : undefined}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-black hover:bg-slate-800"
+            >
+              {sample.label}
+            </a>
+          );
+        })()}
       </section>
 
       {/* 3. MOBILE ACTION BOX */}
