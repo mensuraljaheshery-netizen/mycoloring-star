@@ -64,6 +64,22 @@ const BOOKS = [
     href: '/sample-book-robot.pdf',
     file: 'MyColoringStar_Liam_Robot_World.pdf',
   },
+  {
+    name: "Liam's Soccer book",
+    child: 'Liam',
+    photo: '/sample-liam-photo.jpg',
+    detail: 'A color cover and coloring pages from a real Soccer book.',
+    href: '/sample-book-soccer.pdf',
+    file: 'MyColoringStar_Liam_Soccer_Stadium.pdf',
+  },
+  {
+    name: "Liam's Desert book",
+    child: 'Liam',
+    photo: '/sample-liam-photo.jpg',
+    detail: 'A color cover and coloring pages from a real Desert book.',
+    href: '/sample-book-desert.pdf',
+    file: 'MyColoringStar_Liam_Desert_Adventure.pdf',
+  },
 ];
 
 export default function SamplesPage() {
