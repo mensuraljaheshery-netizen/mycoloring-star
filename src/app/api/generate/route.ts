@@ -18,7 +18,8 @@ async function verifyAndRecordFreeTier(
   shouldRecord: boolean,
   childName?: string,
   theme?: string,
-  email?: string
+  email?: string,
+  freeSession?: string
 ): Promise<{ allowed: boolean; reason?: string }> {
   if (isPaidOrder) {
     return { allowed: true };
@@ -28,50 +29,55 @@ async function verifyAndRecordFreeTier(
   const realIp = req.headers.get('x-real-ip');
   const cfIp = req.headers.get('cf-connecting-ip');
   const ip = forwarded ? forwarded.split(',')[0].trim() : realIp || cfIp || '127.0.0.1';
-
   const cleanEmail = (email || '').toLowerCase().trim();
+  const session = String(freeSession || '').trim();
 
   try {
-    let query = supabaseAdmin.from('free_book_claims').select('id, claimed_at');
-
-    if (cleanEmail) {
-      query = query.or(`ip_address.eq.${ip},email.eq.${cleanEmail}`);
-    } else {
-      query = query.eq('ip_address', ip);
-    }
-
-    const { data: existing, error: selectError } = await query.maybeSingle();
+    const { data: rows, error: selectError } = await supabaseAdmin
+      .from('free_book_claims')
+      .select('id, theme')
+      .eq('ip_address', ip)
+      .limit(5);
 
     if (selectError) {
       console.warn('[SUPABASE_SELECT_WARNING]:', selectError.message);
+      return { allowed: false, reason: "You've unlocked your free sample! Ready to order the full edition?" };
     }
 
-    if (existing) {
-      return {
-        allowed: false,
-        reason: "You've unlocked your free sample! Ready to order the full edition?"
-      };
-    }
-
+    const existing = rows || [];
     if (shouldRecord) {
+      if (existing.length > 0 || !session) {
+        return { allowed: false, reason: "You've unlocked your free sample! Ready to order the full edition?" };
+      }
       const { error: insertError } = await supabaseAdmin
         .from('free_book_claims')
         .insert([{
           ip_address: ip,
           email: cleanEmail || null,
           child_name: childName || 'Hero',
-          theme: theme || 'superhero'
+          theme: `${theme || 'superhero'}::${session}`
         }]);
-
       if (insertError) {
         console.warn('[SUPABASE_INSERT_WARNING]:', insertError.message);
+        return { allowed: false, reason: 'The free sample could not be started. Refresh and try once more.' };
       }
+      return { allowed: true };
+    }
+
+    const sameBook = session && existing.some((row) => String(row.theme || '').endsWith(`::${session}`));
+    if (!sameBook) {
+      return {
+        allowed: false,
+        reason: existing.length
+          ? "You've unlocked your free sample! Ready to order the full edition?"
+          : 'The free sample was not reserved. Start it again from the theme page.'
+      };
     }
 
     return { allowed: true };
   } catch (err: any) {
     console.warn('[FREE_TIER_CHECK_EXCEPTION]:', err);
-    return { allowed: true };
+    return { allowed: false, reason: "You've unlocked your free sample! Ready to order the full edition?" };
   }
 }
 
@@ -211,6 +217,8 @@ export async function POST(req: NextRequest) {
       paperSize = 'letter',
       orderId,
       finalizeFreeClaim,
+      reserveFreeClaim,
+      freeSession,
       brandName
     } = await req.json();
 
@@ -223,16 +231,17 @@ export async function POST(req: NextRequest) {
     }
 
     const isPaidOrder = Boolean(orderId && (orderId.startsWith('paid_') || orderId.startsWith('ord_')));
+    const skipFreeLock = isPaidOrder || Boolean(shopBrand);
 
-    if (finalizeFreeClaim) {
-      const usageCheck = await verifyAndRecordFreeTier(req, false, true, childName, theme, email);
+    if (reserveFreeClaim || finalizeFreeClaim) {
+      const usageCheck = await verifyAndRecordFreeTier(req, skipFreeLock, true, childName, theme, email, freeSession);
       if (!usageCheck.allowed) {
         return NextResponse.json({ error: usageCheck.reason }, { status: 403 });
       }
       return NextResponse.json({ ok: true });
     }
 
-    const usageCheck = await verifyAndRecordFreeTier(req, isPaidOrder, false, childName, theme, email);
+    const usageCheck = await verifyAndRecordFreeTier(req, skipFreeLock, false, childName, theme, email, freeSession);
     if (!usageCheck.allowed) {
       return NextResponse.json({ error: usageCheck.reason }, { status: 403 });
     }
@@ -329,26 +338,15 @@ MANDATORY LINE ART STYLE:
       return NextResponse.json({ error: 'OPENROUTER_API_KEY is missing in environment variables.' }, { status: 500 });
     }
 
-    // Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image) explicitly set
     const modelId = 'google/gemini-3.1-flash-lite-image';
-
-    const messages: any[] = [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: prompt
-          }
-        ]
-      }
-    ];
-
+    const imageBody: Record<string, unknown> = {
+      model: modelId,
+      prompt,
+      aspect_ratio: isLandscape ? '4:3' : '3:4',
+      output_format: 'png'
+    };
     if (imageBase64) {
-      messages[0].content.push({
-        type: 'image_url',
-        image_url: { url: imageBase64 }
-      });
+      imageBody.input_references = [{ type: 'image_url', image_url: { url: imageBase64 } }];
     }
 
     const controller = new AbortController();
@@ -356,7 +354,7 @@ MANDATORY LINE ART STYLE:
 
     let orRes: Response;
     try {
-      orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      orRes = await fetch('https://openrouter.ai/api/v1/images', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -364,21 +362,13 @@ MANDATORY LINE ART STYLE:
           'HTTP-Referer': 'https://www.mycoloringstar.com',
           'X-Title': 'MyColoringStar'
         },
-        body: JSON.stringify({
-          model: modelId,
-          messages,
-          modalities: ['image', 'text'],
-          provider: {
-            order: ['Google AI Studio'],
-            allow_fallbacks: true
-          }
-        }),
+        body: JSON.stringify(imageBody),
         signal: controller.signal
       });
     } catch (fetchErr: any) {
       clearTimeout(timeoutId);
       if (fetchErr.name === 'AbortError') {
-        throw new Error('Image generation timed out after 50 seconds. Retrying scene...');
+        throw new Error('Image generation timed out after 50 seconds.');
       }
       throw fetchErr;
     } finally {
@@ -391,45 +381,19 @@ MANDATORY LINE ART STYLE:
       throw new Error(orData.error?.message || `Model provider returned status ${orRes.status}`);
     }
 
-    const choice = orData.choices?.[0];
-    const message = choice?.message;
-
+    const first = Array.isArray(orData.data) ? orData.data[0] : null;
     let imageUrl: string | null = null;
-
-    if (Array.isArray(message?.images) && message.images.length > 0) {
-      const firstImg = message.images[0];
-      if (typeof firstImg === 'string') imageUrl = firstImg;
-      else if (firstImg?.image_url?.url) imageUrl = firstImg.image_url.url;
-      else if (typeof firstImg?.image_url === 'string') imageUrl = firstImg.image_url;
-      else if (firstImg?.url) imageUrl = firstImg.url;
-    }
-
-    if (!imageUrl && message?.image_url) {
-      imageUrl = typeof message.image_url === 'string' ? message.image_url : message.image_url.url;
-    }
-
-    if (!imageUrl && Array.isArray(message?.content)) {
-      for (const item of message.content) {
-        if (item.type === 'image_url' && item.image_url?.url) {
-          imageUrl = item.image_url.url;
-          break;
-        }
-      }
-    }
-
-    if (!imageUrl && typeof message?.content === 'string') {
-      const markdownMatch = message.content.match(/!\[.*?\]\((https?:\/\/.*?)\)/);
-      const directUrlMatch = message.content.match(/https?:\/\/\S+\.(?:png|jpe?g|webp)/i);
-      if (markdownMatch) imageUrl = markdownMatch[1];
-      else if (directUrlMatch) imageUrl = directUrlMatch[0];
+    if (first?.b64_json) {
+      const mediaType = first.media_type || 'image/png';
+      imageUrl = `data:${mediaType};base64,${first.b64_json}`;
+    } else if (typeof first?.url === 'string') {
+      imageUrl = first.url;
     }
 
     if (!imageUrl) {
-      const textPreview = typeof message?.content === 'string' ? message.content.slice(0, 140) : JSON.stringify(message);
-      throw new Error(`No image URL returned from model: "${textPreview}"`);
+      throw new Error('No image was returned. The page was not created.');
     }
 
-    // Direct lightweight URL return to avoid browser storage quota crashes
     return NextResponse.json({ imageUrl });
 
   } catch (err: any) {

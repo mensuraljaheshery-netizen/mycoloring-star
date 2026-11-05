@@ -146,16 +146,13 @@ export default function HomePage() {
       fetch('/api/free-sample/check')
         .then((res) => res.json())
         .then((data) => {
-          if (data?.claimed) {
+          if (data?.claimed || claimedLocal) {
             setHasClaimedFree(true);
             try {
               localStorage.setItem('mcs_claimed_free_sample', 'true');
             } catch {}
-          } else if (data && data.claimed === false) {
+          } else if (data && data.claimed === false && !claimedLocal) {
             setHasClaimedFree(false);
-            try {
-              localStorage.removeItem('mcs_claimed_free_sample');
-            } catch {}
           }
         })
         .catch(() => {

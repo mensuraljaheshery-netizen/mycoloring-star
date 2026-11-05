@@ -152,16 +152,13 @@ export default function ThemeCustomizerPage() {
         fetch('/api/free-sample/check')
           .then((res) => res.json())
           .then((data) => {
-            if (data?.claimed) {
+            if (data?.claimed || claimedLocal) {
               setHasClaimedFree(true);
               try {
                 localStorage.setItem('mcs_claimed_free_sample', 'true');
               } catch {}
-            } else if (data && data.claimed === false) {
+            } else if (data && data.claimed === false && !claimedLocal) {
               setHasClaimedFree(false);
-              try {
-                localStorage.removeItem('mcs_claimed_free_sample');
-              } catch {}
             }
           })
           .catch(() => {
@@ -448,6 +445,37 @@ export default function ThemeCustomizerPage() {
     setIsBuildingBook(true);
     setDownloadReadyPdf(null);
 
+    const freeSession = `free_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    try {
+      const reserve = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reserveFreeClaim: true,
+          freeSession,
+          childName: childName || 'Hero',
+          theme: baseTheme.name
+        })
+      });
+      const reserved = await reserve.json().catch(() => ({}));
+      if (!reserve.ok) {
+        const message = reserved.error || "You've unlocked your free sample! Ready to order the full edition?";
+        if (reserve.status === 403) {
+          setHasClaimedFree(true);
+          try {
+            localStorage.setItem('mcs_claimed_free_sample', 'true');
+          } catch {}
+        }
+        setErrorMessage(message);
+        setIsBuildingBook(false);
+        return;
+      }
+    } catch (reserveError: any) {
+      setErrorMessage(reserveError.message || 'The free sample could not be started.');
+      setIsBuildingBook(false);
+      return;
+    }
+
     const photoSig = `${photoPreview.length}`;
     const stored = freeProgressRef.current?.photoSig === photoSig ? freeProgressRef.current : readFreeProgress();
     const progress = { cover: stored.cover, pages: [...stored.pages], photoSig };
@@ -455,23 +483,22 @@ export default function ThemeCustomizerPage() {
 
     const generatePage = async (payload: Record<string, unknown>, label: string) => {
       let lastError = 'Failed generating this page';
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        setFulfillmentStage(attempt === 1 ? label : `${label} Trying again (${attempt} of 3)...`);
+      for (let attempt = 1; attempt <= 1; attempt++) {
+        setFulfillmentStage(label);
         try {
           const res = await fetch('/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ ...payload, freeSession })
           });
           const data = await res.json();
           if (res.ok && data.imageUrl) return data.imageUrl as string;
           lastError = data.error || lastError;
-          if (res.status === 403) throw new Error(lastError);
+          throw new Error(lastError);
         } catch (err: any) {
           lastError = err.message || lastError;
-          if (lastError.toLowerCase().includes('free sample')) throw new Error(lastError);
+          throw new Error(lastError);
         }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
       throw new Error(lastError);
     };
@@ -515,18 +542,6 @@ export default function ThemeCustomizerPage() {
       await buildPdfInBrowser(progress.cover, progress.pages.slice(0, 2));
       setFulfillmentStage('Your Free 3-Page Mini-Book is ready!');
 
-      try {
-        await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            finalizeFreeClaim: true,
-            childName: childName || 'Hero',
-            theme: baseTheme.name
-          })
-        });
-      } catch {}
-
       setHasClaimedFree(true);
       try {
         localStorage.setItem('mcs_claimed_free_sample', 'true');
@@ -534,12 +549,7 @@ export default function ThemeCustomizerPage() {
       clearFreeProgress();
     } catch (err: any) {
       console.error(err);
-      const finished = (progress.cover ? 1 : 0) + progress.pages.length;
-      setErrorMessage(
-        finished > 0
-          ? `${err.message || 'Error generating free mini-book.'} ${finished} of 3 pages are saved. Press the button again to continue from the page that failed.`
-          : err.message || 'Error generating free mini-book.'
-      );
+      setErrorMessage(err.message || 'The free sample could not be finished. It cannot be started again from this connection.');
     } finally {
       setIsBuildingBook(false);
     }
