@@ -72,7 +72,6 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
               <Link href="/samples" className="rounded-full bg-orange-500 px-3 py-1.5 text-white hover:bg-orange-600">Samples</Link>
               <Link href="/#how-it-works" className="hover:underline">How it works</Link>
               <Link href="/pricing" className="hover:underline">Pricing</Link>
-              <Link href="/business" className="hover:underline">For shops</Link>
               <Link href="/contact" className="hover:underline">Support</Link>
             </nav>
           )}
@@ -94,13 +93,13 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex items-center gap-6 font-medium">
               <Link href="/samples" className="text-orange-600 font-bold hover:text-orange-700 transition">Samples</Link>
-              <Link href="/business" className="text-orange-600 font-bold hover:text-orange-700 transition">For shops</Link>
               <Link href="/pricing" className="text-orange-600 font-bold hover:text-orange-700 transition">Pricing</Link>
               <Link href="/reviews" className="hover:text-slate-900 transition">Reviews</Link>
               <Link href="/contact" className="hover:text-slate-900 transition">Contact Us</Link>
               <Link href="/terms" className="hover:text-slate-900 transition">Terms of Service</Link>
               <Link href="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
               <Link href="/refunds" className="hover:text-slate-900 transition">Refund Policy</Link>
+              <Link href="/business" className="hover:text-slate-900 transition">For shops</Link>
             </div>
           </div>
         </footer>
