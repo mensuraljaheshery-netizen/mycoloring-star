@@ -41,13 +41,13 @@ async function verifyAndRecordFreeTier(
 
     if (selectError) {
       console.warn('[SUPABASE_SELECT_WARNING]:', selectError.message);
-      return { allowed: false, reason: "You've unlocked your free sample! Ready to order the full edition?" };
+      return { allowed: false, reason: "You already claimed your free sample. The full book is 8 pages for $7." };
     }
 
     const existing = rows || [];
     if (shouldRecord) {
       if (existing.length > 0 || !session) {
-        return { allowed: false, reason: "You've unlocked your free sample! Ready to order the full edition?" };
+        return { allowed: false, reason: 'You already claimed your free sample. The full book is 8 pages for $7.' };
       }
       const { error: insertError } = await supabaseAdmin
         .from('free_book_claims')
@@ -69,7 +69,7 @@ async function verifyAndRecordFreeTier(
       return {
         allowed: false,
         reason: existing.length
-          ? "You've unlocked your free sample! Ready to order the full edition?"
+          ? "You already claimed your free sample. The full book is 8 pages for $7."
           : 'The free sample was not reserved. Start it again from the theme page.'
       };
     }
@@ -77,7 +77,7 @@ async function verifyAndRecordFreeTier(
     return { allowed: true };
   } catch (err: any) {
     console.warn('[FREE_TIER_CHECK_EXCEPTION]:', err);
-    return { allowed: false, reason: "You've unlocked your free sample! Ready to order the full edition?" };
+    return { allowed: false, reason: "You already claimed your free sample. The full book is 8 pages for $7." };
   }
 }
 

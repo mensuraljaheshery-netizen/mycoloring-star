@@ -334,7 +334,9 @@ export default function HomePage() {
           Add their name, attach a photo, pick an adventure world, and get an instant keepsake coloring book ready for crayons.
         </p>
         <p className="max-w-xl mx-auto text-xs sm:text-sm font-bold text-slate-700 mb-4">
-          Free 3-page sample. The full book is 8 pages for $7, a digital PDF you print at home, with unlimited reprints.
+          {hasClaimedFree
+            ? 'You already claimed your free sample. The full book is 8 pages for $7.'
+            : 'Free 3-page sample. The full book is 8 pages for $7, a digital PDF you print at home, with unlimited reprints.'}
         </p>
         <a href="#how-it-works" className="inline-block text-xs font-bold text-orange-600 hover:underline mb-2">
           See how it works
@@ -452,7 +454,7 @@ export default function HomePage() {
           ) : (
             <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2.5 text-xs text-slate-600">
               <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>You&apos;ve unlocked your free sample! Pick an adventure below to personalize your storybook.</span>
+              <span>You already claimed your free sample. The full book is 8 pages for $7.</span>
             </div>
           )}
 
@@ -619,7 +621,9 @@ export default function HomePage() {
               Click any world to customize {childName.trim() || 'your child'}&apos;s storybook.
             </p>
             <p className="text-sm font-black text-slate-900 mt-1">
-              The full book is 8 pages for $7. The 3-page sample is free.
+              {hasClaimedFree
+                ? 'You already claimed your free sample. The full book is 8 pages for $7.'
+                : 'The full book is 8 pages for $7. The 3-page sample is free.'}
             </p>
           </div>
         </div>

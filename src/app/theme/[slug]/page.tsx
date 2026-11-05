@@ -459,7 +459,7 @@ export default function ThemeCustomizerPage() {
       });
       const reserved = await reserve.json().catch(() => ({}));
       if (!reserve.ok) {
-        const message = reserved.error || "You've unlocked your free sample! Ready to order the full edition?";
+        const message = reserved.error || 'You already claimed your free sample. The full book is 8 pages for $7.';
         if (reserve.status === 403) {
           setHasClaimedFree(true);
           try {
@@ -705,7 +705,7 @@ export default function ThemeCustomizerPage() {
         ) : (
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-2 text-xs text-slate-600">
             <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>You&apos;ve unlocked your free sample! Ready to order the full storybook?</span>
+            <span>You already claimed your free sample. The full book is 8 pages for $7.</span>
           </div>
         )}
 
