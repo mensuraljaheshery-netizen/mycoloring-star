@@ -99,7 +99,6 @@ export default function SiteFrame({ children }: { children: React.ReactNode }) {
               <Link href="/terms" className="hover:text-slate-900 transition">Terms of Service</Link>
               <Link href="/privacy" className="hover:text-slate-900 transition">Privacy Policy</Link>
               <Link href="/refunds" className="hover:text-slate-900 transition">Refund Policy</Link>
-              <Link href="/business" className="hover:text-slate-900 transition">For shops</Link>
             </div>
           </div>
         </footer>
